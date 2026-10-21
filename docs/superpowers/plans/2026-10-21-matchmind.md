@@ -91,7 +91,7 @@ data/matches/<match_id>/   # git-ignored generated output
 
 Critical path: 1 → 2 → 4 → 6/7 → 8 → 9 → 10 → 11/12/13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21 → 23 → 24 → 31.
 Can run alongside the critical path: 3 (after 2), 5 (after 4), 22 (any time after 1; do it early so the user's design choice never blocks Task 23), 16.1 (user Azure setup: start immediately).
-Suggested days: D1 Tasks 1–5 · D2 Tasks 6–10 · D3 Tasks 11–16 · D4 Tasks 17–21 · D5 Tasks 22–25 · D6 Task 31 + phase 2 only if Task 25 is done by midday D5.
+Suggested days: Day plan is kept outside the repo. Profiles and baselines (TASK-3.2, 8.3, 10.4, 10.5, 12.3) add about 1.75 days, absorbed by the Day 6 buffer and a trimmed Phase 2 (TASK-34, then TASK-26).
 
 ### Task 0: Maintain the wiki (standing)
 
@@ -144,17 +144,23 @@ Rule: every commit that changes code also updates (1) the wiki page for each are
 - [ ] **Step 4: Run** the tests. Expected: PASS.
 - [ ] **Step 5: Commit** `TASK-2: shared schemas and pitch geometry`.
 
-### Task 3: Fictional league, squads, season history
+### Task 3: Fictional Los Angeles league and player/club profiles
 
-**Files:** Create `src/matchmind/league/league.py`, `src/matchmind/league/season.py`, `src/matchmind/league/names.py` (fictional name parts per region), `tests/league/test_league.py`.
+**Files:** Create `src/matchmind/league/clubs.py` (the 20 approved clubs), `league/league.py`, `league/fixtures.py`, `league/profiles.py`, `league/names.py`, `src/matchmind/schemas_profile.py`, `tests/league/test_league.py`, `tests/league/test_profiles.py`, `tests/fixtures/real_club_blocklist.txt`, `tests/fixtures/real_player_blocklist.txt`.
 
-**Interfaces:** Produces `build_league(seed: int = 2026) -> League` where `League(clubs: list[Club], squads: dict[str, list[Player]])`: 20 clubs, 20 players each (2 GK, 7 DF, 7 MF, 4 FW). Club names are fixed in `league/clubs.py` (`CLUBS`, 20 entries named after Los Angeles neighborhoods, each with a 3-letter short code and a stadium name) and the seed only drives colors, formations, strength, and squads. Real place names are allowed; real club names and pro-team nicknames are not. `derbies() -> list[tuple[str, str]]` lists neighboring rivalries (for example Echo Park vs Silver Lake). Produces `build_season(league: League, seed: int, rounds: int = 9) -> Season`, where `rounds` is how many rounds of a 38-round double round robin have been played (showcase matches are in round 10) with `Season(results: list[SeasonResult], player_totals: dict[str, PlayerSeasonTotals])`, and `milestones_for(season, player_id | club_id) -> list[str]` returning keys like `"goals:10"` and `"clean_sheets_streak:5"`.
+**Approved clubs (fixed, not generated):** Boyle Heights Athletic, Lincoln Heights Locomotive, El Sereno Sporting, Highland Park Albion, Eagle Rock United, Echo Park Rovers, Silver Lake Wanderers, Los Feliz Town, Koreatown City, Atwater Village Kestrels, Venice Tides, Mar Vista Dynamo, Westwood Scholars, San Pedro Harbor, Van Nuys Aviators, Studio City Stars, Sherman Oaks Royals, Leimert Park Harmony, Crenshaw Monarchs, Watts Union. Derbies: Echo Park–Silver Lake, Boyle Heights–Lincoln Heights, Venice–Mar Vista, Leimert Park–Crenshaw. Money in USD millions (`*_m`).
 
-- [ ] **Step 1: Failing tests.** `test_league_deterministic` (same seed → equal); `test_league_shape` (20 clubs, 20 players each, unique ids, unique short codes, unique shirt numbers per club); `test_season_fixtures` (each round has 10 matches and every club plays once per round); `test_no_real_names`: no club name or nickname matches `tests/fixtures/real_club_blocklist.txt` (the 20 current Premier League clubs, 10 famous European clubs, Los Angeles-area pro and semi-pro soccer clubs, and LA pro-team nicknames such as Galaxy, Angel City, Dodgers, Lakers, Kings, Rams, Chargers, Clippers, Sparks), and no player name is in `real_player_blocklist.txt`; `test_milestones`: a player whose total is 9 gets `"goals:10"` as the next milestone.
-- [ ] **Step 2: Run** the tests. Expected: FAIL.
-- [ ] **Step 3: Implement** names from syllable tables (seeded `np.random.Generator`), distinct colors (pairwise ΔE > 20), and season results from a Poisson model on club strength.
-- [ ] **Step 4: Run** the tests. Expected: PASS.
-- [ ] **Step 5: Commit** `TASK-3: fictional league and season history`.
+**Interfaces:**
+- TASK-3.1: `CLUBS` (20 entries with id, name, 3-letter short code, stadium, capacity, founded year), `build_league(seed=2026) -> League(clubs, squads: dict[str, list[Player]])` (20 × 20 players: 2 GK, 7 DF, 7 MF, 4 FW), `derbies() -> list[tuple[str, str]]`, `build_fixtures(league, seed, start_date="2026-08-15") -> list[Fixture(round, date, home_id, away_id)]` (38-round double round robin, 10 matches per round, every club once per round, home/away balanced).
+- TASK-3.2: `schemas_profile.py` (kept separate from `schemas.py`; `Player.pace/skill/stamina` become summary ratings derived from the profile; `skill` = decision quality):
+  - `PlayerProfile(player_id, personality: Personality(composure, aggression, confidence, leadership, consistency), style: Style(position, secondary_position, role, work_rate, tactical_discipline, risk_tolerance), technical: Technical(passing, first_touch, dribbling, finishing, crossing, tackling, aerial, shot_stopping, distribution), origin: Origin(kind: academy|signed|loan, joined_year, signed_from, fee_m), career: Career(nationality, birth_year, years_pro, stage: rookie|prime|veteran, club_apps, club_goals, caps, contract_until, market_value_m, contract_negotiations, transfer_interest: list[str], retirement_risk), discipline: Discipline(career_yellows, career_reds, season_yellows, suspended_until_round), status: Status(injury: fit|returning|doubtful, games_missed, captain, preferred_foot, height_cm), flags: is_academy, is_new_signing, is_former_rival, is_returning_from_injury)`. Ratings are in [0, 1]. Career ambitions are narrative-only (no engine effect).
+  - `ClubProfile(club_id, tactical_identity: TacticalIdentity(press_intensity, line_height, tempo, width, directness, build_up: short|mixed|direct), management: Management(manager_name, manager_style: possession|pressing|counter|pragmatic, manager_tenure_years, job_security), culture: academy_first|win_now|underdog|fan_owned, ownership: long_standing|new_owner|fan_owned, owner_since, transfer_budget_m, wage_bill_m, last_finish, status: promoted|title_contender|mid_table|relegation_fight, home_advantage)` plus `chemistry(club_id) -> dict[tuple[str, str], float]` (pairwise, from years together, academy, shared language, manager tenure).
+  - `Transfer(player_id, from_club, to_club, year, fee_m, kind: permanent|loan|free)`, `Legend(name, club_id, era, apps, goals)`.
+  - `build_profiles(league, seed) -> Profiles(players, clubs, transfers, legends)`. Generation uses a latent-factor model: each player draws hidden quality, temperament and athleticism factors; attributes = position prior + factor loadings + noise, so correlations are realistic (aggression ↔ cards, age ↔ leadership, quality ↔ fee and market value, club budget ↔ squad quality).
+
+- [ ] **TASK-3.1 tests:** `test_league_deterministic`; `test_league_shape` (20 clubs, 20 players each, unique ids and short codes, unique shirt numbers per club); `test_fixtures_round_robin` (38 rounds × 10 matches, each pair meets twice with home and away swapped); `test_no_real_names` (no club name, nickname, or player name matches the blocklists: the 20 Premier League clubs, 10 famous European clubs, LA-area pro and semi-pro soccer clubs, and LA pro nicknames Galaxy, Angel City, Dodgers, Lakers, Kings, Rams, Chargers, Clippers, Sparks).
+- [ ] **TASK-3.2 tests:** `test_profiles_deterministic`; `test_ratings_bounded`; `test_correlations` (over 400 players: corr(aggression, career_yellows) > 0.3, corr(quality factor, fee_m among signed players) > 0.4, veterans' mean leadership > rookies'); `test_transfers_consistent` (every `signed_from` in-league club has a matching `Transfer`; `is_former_rival` true iff a past club is the derby rival); `test_career_stage_rule` (rookie ≤ 2 years pro, veteran ≥ 10).
+- [ ] **Commits:** `TASK-3.1: …`, `TASK-3.2: …`. Season results, standings, and milestones come from TASK-10.4 (engine-simulated), not from this task.
 
 ### Task 4: Engine level 1, formation-anchored baseline (unblocks everything downstream)
 
@@ -237,6 +243,15 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 - [ ] **Step 4: Run** the tests. Expected: PASS.
 - [ ] **Step 5: Commit** `TASK-8: level-2 kinematic players and roles`.
 
+### Task 8.3: Modifier layer (profiles → behavior)
+
+**Files:** Create `src/matchmind/engine/modifiers.py`, `tests/engine/test_modifiers.py`.
+
+**Interfaces:** `Modifiers.for_player(profile, club_profile, ctx) -> PlayerMods` and `Modifiers.for_team(club_profile, ctx) -> TeamMods`. `ctx` = minute, score difference, home/away, energy, confidence state, active scenario beats. Each effect is a multiplier `1 + clip(effect, ±cap)`, with `SUBTLE_CAP = 0.06` by default and `STORYLINE_CAP = 0.20` only while a scenario beat targets that player or team. The mapping is the table in `wiki/engine.md`. Composure scales decision temperature under pressure; aggression raises tackle, foul, and press urgency; confidence is a match state that rises after successes and falls after errors; leadership steadies teammates; consistency sets match-day form variance; work rate drives off-ball distance and energy drain; tactical discipline sets how tightly a player holds their formation anchor; risk tolerance weights xT gain against completion probability; each technical rating drives the error of its own action; injury lowers starting energy; schedule congestion lowers starting energy; home advantage adds composure and confidence; chemistry raises completion between a pair and makes the receiver start runs earlier. Every applied modifier above 0.01 is written to `Event.extras["mods"]` so the Explainer can cite causes.
+
+- [ ] **Tests:** `test_caps` (no effect exceeds `SUBTLE_CAP` without a beat, or `STORYLINE_CAP` with one); `test_directions` (a +aggression profile gives a higher foul multiplier, and so on for every mapped attribute); `test_mods_recorded_in_extras`.
+- [ ] **Commit** `TASK-8.3: modifier layer`.
+
 ### Task 9: Engine level 3, event-coupled loop with ball physics and decisions
 
 **Files:** Create `src/matchmind/engine/ball.py`, `src/matchmind/engine/decisions.py`; modify `src/matchmind/engine/simulate.py`; test `tests/engine/test_ball.py`, `tests/engine/test_decisions.py`, `tests/engine/test_simulate.py`.
@@ -274,6 +289,22 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 - [ ] **Step 3: Implement** the module and storylines. Retrain xT with `scripts/train_xt.py --level 3 --seeds 300` and commit the grid.
 - [ ] **Step 4: Run** the full suite plus the realism report at level 3 over 20 seeds. Expected: every check passes. Update `docs/realism.md`.
 - [ ] **Step 5: Commit** `TASK-10: tactics, fatigue, scenarios; retrained xT`.
+
+### Task 10.4: Season history simulated by the engine
+
+**Files:** Create `src/matchmind/league/season.py`, `tests/league/test_season.py`.
+
+**Interfaces:** `simulate_history(league, profiles, fixtures, rounds=9, tracking_hz=2, workers=os.cpu_count()) -> Season(results, standings, player_lines: list[PlayerMatchLine], milestones)`. It runs the real engine headless (2 Hz tracking, full events) in parallel processes. `PlayerMatchLine(match_id, round, player_id, club_id, minutes, passes, completed, forward_passes, progressive_passes, key_passes, xt_added, shots, shots_on_target, xg, dribbles, tackles, interceptions, pressures, fouls, distance_km, sprints, top_speed_ms, box_touches, goals, assists, yellow, red)`, computed by the same stat functions as live matches. `milestones_for(season, player_id | club_id) -> list[str]`. Suspensions from accumulated cards update `Discipline` before round 10.
+
+- [ ] **Tests:** `test_history_deterministic`; `test_standings_match_results`; `test_player_lines_match_events` (one history match: line totals equal counts from its events); `test_runtime_budget` (rounds 1–9 complete in under 30 minutes on CI-sized hardware, or the timebox ruling applies: drop to `rounds=6`).
+- [ ] **Commit** `TASK-10.4: engine-simulated season history`.
+
+### Task 10.5: Effect tests (attributes really change the data)
+
+**Files:** Create `tests/engine/test_effects.py` (marked `slow`, run in CI nightly and before release).
+
+- [ ] **Tests (across ≥ 20 seeds each):** high-aggression teams foul more; high `press_intensity` gives lower PPDA; high-chemistry pairs complete more passes; `returning` players cover less distance after minute 60; home teams win 40–48% of matches; high `risk_tolerance` gives more progressive passes and lower completion; under storyline beats the targeted effect is at least 3× its subtle size.
+- [ ] **Commit** `TASK-10.5: attribute effect tests`.
 
 ### Task 11: Pass quality, speed metrics, player alerts
 
@@ -317,6 +348,18 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 - [ ] **Step 4: Run** the tests. Expected: PASS.
 - [ ] **Step 5: Commit** `TASK-12: team metrics and moment detection`.
 
+### Task 12.3: Season baselines and live discrepancies
+
+**Files:** Create `src/matchmind/stats/baselines.py`, `src/matchmind/stats/deviations.py`, `tests/stats/test_baselines.py`, `tests/stats/test_deviations.py`; modify `schemas.py` (add `"player_deviation"` to `MomentKind`).
+
+**Interfaces:**
+- `player_baselines(season, profiles) -> dict[str, PlayerBaseline(player_id, minutes, per90: dict[str, float], dispersion: dict[str, float])]`. Per-90 rates are shrunk toward the player's role average with weight `minutes / (minutes + 450)`.
+- `expected_at(baseline, stat, minutes_played, ctx) -> float` (per-90 rate × minutes ÷ 90, adjusted for team possession share against the season average and for red cards).
+- `detect_deviations(match, baselines, t, stats=TRACKED_STATS) -> list[Deviation(player_id, stat, observed, expected, p_value, direction: under|over)]`, using a negative binomial (Poisson when dispersion ≈ 1). It flags only when `p < 0.01`, `minutes_played ≥ 30`, and `expected ≥ 5` (for "over", `observed ≥ 3`), and keeps the top 3 per 5-minute window by `−log p`. Each flagged deviation becomes a `Moment(kind="player_deviation", level="player", trigger_metric=stat, trigger_value=observed)` with `expected`, `baseline_per90`, and `p_value` in the store. `TRACKED_STATS` = the `PlayerMatchLine` count fields.
+
+- [ ] **Tests:** `test_shrinkage` (a player with 90 minutes stays near the role mean; one with 810 minutes stays near their own rate); `test_example_forward_passes` (18 per 90, 3 observed at minute 60 → flagged "under", p < 0.01); `test_no_flag_early` (minute 20 → nothing); `test_false_alarm_rate` (on 20 unscripted seeds, at most 1 flag per team per match on average); `test_scripted_deviation_found` (the `press_collapse` storyline's targeted midfielder is flagged within 10 minutes of the beat).
+- [ ] **Commit** `TASK-12.3: season baselines and discrepancy detection`.
+
 ### Task 13: Counterfactual scorer
 
 **Files:** Create `src/matchmind/stats/counterfactual.py`, `tests/stats/test_counterfactual.py`.
@@ -350,9 +393,9 @@ CLI: `uv run matchmind build --scenario scenarios/comeback_red_card.yaml` runs s
 **Files:** Create `src/matchmind/mcp_server/server.py`, `tests/mcp_server/test_server.py`.
 
 **Interfaces:** A FastMCP server named `matchmind-stats` with tools (all return JSON-serializable dicts and include `ref` strings for citation):
-`get_match_summary(match_id)`, `get_events(match_id, period, t_from, t_to, types: list[str] | None)`, `get_team_metrics(match_id, team_id, period, t)`, `get_player_stats(match_id, player_id, period, t)`, `get_moment(moment_id)`, `get_counterfactual(event_id)`, `get_season_context(club_id | player_id)`, `get_metric(match_id, name, scope, scope_id, period, t)`. Produces `build_mcp(repo: Repo) -> FastMCP` and `mcp_app()` (streamable HTTP ASGI app mounted at `/mcp` in Task 21).
+`get_match_summary(match_id)`, `get_events(match_id, period, t_from, t_to, types: list[str] | None)`, `get_team_metrics(match_id, team_id, period, t)`, `get_player_stats(match_id, player_id, period, t)`, `get_moment(moment_id)`, `get_counterfactual(event_id)`, `get_season_context(club_id | player_id)`, `get_metric(match_id, name, scope, scope_id, period, t)`, `get_player_profile(player_id)`, `get_club_profile(club_id)`, `get_player_baseline(player_id)`, `get_player_deviations(match_id, period, t)`. Produces `build_mcp(repo: Repo) -> FastMCP` and `mcp_app()` (streamable HTTP ASGI app mounted at `/mcp` in Task 21).
 
-- [ ] **Step 1: Failing tests.** Use an in-memory MCP client session: `test_tools_listed` (8 names); `test_get_metric_matches_repo`; `test_unknown_match_returns_error_not_crash`.
+- [ ] **Step 1: Failing tests.** Use an in-memory MCP client session: `test_tools_listed` (12 names); `test_get_metric_matches_repo`; `test_unknown_match_returns_error_not_crash`.
 - [ ] **Step 2: Run** the tests. Expected: FAIL.
 - [ ] **Step 3: Implement** the server.
 - [ ] **Step 4: Run** the tests. Expected: PASS.
@@ -459,7 +502,7 @@ The workflow is an Agent Framework graph (`WorkflowBuilder` from `agent-framewor
 - `GET /api/matches/{id}/timeline` → `{moments: list[Moment], momentum: [{t, home, away}]}`
 - `GET /api/matches/{id}/insights?persona=&lang=` → `list[{insight, text: PersonalizedText}]`
 - `GET /api/insights/{id}/why` → `{claims, events, agent_runs, trace_id, counterfactual: Counterfactual | None}`
-- `GET /api/matches/{id}/stats?scope=team|player&scope_id=&period=&t=` → `{metrics: {name: value}}` (feeds the Team and Player tabs)
+- `GET /api/matches/{id}/stats?scope=team|player&scope_id=&period=&t=` → `{metrics: {name: value}, baseline: {name: expected_at_t} | null, profile: PlayerProfile | ClubProfile}` (feeds the Team and Player tabs, including "vs season average")
 - `GET /api/matches/{id}/pitch-control?period=&t=` → `{grid: number[21][32], attacking_team}` (heatmap overlay and freeze-frames)
 - `GET /api/matches/{id}/recap?lang=&persona=` → `Recap`
 - `GET /api/league` → `{clubs, players}` (for picking favorites)
@@ -527,9 +570,16 @@ The workflow is an Agent Framework graph (`WorkflowBuilder` from `agent-framewor
 
 ---
 
-## Phase 2: Additions after the core is polished (Tasks 26–30, 32–33)
+## Phase 2: Additions after the core is polished (Tasks 26–30, 32–34)
 
-Suggested priority: 26 Scenario Designer → 27 Ingest (multi-agent recovery story) → 33 MCP tool (Copilot demo) → 28 Overlay Director → 32 kloppy export → 29 streaming → 30 voice.
+Suggested priority: 34 Backstory + vector search → 26 Scenario Designer → 27 Ingest (multi-agent recovery story) → 33 MCP tool (Copilot demo) → 28 Overlay Director → 32 kloppy export → 29 streaming → 30 voice.
+
+### Task 34: Backstory agent and vector search (Phase 2, first priority)
+
+**Interfaces:** `async write_backstory(profile, transfers, legends_ctx, client) -> Backstory(player_id, text, claims)`: 2–3 sentences that use only profile fields, checked by the Verifier (no new numbers). Embeddings come from a Foundry `text-embedding-3-small` deployment (new user setup step) and are stored in an Azure SQL `VECTOR(1536)` column (fallback: in-process cosine search over at most 400 rows if the free tier lacks vector support). MCP tool `search_backstories(query, k=5)`, used by the Narrative agent, the Scenario Designer, and an "Ask MatchMind" box.
+
+- [ ] **Tests:** every backstory passes the Verifier; `search_backstories("striker back from injury facing his old club")` returns a player with those flags in the top 5 (fixture embeddings in tests).
+- [ ] **Commit** `TASK-34: backstory agent and vector search`.
 
 ### Task 26: Scenario Designer agent and "Make a match" UI
 

@@ -2,6 +2,9 @@
 
 One entry per decision: date, the decision, and why. Newest first.
 
+- **2026-10-21 · Rich profiles drive behavior, subtly.** Player and club attributes feed a capped modifier layer (±6%, or ±20% in scripted storylines). Career ambitions are narrative only. Active modifiers are logged so explanations cite real causes.
+- **2026-10-21 · Season history simulated by the engine; per-90 baselines with shrinkage; `player_deviation` moments.** Baselines must come from the same engine as live matches, or every player looks anomalous. Flags need p < 0.01, ≥ 30 min, and expected ≥ 5, keeping the top 3 per window.
+- **2026-10-21 · Money in USD. Backstory agent + Azure SQL vector search is the Phase 2 first priority.**
 - **2026-10-21 · 20-club league named after Los Angeles neighborhoods.** Mirrors the Premier League's 20 clubs and 38 rounds, gives natural local derbies, and costs nothing at runtime (the league is deterministic). Real place names are fine; real club names and pro-team nicknames are blocklisted.
 - **2026-10-21 · Wiki lives in the repo (`wiki/`), not the GitHub Wiki.** It is versioned with the code, reviewed in the same commit, and cheap to read locally.
 - **2026-10-21 · Open-source policy.** Use libraries under permissive licenses only; use no real match data; never fork a complete app (rules §4.3, §4.7, §4.11). See `docs/research/open-source-review.md`.
