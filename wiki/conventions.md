@@ -12,7 +12,12 @@
 - Edit only the sections that changed. Keep the `Status` line of each page accurate.
 
 ## Commands
-_Add them when TASK-1 lands (test, lint, typecheck, build, run)._
+| Purpose | Command |
+|---|---|
+| Install | `uv sync` |
+| Test | `uv run pytest` |
+| Lint / format | `uv run ruff check .` · `uv run ruff format .` |
+| Types | `uv run mypy src` (strict) |
 
 ## Testing
 - No live model calls in tests (`FakeChatClient`, recorded fixtures in `tests/fixtures/llm/`).

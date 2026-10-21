@@ -2,11 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** none (planning complete) · **Code status:** no code yet
+**Last updated:** 2026-10-21 · **Latest task:** TASK-1.1 · **Code status:** scaffold only
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Next: TASK-1.1 (repo scaffold). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`).
+- Next: TASK-1.2 (CI + license gate). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -29,7 +30,7 @@ Status: `planned` · `wip` · `done`
 
 | Path | Purpose | Status | Task |
 |---|---|---|---|
-| `src/matchmind/config.py` | Settings from env | planned | 1 |
+| `src/matchmind/config.py` | Settings from env (`Settings`, `get_settings()`) | done | 1 |
 | `src/matchmind/schemas.py` | All shared pydantic models | planned | 2 |
 | `src/matchmind/league/` | Fictional league, squads, season | planned | 3 |
 | `src/matchmind/engine/` | Synthetic match engine + validator | planned | 4–10 |

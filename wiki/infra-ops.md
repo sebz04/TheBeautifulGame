@@ -7,9 +7,11 @@
 - Foundry project with a `gpt-4.1-mini` deployment. Record the TPM quota here once it is known.
 
 ## Environment variables
+Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are unprefixed.
 | Var | Purpose |
 |---|---|
-| `MATCHMIND_DB_URL` | SQLAlchemy URL (default SQLite) |
+| `MATCHMIND_DB_URL` | SQLAlchemy URL (default `sqlite:///data/matchmind.db`) |
+| `MATCHMIND_DATA_DIR` | Generated data root (default `data`) |
 | `FOUNDRY_PROJECT_ENDPOINT` | Foundry project endpoint |
 | `FOUNDRY_MODEL_DEPLOYMENT` | Model deployment name (default `gpt-4.1-mini`) |
 | `MATCHMIND_APPINSIGHTS_CONNECTION_STRING` | Telemetry |

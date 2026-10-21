@@ -1,3 +1,24 @@
 # Hackathon rules PDF is Microsoft-owned material (Rules §11.8); keep it local only
 Microsoft_Premier_League_Hackathon_Rules.pdf
 TASKS.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Generated data and build output
+data/
+!data/models/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+web/dist/
+
+# Local agent workspace
+.superpowers/
+.DS_Store
