@@ -44,7 +44,7 @@ pyproject.toml  uv.lock  .env.example  .gitignore  docker-compose.yml  Dockerfil
 src/matchmind/
   config.py                 # Settings (pydantic-settings) from env
   schemas.py                # All shared pydantic models (single source of truth)
-  league/league.py          # Fictional 10-club league, squads
+  league/league.py          # Fictional 20-club Los Angeles league, squads
   league/season.py          # Fictional season history + milestones
   engine/pitch.py           # Coordinates, zones, geometry helpers
   engine/baseline.py        # Level 1: formation-anchored sim (kept as fallback)
@@ -148,9 +148,9 @@ Rule: every commit that changes code also updates (1) the wiki page for each are
 
 **Files:** Create `src/matchmind/league/league.py`, `src/matchmind/league/season.py`, `src/matchmind/league/names.py` (fictional name parts per region), `tests/league/test_league.py`.
 
-**Interfaces:** Produces `build_league(seed: int = 2026) -> League` where `League(clubs: list[Club], squads: dict[str, list[Player]])`: 10 clubs, 20 players each (2 GK, 7 DF, 7 MF, 4 FW). Produces `build_season(league: League, seed: int, rounds: int = 9) -> Season` with `Season(results: list[SeasonResult], player_totals: dict[str, PlayerSeasonTotals])`, and `milestones_for(season, player_id | club_id) -> list[str]` returning keys like `"goals:10"` and `"clean_sheets_streak:5"`.
+**Interfaces:** Produces `build_league(seed: int = 2026) -> League` where `League(clubs: list[Club], squads: dict[str, list[Player]])`: 20 clubs, 20 players each (2 GK, 7 DF, 7 MF, 4 FW). Club names are fixed in `league/clubs.py` (`CLUBS`, 20 entries named after Los Angeles neighborhoods, each with a 3-letter short code and a stadium name) and the seed only drives colors, formations, strength, and squads. Real place names are allowed; real club names and pro-team nicknames are not. `derbies() -> list[tuple[str, str]]` lists neighboring rivalries (for example Echo Park vs Silver Lake). Produces `build_season(league: League, seed: int, rounds: int = 9) -> Season`, where `rounds` is how many rounds of a 38-round double round robin have been played (showcase matches are in round 10) with `Season(results: list[SeasonResult], player_totals: dict[str, PlayerSeasonTotals])`, and `milestones_for(season, player_id | club_id) -> list[str]` returning keys like `"goals:10"` and `"clean_sheets_streak:5"`.
 
-- [ ] **Step 1: Failing tests.** `test_league_deterministic` (same seed → equal); `test_league_shape` (10 clubs, 20 players each, unique ids, unique shirt numbers per club); `test_no_real_names`: no club name in `tests/fixtures/real_club_blocklist.txt` (the 20 current Premier League clubs plus 10 famous European clubs) and no player name in `real_player_blocklist.txt`; `test_milestones`: a player whose total is 9 gets `"goals:10"` as the next milestone.
+- [ ] **Step 1: Failing tests.** `test_league_deterministic` (same seed → equal); `test_league_shape` (20 clubs, 20 players each, unique ids, unique short codes, unique shirt numbers per club); `test_season_fixtures` (each round has 10 matches and every club plays once per round); `test_no_real_names`: no club name or nickname matches `tests/fixtures/real_club_blocklist.txt` (the 20 current Premier League clubs, 10 famous European clubs, Los Angeles-area pro and semi-pro soccer clubs, and LA pro-team nicknames such as Galaxy, Angel City, Dodgers, Lakers, Kings, Rams, Chargers, Clippers, Sparks), and no player name is in `real_player_blocklist.txt`; `test_milestones`: a player whose total is 9 gets `"goals:10"` as the next milestone.
 - [ ] **Step 2: Run** the tests. Expected: FAIL.
 - [ ] **Step 3: Implement** names from syllable tables (seeded `np.random.Generator`), distinct colors (pairwise ΔE > 20), and season results from a Poisson model on club strength.
 - [ ] **Step 4: Run** the tests. Expected: PASS.
