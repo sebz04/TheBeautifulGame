@@ -125,3 +125,36 @@ class PlayerProfile(BaseModel):
     @property
     def is_returning_from_injury(self) -> bool:
         return self.status.injury == "returning"
+
+
+ManagerStyle = Literal["possession", "pressing", "counter", "pragmatic"]
+
+
+class TacticalIdentity(BaseModel):
+    press_intensity: Rating
+    line_height: Rating
+    tempo: Rating
+    width: Rating
+    directness: Rating
+    build_up: Literal["short", "mixed", "direct"]
+
+
+class Management(BaseModel):
+    manager_name: str
+    manager_style: ManagerStyle
+    manager_tenure_years: float = Field(ge=0.0)
+    job_security: Rating
+
+
+class ClubProfile(BaseModel):
+    club_id: str
+    tactical_identity: TacticalIdentity
+    management: Management
+    culture: Literal["academy_first", "win_now", "underdog", "fan_owned"]
+    ownership: Literal["long_standing", "new_owner", "fan_owned"]
+    owner_since: int
+    transfer_budget_m: float = Field(gt=0.0)
+    wage_bill_m: float = Field(gt=0.0)
+    last_finish: int | None  # None = promoted last season
+    status: Literal["promoted", "title_contender", "mid_table", "relegation_fight"]
+    home_advantage: Rating

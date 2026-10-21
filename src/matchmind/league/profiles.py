@@ -8,18 +8,24 @@ import math
 
 import numpy as np
 
-from matchmind.league.dist import combine, rating, stream
+from matchmind.league.clubs import CLUBS
+from matchmind.league.dist import combine, log_normal_money, rating, stream
 from matchmind.league.league import League, PlayerLatent, Slot
+from matchmind.league.names import draw_nationality, language_of, make_name
 from matchmind.schemas_profile import (
     SEASON_YEAR,
     Career,
+    ClubProfile,
     Discipline,
+    Management,
+    ManagerStyle,
     Personality,
     PlayerProfile,
     Position,
     Role,
     Status,
     Style,
+    TacticalIdentity,
     Technical,
 )
 
@@ -243,3 +249,151 @@ def build_player_profiles(league: League, seed: int) -> dict[str, PlayerProfile]
                 )
             profiles[prof.player_id] = prof
     return profiles
+
+
+# ---- Clubs -----------------------------------------------------------------------------
+
+_STYLE_WEIGHTS: dict[str, tuple[float, float, float, float]] = {
+    # possession, pressing, counter, pragmatic
+    "title_contender": (0.40, 0.35, 0.10, 0.15),
+    "mid_table": (0.25, 0.25, 0.25, 0.25),
+    "relegation_fight": (0.05, 0.20, 0.35, 0.40),
+    "promoted": (0.05, 0.20, 0.35, 0.40),
+}
+_STYLES: tuple[ManagerStyle, ...] = ("possession", "pressing", "counter", "pragmatic")
+# Prior shifts per tactical dimension: press, line, tempo, width, directness
+_STYLE_PRIORS: dict[ManagerStyle, tuple[float, float, float, float, float]] = {
+    "pressing": (1.1, 0.9, 0.7, 0.2, 0.2),
+    "possession": (0.5, 0.6, -0.5, 0.4, -1.1),
+    "counter": (-0.8, -1.0, 0.6, 0.0, 1.1),
+    "pragmatic": (0.0, -0.2, 0.0, 0.0, 0.0),
+}
+
+
+def _tactical_identity(rng: np.random.Generator, style: ManagerStyle) -> TacticalIdentity:
+    press, line, tempo, width, direct = (
+        rating(mu + 0.6 * float(rng.standard_normal())) for mu in _STYLE_PRIORS[style]
+    )
+    build_up = "short" if direct < 0.4 else "direct" if direct > 0.62 else "mixed"
+    return TacticalIdentity(
+        press_intensity=press, line_height=line, tempo=tempo, width=width, directness=direct,
+        build_up=build_up,
+    )  # fmt: skip
+
+
+def build_club_profiles(league: League, seed: int) -> dict[str, ClubProfile]:
+    rng = stream(seed, "profiles.clubs")
+    ids = [c.club_id for c in league.clubs]
+    by_strength = sorted(ids, key=lambda c: -league.strength[c])
+    expected_rank = {c: i + 1 for i, c in enumerate(by_strength)}
+    promoted = {str(c) for c in rng.choice(by_strength[-7:], size=3, replace=False)}
+    survivors = [c for c in ids if c not in promoted]
+    noisy = {c: league.strength[c] + 0.35 * float(rng.standard_normal()) for c in survivors}
+    last_finish = {c: i + 1 for i, c in enumerate(sorted(survivors, key=lambda c: -noisy[c]))}
+    contenders = set(by_strength[:4])
+    strugglers = {c for c in by_strength[-8:] if c not in promoted}
+
+    new_owners = {str(c) for c in rng.choice(ids, size=3, replace=False)}
+    fan_pool = [c for c in by_strength[6:] if c not in new_owners]
+    fan_owned = {str(c) for c in rng.choice(fan_pool, size=2, replace=False)}
+
+    capacities = {s.club_id: s.capacity for s in CLUBS}
+    cap_mean = float(np.mean(list(capacities.values())))
+    cap_sd = float(np.std(list(capacities.values())))
+
+    profiles: dict[str, ClubProfile] = {}
+    for club_id in ids:
+        z = league.strength[club_id]
+        status = (
+            "promoted" if club_id in promoted
+            else "title_contender" if club_id in contenders
+            else "relegation_fight" if club_id in strugglers
+            else "mid_table"
+        )  # fmt: skip
+        weights = np.array(_STYLE_WEIGHTS[status])
+        style: ManagerStyle = _STYLES[int(rng.choice(4, p=weights / weights.sum()))]
+        tenure = round(min(max(float(rng.exponential(2.2)), 0.2), 12.0), 1)
+        finish = last_finish.get(club_id)
+        over_performance = ((expected_rank[club_id] if finish else 18) - (finish or 18)) / 4.0
+        job_security = rating(
+            0.5 * math.log(tenure) + 0.7 * over_performance + 0.5 * float(rng.standard_normal())
+        )
+        manager = Management(
+            manager_name=make_name(rng, draw_nationality(rng)),
+            manager_style=style,
+            manager_tenure_years=tenure,
+            job_security=job_security,
+        )
+        if club_id in fan_owned:
+            ownership, owner_since, culture = (
+                "fan_owned",
+                int(rng.integers(2000, 2016)),
+                "fan_owned",
+            )
+        elif club_id in new_owners:
+            ownership, owner_since = "new_owner", int(rng.choice([2025, 2026]))
+            culture = "win_now" if rng.random() < 0.7 else "academy_first"
+        else:
+            ownership, owner_since = "long_standing", int(rng.integers(1955, 2019))
+            options, p = {
+                "title_contender": (["win_now", "academy_first", "underdog"], [0.65, 0.3, 0.05]),
+                "mid_table": (["academy_first", "win_now", "underdog"], [0.45, 0.3, 0.25]),
+            }.get(status, (["underdog", "academy_first", "win_now"], [0.6, 0.3, 0.1]))
+            culture = str(rng.choice(options, p=p))
+        budget = log_normal_money(rng, 35.0, 0.6 * z, 0.35)
+        if ownership == "new_owner":
+            budget = round(budget * 2.5, 1)
+        elif status == "promoted":
+            budget = round(budget * 0.6, 1)
+        cap_z = (capacities[club_id] - cap_mean) / cap_sd
+        profiles[club_id] = ClubProfile(
+            club_id=club_id,
+            tactical_identity=_tactical_identity(rng, style),
+            management=manager,
+            culture=culture,
+            ownership=ownership,
+            owner_since=owner_since,
+            transfer_budget_m=max(budget, 1.0),
+            wage_bill_m=log_normal_money(rng, 70.0, 0.55 * z, 0.2),
+            last_finish=finish,
+            status=status,
+            home_advantage=rating(
+                0.6 * cap_z
+                + (0.4 if ownership == "fan_owned" else 0.0)
+                + 0.7 * float(rng.standard_normal())
+            ),
+        )
+    return profiles
+
+
+def chemistry(
+    players: list[PlayerProfile], manager_tenure_years: float
+) -> dict[tuple[str, str], float]:
+    """Pairwise on-pitch familiarity in [0, 1] (deterministic).
+
+    Rises with years playing together at the club, a shared academy, a shared language,
+    and the manager's tenure (a settled system).
+    """
+    out: dict[tuple[str, str], float] = {}
+    for i, a in enumerate(players):
+        for b in players[i + 1 :]:
+            together = 0
+            both_academy = False
+            if a.origin is not None and b.origin is not None:
+                together = max(0, SEASON_YEAR - max(a.origin.joined_year, b.origin.joined_year))
+                both_academy = a.origin.kind == "academy" and b.origin.kind == "academy"
+            same_language = language_of(a.career.nationality) == language_of(b.career.nationality)
+            z = (
+                -1.2
+                + 0.35 * min(together, 6)
+                + (0.6 if both_academy else 0.0)
+                + (0.4 if same_language else 0.0)
+                + 0.08 * min(manager_tenure_years, 6.0)
+            )
+            key = (
+                (a.player_id, b.player_id)
+                if a.player_id < b.player_id
+                else (b.player_id, a.player_id)
+            )
+            out[key] = rating(z)
+    return out

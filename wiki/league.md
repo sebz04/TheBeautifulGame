@@ -1,6 +1,6 @@
 # League, Profiles and Fixtures
 
-**Status:** TASK-3.1 (clubs, squads, fixtures) and TASK-3.2 (player profiles) done. Club profiles, chemistry, origins and transfers: TASK-3.3–3.4.
+**Status:** TASK-3.1 (clubs, squads, fixtures) and TASK-3.2 (player profiles) and TASK-3.3 (club profiles, chemistry) done. Origins, transfers and legends: TASK-3.4.
 
 ## Clubs (`league/clubs.py`)
 `CLUBS`: the 20 approved LA neighborhood clubs (`ClubSeed`: id slug, name, 3-letter short, fictional stadium, capacity, founded, curated kit colors, region). `derbies()` lists 4 pairs; `derby_rival(club_id)`. Kits: derby primaries differ by more than 100 RGB units; every kit pair differs (primary + secondary).
@@ -33,3 +33,14 @@ How attributes come from the latents (weights in `profiles.py`):
 - captain: highest leadership in the squad among players aged 24+
 
 Seed-2026 check: traits mean ≈ 0.50, SD ≈ 0.16, under 2% beyond 0.15/0.85; aggression > 0.8 = 1.75%; market value median $3.9m, mean $8.4m, 1.75% above $50m, max $133m; 9.5% injured or doubtful; 18 roles used.
+
+## Club profiles and chemistry (`league/profiles.py`)
+`build_club_profiles(league, seed) -> dict[club_id, ClubProfile]`.
+- **Status:** the top 4 by strength are `title_contender`; 3 clubs drawn from the bottom 7 are `promoted` (`last_finish = None`); the rest of the bottom 8 are `relegation_fight`; everyone else is `mid_table`. `last_finish` (1–17) = strength rank plus noise.
+- **Manager style** is drawn with weights by status, and **tactical identity** comes from style priors (`_STYLE_PRIORS`: pressing → high press and line; counter → low line, direct; possession → short build-up) plus noise. `build_up` comes from directness.
+- **Management:** tenure is exponential (mean 2.2 years, 0.2–12); job security comes from tenure plus over- or under-performance against expected rank.
+- **Ownership:** 3 `new_owner` (owner since 2025–26, budget × 2.5, usually `win_now`), 2 `fan_owned` (culture `fan_owned`), the rest `long_standing`.
+- **Money:** budget is log-normal (median $35m × e^(0.6·strength)), promoted clubs get × 0.6; wage bill is log-normal (median $70m).
+- **Home advantage:** from stadium capacity (+ fan ownership).
+
+`chemistry(players, manager_tenure_years) -> {(a, b): rating}` is deterministic and pairwise (sorted ids). It rises with years together (from `origin.joined_year`, capped at 6), both being academy players, a shared language (`names.language_of`), and manager tenure.
