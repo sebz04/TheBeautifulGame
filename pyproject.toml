@@ -17,6 +17,7 @@ dev = [
     "hypothesis>=6.115",
     "ruff>=0.7",
     "mypy>=1.13",
+    "pip-licenses>=5.0",
 ]
 
 [build-system]
@@ -28,6 +29,7 @@ packages = ["src/matchmind"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["scripts"]
 asyncio_mode = "auto"
 addopts = "-q"
 

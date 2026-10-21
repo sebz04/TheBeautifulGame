@@ -8,6 +8,7 @@
 
 ## Environment variables
 Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are unprefixed.
+
 | Var | Purpose |
 |---|---|
 | `MATCHMIND_DB_URL` | SQLAlchemy URL (default `sqlite:///data/matchmind.db`) |
