@@ -1,6 +1,6 @@
 # League, Profiles and Fixtures
 
-**Status:** TASK-3 done.
+**Status:** TASK-3 done: clubs, squads, fixtures, player and club profiles, chemistry, origins, transfers, legends. Season history and baselines: TASK-10.4 and TASK-12.3.
 
 ## Clubs (`league/clubs.py`)
 `CLUBS`: the 20 approved LA neighborhood clubs (`ClubSeed`: id slug, name, 3-letter short, fictional stadium, capacity, founded, curated kit colors, region). `derbies()` lists 4 pairs; `derby_rival(club_id)`. Kits: derby primaries differ by more than 100 RGB units; every kit pair differs (primary + secondary).
