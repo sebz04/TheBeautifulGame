@@ -23,6 +23,8 @@
 | `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus |
 | `OverlayCue` | `kind` (7 literals), `t_in`/`t_out`, `priority`, free `payload` |
 
+`trusted(cls, data)` builds a model without validation, about 3× cheaper than `model_construct`. Use it only for data our own code produced (engine frames, our Parquet files).
+
 Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `CueKind`.
 
 ## Geometry (`engine/pitch.py`)
@@ -33,7 +35,7 @@ Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `
 - `meta.json`: `MatchMeta`, sorted keys.
 - `events.parquet`: one row per `Event`; `extras` stored as a JSON string.
 - `frames.parquet`: **long format**, one row per player per frame (`frame, period, t, ball_x, ball_y, ball_z, player_id, team_id, x, y, vx, vy`), rows grouped by frame. This is the shape pandas or numpy readers want.
-Zstd compression, no embedded schema metadata: the same data gives byte-identical files. Reading uses `model_construct` for frames (they come from our own writer; full validation of about 1.3M positions is too slow) and full validation for events.
+Zstd compression, no embedded schema metadata: the same data gives byte-identical files. Reading builds frames with `schemas.trusted` (no validation; they come from our own writer) with the GC paused, and fully validates events. One match: frames about 7.4 MB, events about 40 KB; write about 1 s, read about 3 s.
 
 ## Tables
 _None yet._ Planned: matches, events, metrics, moments, insights, personalized, overlay_cues, agent_runs, season_*.

@@ -43,6 +43,21 @@ CueKind = Literal[
 ]
 Rating = float  # attribute in [0, 1]
 
+
+def trusted[M: BaseModel](cls: type[M], data: dict[str, Any]) -> M:
+    """Build a model without validation, about 3x cheaper than `model_construct`.
+
+    Only for data our own code produced with the right types (engine frames, our own
+    Parquet files); `data` must hold every field. Equal to the validated model.
+    """
+    obj = cls.__new__(cls)
+    object.__setattr__(obj, "__dict__", data)
+    object.__setattr__(obj, "__pydantic_fields_set__", set(data))
+    object.__setattr__(obj, "__pydantic_extra__", None)
+    object.__setattr__(obj, "__pydantic_private__", None)
+    return obj
+
+
 _EVENT_ID = re.compile(r"^(?P<match>.+)-e\d{5}$")
 
 

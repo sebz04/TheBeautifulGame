@@ -208,3 +208,12 @@ def test_unknown_persona_rejected():
 def test_period_must_be_1_or_2():
     with pytest.raises(ValidationError):
         make_event(period=3)
+
+
+def test_trusted_matches_validated_construction() -> None:
+    from matchmind.schemas import PlayerPos, trusted
+
+    data = {"player_id": "a", "team_id": "b", "x": 1.0, "y": 2.0, "vx": 0.0, "vy": 0.5}
+    fast = trusted(PlayerPos, dict(data))
+    assert fast == PlayerPos(**data)
+    assert fast.model_dump() == data

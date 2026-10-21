@@ -4,6 +4,7 @@ Frames are stored long (one row per player per frame, ball columns repeated), wh
 the shape the stats engine reads. Same data in, byte-identical files out.
 """
 
+import gc
 import json
 from pathlib import Path
 from typing import Any
@@ -12,7 +13,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from matchmind.schemas import Event, MatchData, MatchMeta, PlayerPos, TrackingFrame
+from matchmind.schemas import Event, MatchData, MatchMeta, PlayerPos, TrackingFrame, trusted
 
 _EVENT_SCHEMA = pa.schema(
     [
@@ -96,34 +97,56 @@ def read_match(out_dir: Path) -> MatchData:
         row["extras"] = json.loads(row["extras"])
         events.append(Event.model_validate(row))
 
+    enabled = gc.isenabled()
+    gc.disable()  # about 1.3M small acyclic objects; see engine/baseline.flush_frames
+    try:
+        frames = _read_frames(out_dir, meta.match_id)
+    finally:
+        if enabled:
+            gc.enable()
+    return MatchData(meta=meta, events=events, frames=frames)
+
+
+def _read_frames(out_dir: Path, match_id: str) -> list[TrackingFrame]:
     table = pq.read_table(out_dir / "frames.parquet")
-    c = {name: table.column(name).to_pylist() for name in _FRAME_SCHEMA.names}
+    c: dict[str, list[Any]] = {}
+    for name in _FRAME_SCHEMA.names:
+        col = table.column(name)
+        is_text = pa.types.is_string(col.type)
+        c[name] = col.to_pylist() if is_text else col.to_numpy().tolist()
     frame_ids = np.asarray(c["frame"])
     # Rows are written grouped by frame; split at each change of frame number.
     starts = [0, *(np.flatnonzero(np.diff(frame_ids)) + 1).tolist(), len(frame_ids)]
+    pid, tid, xs, ys, vxs, vys = (c[k] for k in ("player_id", "team_id", "x", "y", "vx", "vy"))
     frames = []
     for a, b in zip(starts, starts[1:], strict=False):
         if a == b:
             continue
         players = [
-            PlayerPos.model_construct(
-                player_id=c["player_id"][i],
-                team_id=c["team_id"][i],
-                x=c["x"][i],
-                y=c["y"][i],
-                vx=c["vx"][i],
-                vy=c["vy"][i],
-            )
+            trusted(
+                PlayerPos,
+                {
+                    "player_id": pid[i],
+                    "team_id": tid[i],
+                    "x": xs[i],
+                    "y": ys[i],
+                    "vx": vxs[i],
+                    "vy": vys[i],
+                },
+            )  # fmt: skip
             for i in range(a, b)
         ]
         frames.append(
-            TrackingFrame.model_construct(
-                match_id=meta.match_id,
-                frame=c["frame"][a],
-                period=c["period"][a],
-                t=c["t"][a],
-                ball=(c["ball_x"][a], c["ball_y"][a], c["ball_z"][a]),
-                players=players,
+            trusted(
+                TrackingFrame,
+                {
+                    "match_id": match_id,
+                    "frame": c["frame"][a],
+                    "period": c["period"][a],
+                    "t": c["t"][a],
+                    "ball": (c["ball_x"][a], c["ball_y"][a], c["ball_z"][a]),
+                    "players": players,
+                },
             )
         )
-    return MatchData(meta=meta, events=events, frames=frames)
+    return frames
