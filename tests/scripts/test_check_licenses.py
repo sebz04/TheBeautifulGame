@@ -54,3 +54,7 @@ def test_violation_reported_with_name_and_license():
 
 def test_runtime_package_missing_from_report_is_a_violation():
     assert find_violations([], runtime={"pydantic"}) == ["pydantic: not found in license report"]
+
+
+def test_numpy_style_compound_permissive_expression_allowed():
+    assert is_allowed("BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0")

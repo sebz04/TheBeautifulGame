@@ -1,0 +1,41 @@
+# Famous real players: full names and distinctive surnames (lowercase).
+lionel messi
+cristiano ronaldo
+kylian mbappe
+erling haaland
+harry kane
+mohamed salah
+christian pulisic
+landon donovan
+clint dempsey
+carlos vela
+david beckham
+zlatan ibrahimovic
+thierry henry
+wayne rooney
+neymar
+kevin de bruyne
+bukayo saka
+cole palmer
+jude bellingham
+vinicius junior
+son heung-min
+weston mckennie
+tyler adams
+giovanni reyna
+alex morgan
+megan rapinoe
+surname:messi
+surname:ronaldo
+surname:mbappe
+surname:haaland
+surname:salah
+surname:pulisic
+surname:donovan
+surname:dempsey
+surname:beckham
+surname:ibrahimovic
+surname:rooney
+surname:bellingham
+surname:mckennie
+surname:rapinoe

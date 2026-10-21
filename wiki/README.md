@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-2 · **Code status:** scaffold + shared schemas
+**Last updated:** 2026-10-21 · **Latest task:** TASK-3.1 · **Code status:** scaffold, schemas, league and fixtures
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry.
-- Next: TASK-3 (fictional league). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club LA league with squads and fixtures.
+- Next: TASK-3.2 (player profiles). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -15,7 +15,8 @@ A short, current map of the codebase. **Read this page first, then only the page
 |---|---|---|
 | [architecture.md](architecture.md) | Data flow, fast and insight lanes, components and their status | Starting any cross-cutting work |
 | [data-model.md](data-model.md) | Schemas, units, ID formats, DB tables | Touching schemas, store, or API payloads |
-| [engine.md](engine.md) | Synthetic match engine levels, constants, scenarios | Work in `src/matchmind/engine` or `league` |
+| [league.md](league.md) | Clubs, squads, latent factors, distributions, names, fixtures, profiles | Work in `src/matchmind/league` |
+| [engine.md](engine.md) | Synthetic match engine levels, constants, scenarios | Work in `src/matchmind/engine` |
 | [stats.md](stats.md) | xT, pitch control, pass/speed/team metrics, moments, counterfactuals | Work in `src/matchmind/stats` |
 | [agents.md](agents.md) | Agents, prompts, workflow, Verifier rules, fallbacks | Work in `src/matchmind/agents` or `mcp_server` |
 | [api-frontend.md](api-frontend.md) | Endpoints, SSE contract, frontend components | Work in `src/matchmind/api` or `web/` |
@@ -33,7 +34,7 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/config.py` | Settings from env (`Settings`, `get_settings()`) | done | 1 |
 | `src/matchmind/schemas.py` | All shared pydantic models | done | 2 |
 | `src/matchmind/engine/pitch.py` | Pitch constants and geometry | done | 2 |
-| `src/matchmind/league/` | Fictional league, squads, season | planned | 3 |
+| `src/matchmind/league/` | Clubs, squads, fixtures (done); profiles, season (planned) | wip | 3, 10.4 |
 | `src/matchmind/engine/` | Synthetic match engine + validator | planned | 4–10 |
 | `src/matchmind/stats/` | Deterministic metrics | planned | 6, 7, 11–14 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |

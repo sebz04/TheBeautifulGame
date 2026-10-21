@@ -12,11 +12,13 @@ import sys
 
 ALLOWED_PATTERNS = [
     r"\bmit\b",
-    r"\bbsd\b",
+    r"\b0?bsd\b",
     r"\bapache\b",
     r"python software foundation|\bpsf\b",
     r"\bisc\b",
     r"mpl[ -]?2\.0|mozilla public license 2\.0",
+    r"\bzlib\b",
+    r"\bcc0\b",  # public domain dedication
 ]
 
 

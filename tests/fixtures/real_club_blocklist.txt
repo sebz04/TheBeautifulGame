@@ -1,0 +1,63 @@
+# Full club names (lowercase match) and nicknames (match against the last word(s) of our club names).
+# Premier League 2026-27 and recent members
+arsenal
+aston villa
+bournemouth
+brentford
+brighton & hove albion
+burnley
+chelsea
+crystal palace
+everton
+fulham
+leeds united
+liverpool
+manchester city
+manchester united
+newcastle united
+nottingham forest
+sunderland
+tottenham hotspur
+west ham united
+wolverhampton wanderers
+# Famous European clubs
+real madrid
+barcelona
+bayern munich
+juventus
+ac milan
+inter milan
+paris saint-germain
+borussia dortmund
+ajax
+celtic
+corinthians
+# Los Angeles area pro and semi-pro soccer
+la galaxy
+los angeles galaxy
+galaxy ii
+lafc
+los angeles fc
+angel city fc
+la force
+los angeles force
+la wolves
+cal fc
+ventura county fc
+orange county sc
+# LA pro-team nicknames and names to avoid
+nickname:galaxy
+nickname:angel city
+nickname:dodgers
+nickname:lakers
+nickname:kings
+nickname:rams
+nickname:chargers
+nickname:clippers
+nickname:sparks
+nickname:angels
+nickname:ducks
+nickname:mariners
+nickname:falcons
+nickname:wolves
+word:hollywood

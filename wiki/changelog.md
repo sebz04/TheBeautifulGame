@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-3.1 · 20 LA clubs, squads from latent factors, 38-round fixtures, real-name blocklists · README, league (new)
 - 2026-10-21 · TASK-2 · shared pydantic schemas and pitch geometry · README, data-model
 - 2026-10-21 · TASK-1.3 · wiki check script, pre-commit hook, CI per-commit wiki step · README, conventions
 - 2026-10-21 · TASK-1.2 · CI workflow, license gate, THIRD_PARTY_NOTICES · README, conventions, infra-ops

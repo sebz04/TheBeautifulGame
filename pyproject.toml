@@ -8,6 +8,7 @@ license = "MIT"
 dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
+    "numpy>=2.1",
 ]
 
 [dependency-groups]
@@ -39,6 +40,11 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# One row per club / name table reads better than wrapped rows.
+"src/matchmind/league/clubs.py" = ["E501"]
+"src/matchmind/league/names.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
