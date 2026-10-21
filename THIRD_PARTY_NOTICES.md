@@ -13,6 +13,7 @@ checked in CI by `scripts/check_licenses.py`.
 | annotated-types, typing-inspection | MIT | pydantic support |
 | typing-extensions | PSF-2.0 | Typing backports |
 | numpy | BSD-3-Clause | Random generation and numerics |
+| pyarrow | Apache-2.0 | Parquet files for events and tracking |
 
 ## Development-only tools (not shipped)
 pytest (MIT), pytest-asyncio (Apache-2.0), hypothesis (MPL-2.0), ruff (MIT), mypy (MIT), pip-licenses (MIT).

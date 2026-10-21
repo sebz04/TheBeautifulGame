@@ -28,5 +28,12 @@ Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `
 ## Geometry (`engine/pitch.py`)
 `PITCH_LENGTH = 105.0`, `PITCH_WIDTH = 68.0`; `clamp_to_pitch(x, y)`; `zone_index(x, y, nx=16, ny=12) -> (col, row)`, with edge and out-of-bounds points clamped into the grid; `distance(a, b)`.
 
+## Match files (`engine/match_io.py`)
+`write_match(data, out_dir)` / `read_match(out_dir) -> MatchData`. One directory per match:
+- `meta.json`: `MatchMeta`, sorted keys.
+- `events.parquet`: one row per `Event`; `extras` stored as a JSON string.
+- `frames.parquet`: **long format**, one row per player per frame (`frame, period, t, ball_x, ball_y, ball_z, player_id, team_id, x, y, vx, vy`), rows grouped by frame. This is the shape pandas or numpy readers want.
+Zstd compression, no embedded schema metadata: the same data gives byte-identical files. Reading uses `model_construct` for frames (they come from our own writer; full validation of about 1.3M positions is too slow) and full validation for events.
+
 ## Tables
 _None yet._ Planned: matches, events, metrics, moments, insights, personalized, overlay_cues, agent_runs, season_*.
