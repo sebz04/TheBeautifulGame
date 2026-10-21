@@ -1,0 +1,13 @@
+# Decisions
+
+One entry per decision: date, the decision, and why. Newest first.
+
+- **2026-10-21 · Wiki lives in the repo (`wiki/`), not the GitHub Wiki.** It is versioned with the code, reviewed in the same commit, and cheap to read locally.
+- **2026-10-21 · Open-source policy.** Use libraries under permissive licenses only; use no real match data; never fork a complete app (rules §4.3, §4.7, §4.11). See `docs/research/open-source-review.md`.
+- **2026-10-21 · azd for deployment.** Simpler OIDC setup and provisioning than hand-rolled workflows.
+- **2026-10-21 · Batch personalization.** One model call per (insight, language) covers all persona variants. Club-fan texts are generated for both clubs; player-focus texts only for players named in the insight. This keeps tokens within the $100 credit and TPM quota.
+- **2026-10-21 · SSE instead of Web PubSub; preferences stored in the browser instead of Azure SQL.** Lean architecture, and no personal data.
+- **2026-10-21 · Tracking model: event-coupled engine, levels 2–4, built in layers.** Events and positions always agree, which pitch control and counterfactuals need.
+- **2026-10-21 · Languages en/es/pt/fr/ar, generated natively.** Translator is not used in phase 1. Arabic shows RTL support.
+- **2026-10-21 · Primary prize target: Best Multi-Agent System.**
+- **2026-10-21 · Models only through a Foundry `gpt-4.1-mini` deployment.** Claude/ChatGPT consumer subscriptions have no API access, and judges check for Foundry use.
