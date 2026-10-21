@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-1.2 · **Code status:** scaffold only
+**Last updated:** 2026-10-21 · **Latest task:** TASK-1.3 · **Code status:** scaffold only
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`).
-- Next: TASK-1.3 (wiki check). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`).
+- Next: TASK-2 (schemas and pitch geometry). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -43,6 +43,7 @@ Status: `planned` · `wip` · `done`
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |
 | `scripts/check_licenses.py` | Runtime license allowlist gate | done | 1 |
+| `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |
 | `.github/workflows/ci.yml` | CI | done | 1 |
 
 ## Governing documents

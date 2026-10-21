@@ -11,6 +11,9 @@
 - At most 150 lines per page. Use file paths and signatures, not pasted code.
 - Edit only the sections that changed. Keep the `Status` line of each page accurate.
 
+## Setup once per clone
+`git config core.hooksPath .githooks` enables the pre-commit hook (`.githooks/pre-commit` → `scripts/check_wiki.py`).
+
 ## Commands
 | Purpose | Command |
 |---|---|
@@ -19,8 +22,9 @@
 | Lint / format | `uv run ruff check .` · `uv run ruff format .` |
 | Types | `uv run mypy src` (strict) |
 | License gate | `uv run python scripts/check_licenses.py` |
+| Wiki check | `uv run python scripts/check_wiki.py` (staged) · `--range main..HEAD` (per commit) |
 
-CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests and the license gate on every push and PR. The `web` job is a placeholder until TASK-23.
+CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests, the license gate and the per-commit wiki check on every push and PR. The `web` job is a placeholder until TASK-23.
 
 ## Testing
 - No live model calls in tests (`FakeChatClient`, recorded fixtures in `tests/fixtures/llm/`).
