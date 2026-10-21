@@ -1,6 +1,6 @@
 # League, Profiles and Fixtures
 
-**Status:** TASK-3.1 (clubs, squads, fixtures) and TASK-3.2 (player profiles) and TASK-3.3 (club profiles, chemistry) done. Origins, transfers and legends: TASK-3.4.
+**Status:** TASK-3 done.
 
 ## Clubs (`league/clubs.py`)
 `CLUBS`: the 20 approved LA neighborhood clubs (`ClubSeed`: id slug, name, 3-letter short, fictional stadium, capacity, founded, curated kit colors, region). `derbies()` lists 4 pairs; `derby_rival(club_id)`. Kits: derby primaries differ by more than 100 RGB units; every kit pair differs (primary + secondary).
@@ -44,3 +44,14 @@ Seed-2026 check: traits mean ≈ 0.50, SD ≈ 0.16, under 2% beyond 0.15/0.85; a
 - **Home advantage:** from stadium capacity (+ fan ownership).
 
 `chemistry(players, manager_tenure_years) -> {(a, b): rating}` is deterministic and pairwise (sorted ids). It rises with years together (from `origin.joined_year`, capped at 6), both being academy players, a shared language (`names.language_of`), and manager tenure.
+
+## Origins, transfers, legends (`league/profiles.py`)
+Entry point: **`build_profiles(league, seed) -> Profiles(players, clubs, transfers, legends)`**. Use this, not the partial builders.
+- **Origin kinds:** `academy` (more likely at `academy_first` clubs and for under-23s; joined at debut), `loan` (younger players, never the captain, joined this season, contract until 2027), `free` (more likely over 30), `signed` (permanent). For non-loans, joined years go back up to 7 seasons, weighted toward recent ones.
+- `signed_from`: 30% another in-league club (derby rivals weighted ×2), otherwise `ext:<ISO3>` (an abroad or outside-league club, often from the player's home country). There are no real club names.
+- **Fees:** permanent fee ≈ 0.9 × market value at the time × log-normal noise; free and academy transfers are $0; some loans have a $0.2–1.5m fee.
+- **Transfers:** a linked chronological chain per player that ends at the current club in `joined_year`. About 25% of players with 6+ years pro have an earlier in-league club (`_career_chain`). `career.previous_league_clubs` = the in-league `from_club`s in order.
+- `origin.club_apps/club_goals`: record at the current club before this season (14–34 apps per season; goals ~ Poisson by position × finishing).
+- **Legends:** per club, a record scorer (FW, 110–260 goals, always above any current player) and a record-appearances player (450–640 apps), with a fictional name and an era decade.
+
+Seed-2026 check: academy 25%, signed 56%, free 13%, loan 6%; 31.5% new signings; 6 former derby rivals; permanent fees median $3.2m, mean $7.4m, max $78m; 384 transfers (149 in-league).

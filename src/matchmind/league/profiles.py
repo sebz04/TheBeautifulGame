@@ -8,7 +8,7 @@ import math
 
 import numpy as np
 
-from matchmind.league.clubs import CLUBS
+from matchmind.league.clubs import CLUBS, derby_rival
 from matchmind.league.dist import combine, log_normal_money, rating, stream
 from matchmind.league.league import League, PlayerLatent, Slot
 from matchmind.league.names import draw_nationality, language_of, make_name
@@ -17,16 +17,20 @@ from matchmind.schemas_profile import (
     Career,
     ClubProfile,
     Discipline,
+    Legend,
     Management,
     ManagerStyle,
+    Origin,
     Personality,
     PlayerProfile,
     Position,
+    Profiles,
     Role,
     Status,
     Style,
     TacticalIdentity,
     Technical,
+    Transfer,
 )
 
 _POS: dict[Slot, Position] = {
@@ -397,3 +401,215 @@ def chemistry(
             )
             out[key] = rating(z)
     return out
+
+
+# ---- Origins, transfers, legends -------------------------------------------------------
+
+_EXT_LEAGUES = [
+    "MEX",
+    "ENG",
+    "ESP",
+    "FRA",
+    "DEU",
+    "NLD",
+    "BRA",
+    "ARG",
+    "PRT",
+    "BEL",
+    "KOR",
+    "JPN",
+    "CAN",
+    "USA",
+]
+_GOALS_PER_APP: dict[Position, float] = {"GK": 0.0, "DF": 0.04, "MF": 0.12, "FW": 0.35}
+
+
+def _external_club(rng: np.random.Generator, nationality: str) -> str:
+    if nationality in _EXT_LEAGUES and rng.random() < 0.6:
+        return f"ext:{nationality}"
+    return f"ext:{rng.choice(_EXT_LEAGUES)}"
+
+
+def _other_club(rng: np.random.Generator, club_id: str, exclude: set[str]) -> str:
+    """Another in-league club; derby rivals are twice as likely (they make good stories)."""
+    rival = derby_rival(club_id)
+    options = [c.club_id for c in CLUBS if c.club_id != club_id and c.club_id not in exclude]
+    weights = np.array([2.0 if c == rival else 1.0 for c in options])
+    return str(rng.choice(options, p=weights / weights.sum()))
+
+
+def _apps_and_goals(rng: np.random.Generator, seasons: int, prof: PlayerProfile) -> tuple[int, int]:
+    apps = int(sum(rng.integers(14, 35) for _ in range(seasons)))
+    rate = _GOALS_PER_APP[prof.style.position] * (0.4 + prof.technical.finishing)
+    return apps, int(rng.poisson(apps * rate))
+
+
+def _assign_origin(
+    rng: np.random.Generator, prof: PlayerProfile, lat: PlayerLatent, club: ClubProfile
+) -> tuple[PlayerProfile, list[Transfer]]:
+    debut_year = SEASON_YEAR - lat.years_pro
+    p_academy = min(
+        0.5,
+        0.17 + (0.15 if club.culture == "academy_first" else 0.0) + (0.08 if lat.age < 23 else 0.0),
+    )
+    p_loan = 0.0 if prof.status.captain else (0.11 if lat.age < 24 else 0.03)
+    u = rng.random()
+    transfers: list[Transfer] = []
+    previous: list[str] = []
+    career_update: dict[str, object] = {}
+
+    if u < p_academy:
+        apps, goals = _apps_and_goals(rng, lat.years_pro, prof)
+        origin = Origin(
+            kind="academy",
+            joined_year=debut_year,
+            signed_from=None,
+            fee_m=0.0,
+            club_apps=apps,
+            club_goals=goals,
+        )
+    else:
+        is_loan = u < p_academy + p_loan
+        if is_loan:
+            kind, years_ago = "loan", 0
+            career_update = {"contract_until": SEASON_YEAR + 1, "contract_negotiations": "none"}
+        else:
+            max_ago = min(lat.years_pro, 7)
+            w = np.array([0.7**k for k in range(max_ago + 1)])
+            years_ago = int(rng.choice(max_ago + 1, p=w / w.sum()))
+            kind = "free" if rng.random() < (0.32 if lat.age > 30 else 0.14) else "signed"
+        joined = SEASON_YEAR - years_ago
+        signed_from = (
+            _other_club(rng, prof.club_id, set())
+            if rng.random() < 0.3
+            else _external_club(rng, prof.career.nationality)
+        )
+        fee = 0.0
+        if kind == "signed":
+            value_then = prof.career.market_value_m * math.exp(-0.1 * years_ago)
+            fee = round(
+                max(0.1, value_then * 0.9 * math.exp(0.35 * float(rng.standard_normal()))), 1
+            )
+        elif kind == "loan" and rng.random() < 0.4:
+            fee = round(float(rng.uniform(0.2, 1.5)), 1)
+        transfer_kind = {"signed": "permanent", "free": "free", "loan": "loan"}[kind]
+        transfers, signed_from = _career_chain(rng, prof, lat, debut_year, joined, signed_from)
+        transfers.append(
+            Transfer(
+                player_id=prof.player_id,
+                from_club=signed_from,
+                to_club=prof.club_id,
+                year=joined,
+                fee_m=fee,
+                kind=transfer_kind,
+            )
+        )
+        previous = [t.from_club for t in transfers if not t.from_club.startswith("ext:")]
+        apps, goals = _apps_and_goals(rng, years_ago, prof)
+        origin = Origin(
+            kind=kind,
+            joined_year=joined,
+            signed_from=signed_from,
+            fee_m=fee,
+            club_apps=apps,
+            club_goals=goals,
+        )
+
+    career = prof.career.model_copy(update={**career_update, "previous_league_clubs": previous})
+    return prof.model_copy(update={"origin": origin, "career": career}), transfers
+
+
+def _career_chain(
+    rng: np.random.Generator,
+    prof: PlayerProfile,
+    lat: PlayerLatent,
+    debut_year: int,
+    joined: int,
+    signed_from: str,
+) -> tuple[list[Transfer], str]:
+    """Earlier moves before the final one, for some experienced players.
+
+    Returns the earlier transfers (chronological, linked) and the club the final move
+    starts from, which can change when there is no room left for an intermediate move.
+    """
+    if not (lat.years_pro >= 6 and joined - debut_year >= 2 and rng.random() < 0.25):
+        return [], signed_from
+    exclude = set() if signed_from.startswith("ext:") else {signed_from}
+    earlier = _other_club(rng, prof.club_id, exclude)
+    earlier_year = int(rng.integers(debut_year + 1, joined))
+    moves = [
+        Transfer(
+            player_id=prof.player_id,
+            from_club=_external_club(rng, prof.career.nationality),
+            to_club=earlier,
+            year=earlier_year,
+            fee_m=0.0,
+            kind="free",
+        )
+    ]
+    if earlier_year + 1 >= joined:
+        return moves, earlier  # no room for another stop: the final move leaves `earlier`
+    moves.append(
+        Transfer(
+            player_id=prof.player_id,
+            from_club=earlier,
+            to_club=signed_from,
+            year=int(rng.integers(earlier_year + 1, joined)),
+            fee_m=0.0,
+            kind="free",
+        )
+    )
+    return moves, signed_from
+
+
+def _legends(
+    rng: np.random.Generator, club_id: str, founded: int, best_current_goals: int
+) -> list[Legend]:
+    def era() -> str:
+        return f"{int(rng.integers(max(founded + 20, 1960) // 10, 202)) * 10}s"
+
+    scorer_goals = max(int(rng.integers(110, 231)), best_current_goals + int(rng.integers(5, 40)))
+    return [
+        Legend(
+            name=make_name(rng, "USA" if rng.random() < 0.6 else "MEX"),
+            club_id=club_id,
+            position="FW",
+            era=era(),
+            apps=int(rng.integers(280, 461)),
+            goals=min(scorer_goals, 260),
+            record="goals",
+        ),
+        Legend(
+            name=make_name(rng, "USA" if rng.random() < 0.6 else "MEX"),
+            club_id=club_id,
+            position=str(rng.choice(["DF", "MF", "GK"])),
+            era=era(),
+            apps=int(rng.integers(450, 641)),
+            goals=int(rng.integers(3, 71)),
+            record="appearances",
+        ),
+    ]
+
+
+def build_profiles(league: League, seed: int) -> Profiles:
+    """Everything profile-related, internally consistent: players, clubs, transfers, legends."""
+    players = build_player_profiles(league, seed)
+    clubs = build_club_profiles(league, seed)
+    rng = stream(seed, "profiles.origins")
+    transfers: list[Transfer] = []
+    for club_id, squad in league.squads.items():
+        for player in squad:
+            prof, moves = _assign_origin(
+                rng, players[player.player_id], league.latents[player.player_id], clubs[club_id]
+            )
+            players[player.player_id] = prof
+            transfers += moves
+    founded = {c.club_id: c.founded for c in CLUBS}
+    legends: list[Legend] = []
+    for club_id, squad in league.squads.items():
+        best = max(
+            (o.club_goals for p in squad if (o := players[p.player_id].origin) is not None),
+            default=0,
+        )
+        legends += _legends(rng, club_id, founded[club_id], best)
+    return Profiles(players=players, clubs=clubs, transfers=transfers, legends=legends)

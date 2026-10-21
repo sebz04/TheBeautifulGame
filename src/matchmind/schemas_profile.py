@@ -158,3 +158,31 @@ class ClubProfile(BaseModel):
     last_finish: int | None  # None = promoted last season
     status: Literal["promoted", "title_contender", "mid_table", "relegation_fight"]
     home_advantage: Rating
+
+
+class Transfer(BaseModel):
+    player_id: str
+    from_club: str  # in-league club_id or "ext:<ISO3>"
+    to_club: str
+    year: int
+    fee_m: float = Field(ge=0.0)
+    kind: Literal["permanent", "loan", "free"]
+
+
+class Legend(BaseModel):
+    """A retired fictional club icon, used for club-record milestones."""
+
+    name: str
+    club_id: str
+    position: Position
+    era: str  # e.g. "1990s"
+    apps: int
+    goals: int
+    record: Literal["goals", "appearances"]
+
+
+class Profiles(BaseModel):
+    players: dict[str, PlayerProfile]
+    clubs: dict[str, ClubProfile]
+    transfers: list[Transfer]
+    legends: list[Legend]

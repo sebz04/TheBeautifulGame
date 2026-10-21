@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-3.4 · origins, transfer chains, previous league clubs, legends, build_profiles · README, league
 - 2026-10-21 · TASK-3.3 · club profiles (status, style, tactics, ownership, budgets) and squad chemistry · README, league
 - 2026-10-21 · TASK-3.2 · player profiles from latent factors with real-life distributions · README, league
 - 2026-10-21 · TASK-3.1 · 20 LA clubs, squads from latent factors, 38-round fixtures, real-name blocklists · README, league (new)

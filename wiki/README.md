@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-3.3 · **Code status:** scaffold, schemas, league and fixtures
+**Last updated:** 2026-10-21 · **Latest task:** TASK-3.4 · **Code status:** scaffold, schemas, full league with profiles
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club LA league with squads and fixtures, player and club profiles, chemistry.
-- Next: TASK-3.4 (origins, transfers, legends). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club LA league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends.
+- Next: TASK-4.1 (match file I/O). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -33,9 +33,9 @@ Status: `planned` · `wip` · `done`
 |---|---|---|---|
 | `src/matchmind/config.py` | Settings from env (`Settings`, `get_settings()`) | done | 1 |
 | `src/matchmind/schemas.py` | All shared pydantic models | done | 2 |
-| `src/matchmind/schemas_profile.py` | Player and club profile models | wip | 3 |
+| `src/matchmind/schemas_profile.py` | Player/club profiles, Transfer, Legend, Profiles | done | 3 |
 | `src/matchmind/engine/pitch.py` | Pitch constants and geometry | done | 2 |
-| `src/matchmind/league/` | Clubs, squads, fixtures (done); profiles, season (planned) | wip | 3, 10.4 |
+| `src/matchmind/league/` | Clubs, squads, fixtures, profiles, transfers, legends (done); season history (planned) | wip | 3, 10.4 |
 | `src/matchmind/engine/` | Synthetic match engine + validator | planned | 4–10 |
 | `src/matchmind/stats/` | Deterministic metrics | planned | 6, 7, 11–14 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |
