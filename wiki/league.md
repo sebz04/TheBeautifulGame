@@ -1,6 +1,6 @@
 # League, Profiles and Fixtures
 
-**Status:** TASK-3.1 done (clubs, squads, fixtures). Profiles: TASK-3.2–3.4.
+**Status:** TASK-3.1 (clubs, squads, fixtures) and TASK-3.2 (player profiles) done. Club profiles, chemistry, origins and transfers: TASK-3.3–3.4.
 
 ## Clubs (`league/clubs.py`)
 `CLUBS`: the 20 approved LA neighborhood clubs (`ClubSeed`: id slug, name, 3-letter short, fictional stadium, capacity, founded, curated kit colors, region). `derbies()` lists 4 pairs; `derby_rival(club_id)`. Kits: derby primaries differ by more than 100 RGB units; every kit pair differs (primary + secondary).
@@ -21,3 +21,15 @@ Nationality weights fit an LA league (USA 40%, Mexico 13%, ...). First names are
 
 ## Fixtures (`league/fixtures.py`)
 `build_fixtures(league, seed, start_date="2026-08-15") -> list[Fixture(match_id, round, date, home_id, away_id)]`: circle-method double round robin, 38 rounds × 10 matches, each club 19 home. Rounds 5, 12, 19, 26, 33 are midweek (3 days after the previous round), which creates schedule congestion. `match_id = "r{round:02d}-{home}-v-{away}"`.
+
+## Player profiles (`schemas_profile.py`, `league/profiles.py`)
+`build_player_profiles(league, seed) -> dict[player_id, PlayerProfile]`. `PlayerProfile` = `personality` (composure, aggression, confidence, leadership, consistency), `style` (position, secondary_position, role from 19 options, work_rate, tactical_discipline, risk_tolerance), `technical` (passing, first_touch, dribbling, finishing, crossing, tackling, aerial, shot_stopping, distribution), `career` (nationality, birth_year, years_pro, stage, caps, contract_until 2027–2031, market_value_m, contract_negotiations, transfer_interest, retirement_risk, previous_league_clubs), `discipline`, `status` (injury, games_missed, captain, foot, height), `origin` (added in TASK-3.4). Flags (`is_academy`, `is_new_signing`, `is_former_rival`, `is_returning_from_injury`) are computed fields, so they can't disagree with the data.
+
+How attributes come from the latents (weights in `profiles.py`):
+- composure ← mentality, quality, −temperament, experience · aggression ← temperament (+DF, −GK) · leadership ← mentality, experience · consistency ← mentality, experience
+- technical ← quality + position priors (`_TECH_TABLE`); aerial uses height; outfield shot_stopping ≈ 0
+- market value: log-normal, `ln(4) + 1.1·quality + age term + noise` (young players get a potential premium; over 30, value declines)
+- discipline: Poisson cards from career apps × (position base + aggression)
+- captain: highest leadership in the squad among players aged 24+
+
+Seed-2026 check: traits mean ≈ 0.50, SD ≈ 0.16, under 2% beyond 0.15/0.85; aggression > 0.8 = 1.75%; market value median $3.9m, mean $8.4m, 1.75% above $50m, max $133m; 9.5% injured or doubtful; 18 roles used.
