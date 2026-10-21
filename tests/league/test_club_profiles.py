@@ -4,7 +4,7 @@ import numpy as np
 
 from matchmind.league.league import build_league
 from matchmind.league.profiles import build_club_profiles, build_player_profiles, chemistry
-from matchmind.schemas_profile import Origin
+from matchmind.schemas_profile import Origin, PlayerProfile
 
 
 @cache
@@ -37,6 +37,9 @@ def test_budgets_right_skewed_and_follow_strength():
     budgets = np.array([c.transfer_budget_m for c in clubs.values()])
     assert budgets.mean() > np.median(budgets)
     assert budgets.max() / budgets.min() > 4
+    assert 2.0 <= float(np.median(budgets)) <= 8.0  # Colombian-league scale, USD millions
+    wages = np.array([c.wage_bill_m for c in clubs.values()])
+    assert 5.0 <= float(np.median(wages)) <= 20.0
     old_money = [c for c in clubs.values() if c.ownership != "new_owner"]
     strength = [league.strength[c.club_id] for c in old_money]
     assert np.corrcoef(strength, [np.log(c.transfer_budget_m) for c in old_money])[0, 1] > 0.5
@@ -82,15 +85,15 @@ def _with_origin(profile, joined: int, kind: str = "signed"):
 def test_chemistry_rises_with_shared_history():
     league = build_league()
     profiles = build_player_profiles(league, seed=2026)
-    squad = [profiles[p.player_id] for p in league.squads["echo-park"]]
+    squad = [profiles[p.player_id] for p in league.squads["laureles"]]
     a, b, c = squad[2], squad[3], squad[4]
-    base = {"career": a.career.model_copy(update={"nationality": "USA"})}
+    base = {"career": a.career.model_copy(update={"nationality": "COL"})}
     a = _with_origin(a.model_copy(update=base), 2020)
     b = _with_origin(
-        b.model_copy(update={"career": b.career.model_copy(update={"nationality": "USA"})}), 2020
+        b.model_copy(update={"career": b.career.model_copy(update={"nationality": "COL"})}), 2020
     )
     c = _with_origin(
-        c.model_copy(update={"career": c.career.model_copy(update={"nationality": "KOR"})}), 2026
+        c.model_copy(update={"career": c.career.model_copy(update={"nationality": "BRA"})}), 2026
     )
     chem = chemistry([a, b, c], manager_tenure_years=2.0)
     key = lambda x, y: tuple(sorted((x.player_id, y.player_id)))  # noqa: E731
@@ -104,3 +107,20 @@ def test_chemistry_rises_with_shared_history():
 
     longer_manager = chemistry([a, b], manager_tenure_years=6.0)
     assert longer_manager[key(a, b)] > chem[key(a, b)]
+
+
+def test_chemistry_compatriots_above_shared_language():
+    league = build_league()
+    profiles = build_player_profiles(league, seed=2026)
+    a, b, c = (profiles[p.player_id] for p in league.squads["laureles"][2:5])
+
+    def nat(p: PlayerProfile, code: str) -> PlayerProfile:
+        return _with_origin(
+            p.model_copy(update={"career": p.career.model_copy(update={"nationality": code})}),
+            2022,
+        )
+
+    a, b, c = nat(a, "COL"), nat(b, "COL"), nat(c, "PER")  # all Spanish speakers
+    chem = chemistry([a, b, c], manager_tenure_years=2.0)
+    key = lambda x, y: tuple(sorted((x.player_id, y.player_id)))  # noqa: E731
+    assert chem[key(a, b)] > chem[key(a, c)]

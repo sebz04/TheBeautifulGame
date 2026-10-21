@@ -76,10 +76,12 @@ def test_technical_ratings_follow_position():
 
 def test_money_is_right_skewed():
     value = np.array([p.career.market_value_m for p in _data()[1].values()])
-    assert 2.0 <= float(np.median(value)) <= 8.0
-    assert (value > 50).mean() < 0.03
+    # Colombian-league scale in USD: most players under $1m, a few stars at $5-15m
+    assert 0.3 <= float(np.median(value)) <= 1.2
+    assert (value > 5).mean() < 0.05
+    assert 4 <= value.max() <= 30
     assert value.mean() > np.median(value) * 1.2
-    assert value.min() >= 0.1 and value.max() < 200
+    assert value.min() >= 0.05
 
 
 def test_demographics():
@@ -98,8 +100,11 @@ def test_demographics():
     assert 0.15 <= feet["left"] / 400 <= 0.30 and feet["both"] / 400 <= 0.06
     not_fit = sum(p.status.injury != "fit" for p in profiles.values()) / 400
     assert 0.05 <= not_fit <= 0.18
-    usa = sum(p.career.nationality == "USA" for p in profiles.values()) / 400
-    assert 0.30 <= usa <= 0.50
+    nat = Counter(p.career.nationality for p in profiles.values())
+    assert 0.58 <= nat["COL"] / 400 <= 0.78
+    assert nat["BRA"] > 0 and nat["PER"] > 0
+    south_america = {"COL", "BRA", "PER", "VEN", "ECU", "ARG", "URY", "PRY", "CHL", "BOL"}
+    assert set(nat) <= south_america
     assert {p.career.contract_until for p in profiles.values()} <= set(range(2027, 2032))
 
 

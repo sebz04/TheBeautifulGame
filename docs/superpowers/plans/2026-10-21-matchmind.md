@@ -44,7 +44,7 @@ pyproject.toml  uv.lock  .env.example  .gitignore  docker-compose.yml  Dockerfil
 src/matchmind/
   config.py                 # Settings (pydantic-settings) from env
   schemas.py                # All shared pydantic models (single source of truth)
-  league/league.py          # Fictional 20-club Los Angeles league, squads
+  league/league.py          # Fictional 20-club Colombian barrio league, squads
   league/season.py          # Fictional season history + milestones
   engine/pitch.py           # Coordinates, zones, geometry helpers
   engine/baseline.py        # Level 1: formation-anchored sim (kept as fallback)
@@ -144,11 +144,11 @@ Rule: every commit that changes code also updates (1) the wiki page for each are
 - [ ] **Step 4: Run** the tests. Expected: PASS.
 - [ ] **Step 5: Commit** `TASK-2: shared schemas and pitch geometry`.
 
-### Task 3: Fictional Los Angeles league and player/club profiles
+### Task 3: Fictional Colombian league and player/club profiles
 
 **Files:** Create `src/matchmind/league/clubs.py` (the 20 approved clubs), `league/league.py`, `league/fixtures.py`, `league/profiles.py`, `league/names.py`, `src/matchmind/schemas_profile.py`, `tests/league/test_league.py`, `tests/league/test_profiles.py`, `tests/fixtures/real_club_blocklist.txt`, `tests/fixtures/real_player_blocklist.txt`.
 
-**Approved clubs (fixed, not generated):** Boyle Heights Athletic, Lincoln Heights Locomotive, El Sereno Sporting, Highland Park Albion, Eagle Rock United, Echo Park Rovers, Silver Lake Wanderers, Los Feliz Town, Koreatown City, Atwater Village Kestrels, Venice Tides, Mar Vista Dynamo, Westwood Scholars, San Pedro Harbor, Van Nuys Aviators, Studio City Stars, Sherman Oaks Royals, Leimert Park Harmony, Crenshaw Monarchs, Watts Union. Derbies: Echo Park–Silver Lake, Boyle Heights–Lincoln Heights, Venice–Mar Vista, Leimert Park–Crenshaw. Money in USD millions (`*_m`).
+**Approved clubs (fixed, not generated; re-themed from LA in TASK-3.5):** Bogotá: Atlético Chapinero, Club Deportivo Usaquén, Sporting La Candelaria, Unión Teusaquillo, Deportivo Suba. Medellín: Atlético Laureles, Sporting El Poblado, Deportivo Belén, Unión Manrique. Cali: San Antonio Fútbol Club, Deportivo San Fernando, Atlético Siloé. Barranquilla: Atlético El Prado, Unión Barrio Abajo, Deportivo Rebolo. Cartagena: Sporting Getsemaní, Manga Fútbol Club. Bucaramanga: Atlético Cabecera. Santa Marta: Club El Rodadero. Manizales: Deportivo Chipre. Derbies: Chapinero–Usaquén, Laureles–El Poblado, San Antonio–San Fernando, El Prado–Barrio Abajo, Getsemaní–Manga. Nationalities: about 68% Colombian, the rest South American. Money in USD millions (`*_m`) at Colombian-league scale (player value median about $0.5m, stars $5–15m).
 
 **Interfaces:**
 - TASK-3.1: `CLUBS` (20 entries with id, name, 3-letter short code, stadium, capacity, founded year), `build_league(seed=2026) -> League(clubs, squads: dict[str, list[Player]])` (20 × 20 players: 2 GK, 7 DF, 7 MF, 4 FW), `derbies() -> list[tuple[str, str]]`, `build_fixtures(league, seed, start_date="2026-08-15") -> list[Fixture(round, date, home_id, away_id)]` (38-round double round robin, 10 matches per round, every club once per round, home/away balanced).
@@ -158,10 +158,10 @@ Rule: every commit that changes code also updates (1) the wiki page for each are
   - `Transfer(player_id, from_club, to_club, year, fee_m, kind: permanent|loan|free)`, `Legend(name, club_id, era, apps, goals)`.
   - `build_profiles(league, seed) -> Profiles(players, clubs, transfers, legends)`. Generation uses a latent-factor model: each player draws hidden quality, temperament and athleticism factors; attributes = position prior + factor loadings + noise, so correlations are realistic (aggression ↔ cards, age ↔ leadership, quality ↔ fee and market value, club budget ↔ squad quality).
 
-- [ ] **TASK-3.1 tests:** `test_league_deterministic`; `test_league_shape` (20 clubs, 20 players each, unique ids and short codes, unique shirt numbers per club); `test_fixtures_round_robin` (38 rounds × 10 matches, each pair meets twice with home and away swapped); `test_no_real_names` (no club name, nickname, or player name matches the blocklists: the 20 Premier League clubs, 10 famous European clubs, LA-area pro and semi-pro soccer clubs, and LA pro nicknames Galaxy, Angel City, Dodgers, Lakers, Kings, Rams, Chargers, Clippers, Sparks).
+- [ ] **TASK-3.1 tests:** `test_league_deterministic`; `test_league_shape` (20 clubs, 20 players each, unique ids and short codes, unique shirt numbers per club); `test_fixtures_round_robin` (38 rounds × 10 matches, each pair meets twice with home and away swapped); `test_no_real_names` (no club name, nickname, or player name matches the blocklists: the 20 Premier League clubs, 10 famous European clubs, Colombian Primera A/B and historical clubs, and Colombian club nicknames such as Verdolagas, Embajadores, Cardenales, Diablos Rojos, Tiburones, Pijaos).
 - [ ] **Distribution rules (TASK-3.2/3.3):** ratings are `sigmoid(0.7 · z)` of a standardized latent combination, so they are bell-shaped around 0.5; money (fees, market values, budgets, wages) is log-normal (right-skewed); ages are a truncated normal (mean ≈ 26.5, SD ≈ 4.2, range 17–37). Tests: `test_rating_distributions`, `test_money_right_skewed`, `test_demographics`.
 - [ ] **TASK-3.2–3.4 tests** (split across the three sub-tasks): `test_profiles_deterministic`; `test_ratings_bounded`; `test_correlations` (over 400 players: corr(aggression, career_yellows) > 0.3, corr(quality factor, fee_m among signed players) > 0.4, veterans' mean leadership > rookies'); `test_transfers_consistent` (every `signed_from` in-league club has a matching `Transfer`; `is_former_rival` true iff a past club is the derby rival); `test_career_stage_rule` (rookie ≤ 2 years pro, veteran ≥ 10).
-- [ ] **Commits:** `TASK-3.1` (league, fixtures), `TASK-3.2` (player profiles), `TASK-3.3` (club profiles, chemistry), `TASK-3.4` (origins, transfers, legends). Season results, standings, and milestones come from TASK-10.4 (engine-simulated), not from this task.
+- [ ] **Commits:** `TASK-3.1` (league, fixtures), `TASK-3.2` (player profiles), `TASK-3.3` (club profiles, chemistry), `TASK-3.4` (origins, transfers, legends), `TASK-3.5` (Colombian re-theme: clubs, derbies, nationalities, names, money scale, compatriot chemistry, blocklists). Season results, standings, and milestones come from TASK-10.4 (engine-simulated), not from this task.
 
 ### Task 4: Engine level 1, formation-anchored baseline (unblocks everything downstream)
 

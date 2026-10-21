@@ -1,4 +1,4 @@
-"""The 20 approved clubs, named after Los Angeles neighborhoods (fixed, not generated).
+"""The 20 approved clubs, named after barrios in Colombian cities (fixed, not generated).
 
 Kits, stadiums, capacities, and founding years are fictional. Colors are curated so
 derby rivals and every pair of kits stay distinguishable on screen.
@@ -6,7 +6,7 @@ derby rivals and every pair of kits stay distinguishable on screen.
 
 from dataclasses import dataclass
 
-Region = str  # "eastside" | "central" | "westside" | "valley" | "south"
+Region = str  # city slug: "bogota", "medellin", "cali", "barranquilla", ...
 
 
 @dataclass(frozen=True)
@@ -23,33 +23,34 @@ class ClubSeed:
 
 
 CLUBS: list[ClubSeed] = [
-    ClubSeed("boyle-heights", "Boyle Heights Athletic", "BHA", "Hollenbeck Ground", 18500, 1921, "#B22234", "#F2C14E", "eastside"),
-    ClubSeed("lincoln-heights", "Lincoln Heights Locomotive", "LHL", "Railyard Park", 14000, 1908, "#1F2A44", "#C0C0C0", "eastside"),
-    ClubSeed("el-sereno", "El Sereno Sporting", "ELS", "Hilltop Field", 9800, 1946, "#4B9CD3", "#FFFFFF", "eastside"),
-    ClubSeed("highland-park", "Highland Park Albion", "HPA", "Arroyo Stadium", 16200, 1912, "#7A1F3D", "#F5E6C8", "eastside"),
-    ClubSeed("eagle-rock", "Eagle Rock United", "ERU", "The Rock", 21000, 1904, "#D35400", "#1B1B1B", "eastside"),
-    ClubSeed("echo-park", "Echo Park Rovers", "EPR", "Lakeside Ground", 24500, 1899, "#0072CE", "#FFFFFF", "central"),
-    ClubSeed("silver-lake", "Silver Lake Wanderers", "SLW", "Reservoir Park", 23000, 1902, "#8A9BA8", "#0B3D2E", "central"),
-    ClubSeed("los-feliz", "Los Feliz Town", "LFT", "Griffith Road", 15500, 1925, "#2C5F2D", "#FFE77A", "central"),
-    ClubSeed("koreatown", "Koreatown City", "KTC", "Wilshire Arena", 27000, 1978, "#E4002B", "#003478", "central"),
-    ClubSeed("atwater-village", "Atwater Village Kestrels", "AVK", "Riverside Ground", 11200, 1931, "#5E3A87", "#F2C14E", "central"),
-    ClubSeed("venice", "Venice Tides", "VNT", "Boardwalk Stadium", 19000, 1910, "#00B2A9", "#F4D35E", "westside"),
-    ClubSeed("mar-vista", "Mar Vista Dynamo", "MVD", "Vista Park", 12500, 1955, "#FFD100", "#1D428A", "westside"),
-    ClubSeed("westwood", "Westwood Scholars", "WWS", "Campus Field", 17800, 1919, "#2D68C4", "#F2A900", "westside"),
-    ClubSeed("san-pedro", "San Pedro Harbor", "SPH", "Dockside Stadium", 20500, 1896, "#002147", "#E35205", "westside"),
-    ClubSeed("van-nuys", "Van Nuys Aviators", "VNA", "Airfield Ground", 22500, 1949, "#5B6770", "#FFB81C", "valley"),
-    ClubSeed("studio-city", "Studio City Stars", "SCS", "Ventura Lot", 16000, 1938, "#000000", "#FFD700", "valley"),
-    ClubSeed("sherman-oaks", "Sherman Oaks Royals", "SOR", "Oakwood Park", 18200, 1927, "#0F4C3A", "#D4AF37", "valley"),
-    ClubSeed("leimert-park", "Leimert Park Harmony", "LPH", "Village Green", 13400, 1962, "#009639", "#FDDA24", "south"),
-    ClubSeed("crenshaw", "Crenshaw Monarchs", "CRM", "Baldwin Ground", 25000, 1958, "#4B2E83", "#B9975B", "south"),
-    ClubSeed("watts", "Watts Union", "WTU", "Towers Park", 15000, 1965, "#C8102E", "#000000", "south"),
+    ClubSeed("chapinero", "Atlético Chapinero", "ACH", "Estadio Los Cerros", 28000, 1924, "#6A1B9A", "#FFFFFF", "bogota"),
+    ClubSeed("usaquen", "Club Deportivo Usaquén", "CDU", "Estadio El Cedro", 21000, 1931, "#00843D", "#FFD100", "bogota"),
+    ClubSeed("la-candelaria", "Sporting La Candelaria", "SLC", "Estadio Las Aguas", 12000, 1909, "#8B0000", "#F5E6C8", "bogota"),
+    ClubSeed("teusaquillo", "Unión Teusaquillo", "UTE", "Estadio La Soledad", 17500, 1938, "#1F2A44", "#C0C0C0", "bogota"),
+    ClubSeed("suba", "Deportivo Suba", "DSU", "Estadio Los Humedales", 19500, 1967, "#4B9CD3", "#FFFFFF", "bogota"),
+    ClubSeed("laureles", "Atlético Laureles", "ALA", "Estadio La Setenta", 30000, 1913, "#E4002B", "#FFFFFF", "medellin"),
+    ClubSeed("el-poblado", "Sporting El Poblado", "SEP", "Estadio Los Balsos", 26000, 1916, "#002D72", "#F2A900", "medellin"),
+    ClubSeed("belen", "Deportivo Belén", "DBE", "Estadio Los Alpes", 16500, 1945, "#FF8200", "#1B1B1B", "medellin"),
+    ClubSeed("manrique", "Unión Manrique", "UMA", "Estadio El Pinal", 14000, 1952, "#5B6770", "#E35205", "medellin"),
+    ClubSeed("san-antonio", "San Antonio Fútbol Club", "SAF", "Estadio La Colina", 22000, 1912, "#7A1F3D", "#F2C14E", "cali"),
+    ClubSeed("san-fernando", "Deportivo San Fernando", "DSF", "Estadio El Templete", 25500, 1927, "#00B2A9", "#002147", "cali"),
+    ClubSeed("siloe", "Atlético Siloé", "ASI", "Estadio La Loma", 13000, 1959, "#2C5F2D", "#FFE77A", "cali"),
+    ClubSeed("el-prado", "Atlético El Prado", "AEP", "Estadio Los Almendros", 27500, 1919, "#FFD700", "#000000", "barranquilla"),
+    ClubSeed("barrio-abajo", "Unión Barrio Abajo", "UBA", "Estadio La Ribera", 18000, 1922, "#C8102E", "#1D428A", "barranquilla"),
+    ClubSeed("rebolo", "Deportivo Rebolo", "DRE", "Estadio El Arenal", 11500, 1961, "#8A9BA8", "#0B3D2E", "barranquilla"),
+    ClubSeed("getsemani", "Sporting Getsemaní", "SGE", "Estadio La Trinidad", 20000, 1905, "#D35400", "#FFFFFF", "cartagena"),
+    ClubSeed("manga", "Manga Fútbol Club", "MFC", "Estadio El Muelle", 15500, 1933, "#0072CE", "#FFFFFF", "cartagena"),
+    ClubSeed("cabecera", "Atlético Cabecera", "ACA", "Estadio Los Guayacanes", 23500, 1950, "#4B2E83", "#B9975B", "bucaramanga"),
+    ClubSeed("el-rodadero", "Club El Rodadero", "CER", "Estadio La Bahía", 16000, 1948, "#00A3E0", "#F4D35E", "santa-marta"),
+    ClubSeed("chipre", "Deportivo Chipre", "DCH", "Estadio El Mirador", 19000, 1930, "#000000", "#FFFFFF", "manizales"),
 ]  # fmt: skip
 
 _DERBIES: list[tuple[str, str]] = [
-    ("echo-park", "silver-lake"),
-    ("boyle-heights", "lincoln-heights"),
-    ("venice", "mar-vista"),
-    ("leimert-park", "crenshaw"),
+    ("chapinero", "usaquen"),
+    ("laureles", "el-poblado"),
+    ("san-antonio", "san-fernando"),
+    ("el-prado", "barrio-abajo"),
+    ("getsemani", "manga"),
 ]
 
 

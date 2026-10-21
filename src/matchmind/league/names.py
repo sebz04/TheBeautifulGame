@@ -6,44 +6,33 @@ syllables so full names don't belong to real players. Tests check a blocklist.
 
 import numpy as np
 
-# ISO 3166-1 alpha-3 codes, weights reflect a Los Angeles-based league's squads.
+# ISO 3166-1 alpha-3 codes; weights reflect a Colombian league's squads (mostly domestic,
+# with Venezuelan, Brazilian, Peruvian, and other South American imports).
 NATIONALITY_WEIGHTS: dict[str, float] = {
-    "USA": 0.40, "MEX": 0.13, "SLV": 0.03, "GTM": 0.02, "CAN": 0.04, "JAM": 0.02,
-    "COL": 0.03, "ARG": 0.03, "BRA": 0.04, "URY": 0.01, "ENG": 0.04, "ESP": 0.03,
-    "FRA": 0.03, "DEU": 0.02, "NLD": 0.01, "NGA": 0.02, "GHA": 0.02, "KOR": 0.03,
-    "JPN": 0.03, "PHL": 0.02,
+    "COL": 0.68, "VEN": 0.05, "BRA": 0.06, "PER": 0.05, "ECU": 0.04, "ARG": 0.04,
+    "URY": 0.03, "PRY": 0.02, "CHL": 0.02, "BOL": 0.01,
 }  # fmt: skip
 
 _REGION = {
-    "USA": "anglo", "CAN": "anglo", "ENG": "anglo", "JAM": "caribbean",
-    "MEX": "hispanic", "SLV": "hispanic", "GTM": "hispanic", "COL": "hispanic",
-    "ARG": "hispanic", "URY": "hispanic", "ESP": "hispanic", "PHL": "hispanic",
-    "BRA": "lusophone", "FRA": "french", "DEU": "germanic", "NLD": "germanic",
-    "NGA": "west_african", "GHA": "west_african", "KOR": "korean", "JPN": "japanese",
+    "COL": "colombian", "VEN": "caribbean_hispanic", "BRA": "lusophone", "PER": "andean",
+    "ECU": "andean", "BOL": "andean", "ARG": "southern_cone", "URY": "southern_cone",
+    "PRY": "southern_cone", "CHL": "southern_cone",
 }  # fmt: skip
 
 _FIRST = {
-    "anglo": ["Jake", "Tyler", "Owen", "Caleb", "Marcus", "Ethan", "Ryan", "Dylan", "Logan", "Connor", "Miles", "Jordan", "Nathan", "Cole", "Wes", "Grant"],
-    "caribbean": ["Andre", "Kemar", "Shamar", "Damion", "Javain", "Ricardo", "Leon", "Oneil"],
-    "hispanic": ["Diego", "Luis", "Carlos", "Mateo", "Javier", "Andrés", "Héctor", "Iván", "Rafael", "Emilio", "Joaquín", "Tomás", "Bruno", "Santiago", "Adrián", "Rodrigo"],
-    "lusophone": ["João", "Thiago", "Rafael", "Gustavo", "Lucas", "Felipe", "Caio", "Matheus"],
-    "french": ["Hugo", "Théo", "Lucas", "Mathis", "Bastien", "Yanis", "Noah", "Enzo"],
-    "germanic": ["Lukas", "Jonas", "Niklas", "Tim", "Daan", "Bram", "Felix", "Jannik"],
-    "west_african": ["Kwame", "Emeka", "Chidi", "Kofi", "Tunde", "Yaw", "Obinna", "Femi"],
-    "korean": ["Min-jun", "Seo-jun", "Ji-ho", "Hyun-woo", "Do-yun", "Jae-won", "Tae-yang", "Sung-min"],
-    "japanese": ["Haruto", "Sota", "Ren", "Kaito", "Riku", "Yuto", "Daiki", "Takumi"],
+    "colombian": ["Juan Camilo", "Juan David", "Andrés Felipe", "Jhon", "Duván", "Yeison", "Brayan", "Stiven", "Cristian", "Sebastián", "Santiago", "Mateo", "Luis Fernando", "Wílmar", "Jéfferson", "Déiver", "Harold", "Edwin", "Camilo", "Daniel", "Jhojan", "Kevin", "Carlos", "Mauricio"],
+    "caribbean_hispanic": ["Yordan", "Darwin", "Jhonder", "Eduard", "Yeferson", "Josué", "Rómulo", "Salomón"],
+    "lusophone": ["João", "Thiago", "Rafael", "Gustavo", "Lucas", "Felipe", "Caio", "Matheus", "Vitor", "Gabriel"],
+    "andean": ["Piero", "Renato", "Yoshimar", "Christofer", "Édison", "Jhilmar", "Bryan", "Wálter", "Marcelo"],
+    "southern_cone": ["Facundo", "Nicolás", "Agustín", "Matías", "Gonzalo", "Franco", "Joaquín", "Thiago", "Bruno", "Lautaro"],
 }  # fmt: skip
 
 _SURNAME_PARTS = {
-    "anglo": (["Hal", "Whit", "Brad", "Cor", "Ash", "Pen", "Ren", "Thorn", "Mar", "Sel"], ["ford", "ley", "wick", "ton", "by", "more", "kin", "well", "ridge", "den"]),
-    "caribbean": (["Black", "Gor", "Fen", "Mal", "Bra", "Thom"], ["wood", "don", "ton", "colm", "nett", "son"]),
-    "hispanic": (["Val", "Mor", "Cas", "Al", "Fer", "Var", "Ri", "Que", "Zam", "Ban", "Lo", "Ar"], ["ado", "ero", "eda", "ino", "ales", "ardo", "illo", "ona", "uez", "arro"]),
-    "lusophone": (["Bra", "Ca", "Fon", "Mo", "Sil", "Tei"], ["galhães", "rvalho", "seca", "reira", "veira", "xeira"]),
-    "french": (["Bel", "Du", "Mar", "Lan", "Ro", "Fon"], ["court", "mont", "ceau", "glade", "chet", "taine"]),
-    "germanic": (["Brand", "Hol", "Kess", "Lind", "Van der ", "Stei"], ["mann", "berg", "ler", "hoven", "Velde", "ner"]),
-    "west_african": (["Ade", "Oko", "Ase", "Nwa", "Ama", "Ola"], ["bayo", "nkwo", "mah", "chukwu", "koh", "wale"]),
-    "korean": (["Kim", "Park", "Lee", "Choi", "Jung", "Kang", "Yoon", "Han"], [""]),
-    "japanese": (["Tana", "Naka", "Mori", "Hayashi", "Ishi", "Fuji"], ["ka", "mura", "ta", "", "zaki", "moto"]),
+    "colombian": (["Val", "Mor", "Cas", "Ar", "Fer", "Var", "Ri", "Zam", "Ban", "Lo", "Car", "Ose", "Mos", "Pal", "Bal", "Mon"], ["ado", "ero", "eda", "ino", "ales", "ardo", "illo", "ona", "ejo", "arro", "ancia", "era"]),
+    "caribbean_hispanic": (["Her", "Sal", "Ren", "Mach", "Osu", "Ron"], ["nández", "azar", "dón", "ado", "na", "jas"]),
+    "lusophone": (["Bra", "Ca", "Fon", "Mo", "Sil", "Tei", "Mar", "Gui"], ["galhães", "rvalho", "seca", "reira", "veira", "xeira", "tins", "marães"]),
+    "andean": (["Qui", "Hua", "Ma", "Cha", "Ya", "Tu", "Llo", "Pa"], ["spe", "mán", "mani", "vez", "nqui", "pac", "na", "ucar"]),
+    "southern_cone": (["Ben", "Gal", "Fer", "Al", "Ro", "Oli", "Pe", "Sa"], ["ítez", "arza", "reyra", "mirón", "dríguez", "vera", "ralta", "bella"]),
 }  # fmt: skip
 
 
@@ -54,18 +43,13 @@ def draw_nationality(rng: np.random.Generator) -> str:
 
 
 def make_name(rng: np.random.Generator, nationality: str) -> str:
-    region = _REGION.get(nationality, "anglo")
+    region = _REGION.get(nationality, "colombian")
     first = str(rng.choice(_FIRST[region]))
     starts, ends = _SURNAME_PARTS[region]
     surname = f"{rng.choice(starts)}{rng.choice(ends)}"
-    if region == "korean":
-        return f"{surname} {first}"  # family name first
     return f"{first} {surname}"
 
 
 def language_of(nationality: str) -> str:
     """Coarse shared-language group, used for squad chemistry."""
-    return {
-        "anglo": "en", "caribbean": "en", "west_african": "en", "hispanic": "es",
-        "lusophone": "pt", "french": "fr", "germanic": "de", "korean": "ko", "japanese": "ja",
-    }[_REGION.get(nationality, "anglo")]  # fmt: skip
+    return "pt" if _REGION.get(nationality) == "lusophone" else "es"

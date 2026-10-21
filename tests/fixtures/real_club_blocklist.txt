@@ -32,32 +32,77 @@ borussia dortmund
 ajax
 celtic
 corinthians
-# Los Angeles area pro and semi-pro soccer
-la galaxy
-los angeles galaxy
-galaxy ii
-lafc
-los angeles fc
-angel city fc
-la force
-los angeles force
-la wolves
-cal fc
-ventura county fc
-orange county sc
-# LA pro-team nicknames and names to avoid
-nickname:galaxy
-nickname:angel city
-nickname:dodgers
-nickname:lakers
-nickname:kings
-nickname:rams
-nickname:chargers
-nickname:clippers
-nickname:sparks
-nickname:angels
-nickname:ducks
-nickname:mariners
-nickname:falcons
-nickname:wolves
-word:hollywood
+# Colombian professional clubs (Primera A, Primera B, and well-known historical clubs)
+atlético nacional
+atletico nacional
+independiente medellín
+independiente medellin
+millonarios
+independiente santa fe
+santa fe
+américa de cali
+america de cali
+deportivo cali
+atlético junior
+junior
+once caldas
+deportes tolima
+deportivo pereira
+atlético bucaramanga
+envigado
+águilas doradas
+alianza fc
+boyacá chicó
+fortaleza ceif
+jaguares de córdoba
+la equidad
+internacional de bogotá
+patriotas boyacá
+deportivo pasto
+cúcuta deportivo
+real cartagena
+unión magdalena
+llaneros
+atlético huila
+cortuluá
+orsomarso
+real santander
+leones fc
+tigres fc
+bogotá fc
+barranquilla fc
+atlético fc
+deportes quindío
+boca juniors de cali
+sporting barranquilla
+real cundinamarca
+itagüí leones
+# Colombian club nicknames and identity words to avoid in our club names
+nickname:verdolagas
+nickname:poderoso
+nickname:embajadores
+nickname:cardenales
+nickname:leones
+nickname:diablos rojos
+nickname:azucareros
+nickname:tiburones
+nickname:pijaos
+nickname:matecaña
+nickname:leopardos
+nickname:motilones
+nickname:águilas
+nickname:tigres
+nickname:jaguares
+nickname:llaneros
+nickname:patriotas
+nickname:albos
+nickname:ballet azul
+word:nacional
+word:millonarios
+word:junior
+word:santa fe
+word:chicó
+word:equidad
+word:once caldas
+word:tolima
+word:pereira

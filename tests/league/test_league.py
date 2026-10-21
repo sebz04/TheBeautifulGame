@@ -16,7 +16,11 @@ def _blocklist(name: str) -> list[str]:
 def test_twenty_approved_clubs():
     names = [c.name for c in CLUBS]
     assert len(names) == 20 == len(set(names))
-    assert "Boyle Heights Athletic" in names and "Watts Union" in names
+    assert "Atlético Chapinero" in names and "Deportivo Chipre" in names
+    assert {c.region for c in CLUBS} == {
+        "bogota", "medellin", "cali", "barranquilla", "cartagena", "bucaramanga", "santa-marta",
+        "manizales",
+    }  # fmt: skip
     assert len({c.short for c in CLUBS}) == 20
     assert all(len(c.short) == 3 and c.short.isupper() for c in CLUBS)
 
@@ -24,9 +28,11 @@ def test_twenty_approved_clubs():
 def test_derbies_are_neighbors():
     ids = {c.club_id for c in CLUBS}
     pairs = derbies()
-    assert ("echo-park", "silver-lake") in pairs
-    assert len(pairs) == 4
+    assert ("laureles", "el-poblado") in pairs
+    assert len(pairs) == 5
     assert all(a in ids and b in ids for a, b in pairs)
+    region = {c.club_id: c.region for c in CLUBS}
+    assert all(region[a] == region[b] for a, b in pairs)  # derbies are same-city
 
 
 def _rgb(hex_color: str) -> tuple[int, int, int]:

@@ -1,1 +1,1 @@
-"""Fictional Los Angeles neighborhood league: clubs, squads, profiles, fixtures."""
+"""Fictional Colombian barrio league: clubs, squads, profiles, fixtures."""

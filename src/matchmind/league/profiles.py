@@ -138,8 +138,9 @@ def _role(
 
 def _market_value(rng: np.random.Generator, lat: PlayerLatent) -> float:
     age_term = 0.12 * max(0.0, 23.0 - lat.age) - 0.15 * max(0.0, lat.age - 30.0)
-    log_value = math.log(4.0) + 1.1 * lat.quality + age_term + 0.45 * float(rng.standard_normal())
-    return round(min(max(math.exp(log_value), 0.1), 180.0), 1)
+    # Colombian-league scale (USD millions): median about $0.6m, stars at $5-15m
+    log_value = math.log(0.6) + 1.05 * lat.quality + age_term + 0.45 * float(rng.standard_normal())
+    return round(min(max(math.exp(log_value), 0.05), 30.0), 2)
 
 
 def _career(rng: np.random.Generator, lat: PlayerLatent, club_id: str, league: League) -> Career:
@@ -344,7 +345,7 @@ def build_club_profiles(league: League, seed: int) -> dict[str, ClubProfile]:
                 "mid_table": (["academy_first", "win_now", "underdog"], [0.45, 0.3, 0.25]),
             }.get(status, (["underdog", "academy_first", "win_now"], [0.6, 0.3, 0.1]))
             culture = str(rng.choice(options, p=p))
-        budget = log_normal_money(rng, 35.0, 0.6 * z, 0.35)
+        budget = log_normal_money(rng, 4.0, 0.6 * z, 0.35)
         if ownership == "new_owner":
             budget = round(budget * 2.5, 1)
         elif status == "promoted":
@@ -357,8 +358,8 @@ def build_club_profiles(league: League, seed: int) -> dict[str, ClubProfile]:
             culture=culture,
             ownership=ownership,
             owner_since=owner_since,
-            transfer_budget_m=max(budget, 1.0),
-            wage_bill_m=log_normal_money(rng, 70.0, 0.55 * z, 0.2),
+            transfer_budget_m=max(budget, 0.3),
+            wage_bill_m=log_normal_money(rng, 10.0, 0.55 * z, 0.2),
             last_finish=finish,
             status=status,
             home_advantage=rating(
@@ -375,8 +376,8 @@ def chemistry(
 ) -> dict[tuple[str, str], float]:
     """Pairwise on-pitch familiarity in [0, 1] (deterministic).
 
-    Rises with years playing together at the club, a shared academy, a shared language,
-    and the manager's tenure (a settled system).
+    Rises with years playing together at the club, a shared academy, a shared language
+    (plus a smaller bonus for compatriots), and the manager's tenure (a settled system).
     """
     out: dict[tuple[str, str], float] = {}
     for i, a in enumerate(players):
@@ -387,11 +388,13 @@ def chemistry(
                 together = max(0, SEASON_YEAR - max(a.origin.joined_year, b.origin.joined_year))
                 both_academy = a.origin.kind == "academy" and b.origin.kind == "academy"
             same_language = language_of(a.career.nationality) == language_of(b.career.nationality)
+            compatriots = a.career.nationality == b.career.nationality
             z = (
                 -1.2
                 + 0.35 * min(together, 6)
                 + (0.6 if both_academy else 0.0)
-                + (0.4 if same_language else 0.0)
+                + (0.3 if same_language else 0.0)
+                + (0.2 if compatriots else 0.0)
                 + 0.08 * min(manager_tenure_years, 6.0)
             )
             key = (
@@ -405,21 +408,23 @@ def chemistry(
 
 # ---- Origins, transfers, legends -------------------------------------------------------
 
+# Leagues an outside-league signing comes from: lower Colombian tiers, the region, and a
+# few players returning from abroad.
 _EXT_LEAGUES = [
-    "MEX",
-    "ENG",
-    "ESP",
-    "FRA",
-    "DEU",
-    "NLD",
+    "COL",
+    "VEN",
     "BRA",
+    "PER",
+    "ECU",
     "ARG",
-    "PRT",
-    "BEL",
-    "KOR",
-    "JPN",
-    "CAN",
+    "URY",
+    "PRY",
+    "CHL",
+    "BOL",
+    "MEX",
     "USA",
+    "ESP",
+    "PRT",
 ]
 _GOALS_PER_APP: dict[Position, float] = {"GK": 0.0, "DF": 0.04, "MF": 0.12, "FW": 0.35}
 
@@ -488,10 +493,10 @@ def _assign_origin(
         if kind == "signed":
             value_then = prof.career.market_value_m * math.exp(-0.1 * years_ago)
             fee = round(
-                max(0.1, value_then * 0.9 * math.exp(0.35 * float(rng.standard_normal()))), 1
+                max(0.05, value_then * 0.9 * math.exp(0.35 * float(rng.standard_normal()))), 2
             )
         elif kind == "loan" and rng.random() < 0.4:
-            fee = round(float(rng.uniform(0.2, 1.5)), 1)
+            fee = round(float(rng.uniform(0.05, 0.4)), 2)
         transfer_kind = {"signed": "permanent", "free": "free", "loan": "loan"}[kind]
         transfers, signed_from = _career_chain(rng, prof, lat, debut_year, joined, signed_from)
         transfers.append(
@@ -571,7 +576,7 @@ def _legends(
     scorer_goals = max(int(rng.integers(110, 231)), best_current_goals + int(rng.integers(5, 40)))
     return [
         Legend(
-            name=make_name(rng, "USA" if rng.random() < 0.6 else "MEX"),
+            name=make_name(rng, "COL" if rng.random() < 0.85 else draw_nationality(rng)),
             club_id=club_id,
             position="FW",
             era=era(),
@@ -580,7 +585,7 @@ def _legends(
             record="goals",
         ),
         Legend(
-            name=make_name(rng, "USA" if rng.random() < 0.6 else "MEX"),
+            name=make_name(rng, "COL" if rng.random() < 0.85 else draw_nationality(rng)),
             club_id=club_id,
             position=str(rng.choice(["DF", "MF", "GK"])),
             era=era(),

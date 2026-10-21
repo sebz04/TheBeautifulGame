@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-3.5 · league re-themed to Colombia: barrio clubs in 8 cities, 5 derbies, South American nationalities and names, Colombian-scale USD money, compatriot chemistry, Colombian blocklists · README, league, decisions, glossary
 - 2026-10-21 · TASK-3.4 · origins, transfer chains, previous league clubs, legends, build_profiles · README, league
 - 2026-10-21 · TASK-3.3 · club profiles (status, style, tactics, ownership, budgets) and squad chemistry · README, league
 - 2026-10-21 · TASK-3.2 · player profiles from latent factors with real-life distributions · README, league

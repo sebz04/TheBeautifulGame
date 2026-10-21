@@ -10,3 +10,5 @@
 - **Moment:** a time window flagged by a deterministic rule (momentum swing, pressing collapse, formation shift, big chance, goal, red card).
 - **Insight:** an agent's verified explanation of a moment, with cited claims and a confidence label.
 - **Fast lane / insight lane:** deterministic overlays (≤ 1 s) vs. verified agent text (≤ 10 s).
+- **Barrio:** a city neighborhood in Colombia. Each of our 20 fictional clubs is named after one (e.g. Atlético Chapinero, Bogotá).
+- **Clásico / derby:** a match between two clubs from the same city (5 pairs, see `league.md`).

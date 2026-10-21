@@ -39,3 +39,48 @@ surname:rooney
 surname:bellingham
 surname:mckennie
 surname:rapinoe
+# Famous Colombian and South American players
+james rodríguez
+james rodriguez
+radamel falcao
+luis díaz
+luis diaz
+juan cuadrado
+carlos valderrama
+rené higuita
+faustino asprilla
+freddy rincón
+david ospina
+yerry mina
+davinson sánchez
+jhon córdoba
+jhon durán
+richard ríos
+daniel muñoz
+jefferson lerma
+luis sinisterra
+rafael santos borré
+juan fernando quintero
+jhon arias
+kevin castaño
+andrés escobar
+paolo guerrero
+claudio pizarro
+luis suárez
+edinson cavani
+alexis sánchez
+arturo vidal
+moisés caicedo
+enner valencia
+surname:falcao
+surname:valderrama
+surname:higuita
+surname:asprilla
+surname:cuadrado
+surname:ospina
+surname:sinisterra
+surname:borré
+surname:guerrero
+surname:pizarro
+surname:cavani
+surname:caicedo

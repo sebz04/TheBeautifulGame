@@ -75,8 +75,8 @@ def test_fees_are_right_skewed_and_track_value():
     _, prof = _data()
     permanent = [p for p in prof.players.values() if p.origin.kind == "signed"]
     fees = np.array([p.origin.fee_m for p in permanent])
-    assert 1.0 <= float(np.median(fees)) <= 8.0
-    assert fees.mean() > np.median(fees) and fees.max() > 20
+    assert 0.2 <= float(np.median(fees)) <= 1.2
+    assert fees.mean() > np.median(fees) and 3 < fees.max() < 25
     values = np.log([p.career.market_value_m for p in permanent])
     assert np.corrcoef(np.log(fees + 0.1), values)[0, 1] > 0.4
     for p in prof.players.values():
