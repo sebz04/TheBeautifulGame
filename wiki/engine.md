@@ -1,6 +1,6 @@
 # Synthetic Match Engine
 
-**Status:** level 1 built (TASK-4); level-2 building blocks in progress (TASK-8); levels 3–4 planned (TASK-9, TASK-10).
+**Status:** level 1 built (TASK-4); level-2 building blocks built (TASK-8: kinematics, roles, modifiers), wired into the loop in TASK-9; levels 3–4 planned (TASK-9, TASK-10).
 
 ## Levels (layered, each keeps the same output format)
 1. Formation-anchored baseline (`engine/baseline.py`). Stays in the code as a fallback.
@@ -46,8 +46,14 @@ Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (noth
 - **TASK-10:** corner delivery (`crossing`) and aerial duels (`aerial` + height) leading to headers; direct free kicks within about 30 m (`finishing`); penalties (about 0.76 conversion, composure subtle). Shots tagged `extras.set_piece`.
 - New realism ranges: throw-ins, goal kicks, corners, fouls, penalties, and set-piece goal share.
 
-## Profile → behavior mapping (design; built in TASK-8.3)
-Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario beat targets the player or team. Active modifiers are recorded in `Event.extras["mods"]`.
+## Profile → behavior mapping (`engine/modifiers.py`, TASK-8.3)
+Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario beat targets the player or team.
+- `Modifiers.for_player(profile, club, MatchContext(minute, score_diff, is_home, energy, confidence, storyline, congestion_days, form)) -> PlayerMods`. Each property is a multiplier (`foul_rate`, `decision_temperature`, `pass_error`, ...); `effects` holds the raw effects.
+- `Modifiers.for_team(club, ctx) -> TeamMods`: tactics `press_intensity`, `line_height`, `tempo`, `width`, `directness` (uncapped settings), plus capped `chase_urgency` (losing after minute 60, stronger with low job security) and `home_boost`.
+- Traits enter as `dev(x) = clip((x − 0.5)/0.25, ±1)`, with term weights summing to at most 1, so nothing saturates early. Composure counts double when the game is late and close (minute 75+, margin ≤ 1). The home crowd adds `max(0, home_advantage − 0.5) · 0.3` to composure and confidence. Run timing = −½·mean(discipline, composure, experience) + ½·fatigue.
+- `match_form(profile, rng)` draws match-day form from N(0, 0.25 + 0.75 · (1 − consistency)), clipped to [−1, 1], and passed in through the context. `pair_mods(chemistry)` gives pass completion and early runs for a passing pair.
+- **Record only what's relevant:** `to_extras(only=(...))` keeps the action's own modifiers for `Event.extras["mods"]`. A player has about 16 non-zero effects, too many to attach to every event.
+- **Size (400 players, neutral context):** mean |effect| about 0.03 for aggression and technical traits, with 13–14% of players at the cap; composure and run timing about 0.01–0.015 (they're scaled by pressure and fatigue).
 
 | Attribute | Behavior |
 |---|---|
