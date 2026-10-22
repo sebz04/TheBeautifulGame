@@ -31,6 +31,15 @@ Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1�
 - Energy drains `8e-5 · v² · (1.3 − 0.6 · stamina)` per second and recovers 0.002 · (1 − energy) per second below 2 m/s. A realistic 10.6 km workload ends at about 0.48 energy (stamina 0.5): 0.39 at stamina 0.2, 0.57 at 0.8.
 - The plan said `9.5 + 0.8 · pace` (about 9.9 m/s for an average player), which is above real top speeds and our 10 m/s realism ceiling.
 
+## Level 2 roles (`engine/roles.py`, TASK-8.2)
+`role_target(role, RoleContext(pos, anchor, ball, attacks_right, mark=None, line_depth=None, offside_line=None, run_started=False)) -> (absolute target, urgency)`. Roles work in the team frame (own goal at (0, 34)):
+- `press`: 1 m goal-side of the ball (0.95). `mark`: 1.5 m goal-side of `mark` (0.6).
+- `cover`: halfway between the anchor and a point 35% of the way from the ball to goal (0.5).
+- `support`: 12 m from the ball at 50° forward, on the anchor's side (0.5).
+- `gk_position`: on the goal–ball line, 1 + 0.08 × distance, at most 16 m out (0.7).
+- `hold_line`: (`line_depth`, anchor width) (0.7). `defensive_line(anchors_depth, ball_depth, line_height)` = mean anchor + 0.35 · (ball − halfway) + (line_height − 0.5) · 16, kept at least 2 m behind the ball and at least 1 m.
+- `run_in_behind`: waits 0.2 m onside of `offside_line` (0.45), then runs 14 m behind it (1.0). `offside_line(opponents, ball, attacks_right)` = the deeper of the second-last opponent, the ball, and halfway (absolute x). `draw_timing_error(rng, scale)` ~ N(0, 0.35 s × scale). Released 0.5 s early → offside at the pass; on time or 0.2 s early → onside (tested with kinematics and `offside_players`).
+
 ## Set pieces and out of play (planned: TASK-9, TASK-10)
 Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:
 - **TASK-9:** out of play follows the ball's path, and the last touch decides the restart. Clearances, blocked shots, and parried saves can put the ball out.

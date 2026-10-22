@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-8.2 · role targets (mark, press, cover, support, run in behind, hold line, keeper), defensive_line, offside_line, run timing error · README, engine
 - 2026-10-21 · TASK-8.1 · level-2 kinematics: seek with arrival, speed/accel/decel caps, energy drain calibrated on a 10.6 km workload · README, engine
 - 2026-10-21 · planning · set pieces and out of play: TASK-9/10 additions, new realism ranges, corner_pressure moment · engine, decisions
 - 2026-10-21 · TASK-7 · xT (Singh) trained on 200 level-1 matches; normalize_events; simulate_match(tracking=False); fixed an engine crash on passes abandoned at half end; .gitignore now tracks data/models · README, stats, engine
