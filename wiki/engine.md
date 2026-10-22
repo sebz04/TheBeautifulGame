@@ -40,7 +40,16 @@ Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1�
 - `hold_line`: (`line_depth`, anchor width) (0.7). `defensive_line(anchors_depth, ball_depth, line_height)` = mean anchor + 0.35 · (ball − halfway) + (line_height − 0.5) · 16, kept at least 2 m behind the ball and at least 1 m.
 - `run_in_behind`: waits 0.2 m onside of `offside_line` (0.45), then runs 14 m behind it (1.0). `offside_line(opponents, ball, attacks_right)` = the deeper of the second-last opponent, the ball, and halfway (absolute x). `draw_timing_error(rng, scale)` ~ N(0, 0.35 s × scale). Released 0.5 s early → offside at the pass; on time or 0.2 s early → onside (tested with kinematics and `offside_players`).
 
-## Set pieces and out of play (planned: TASK-9, TASK-10)
+## Ball physics (`engine/ball.py`, TASK-9.1)
+- `flight(start, end, kind, speed_ms, loft_deg=None) -> Trajectory` (`t`, `xyz` at 10 Hz, `duration`, `reaches_end`, `positions_at(t)`, `out_of_play()`). Integrated in 0.02 s sub-steps.
+- Air drag `DRAG_K = 0.010`/m (dv/dt = −k|v|v, a real ball's value); rolling resistance `ROLL_DECEL = 0.7` m/s²; bounces keep 50% of vertical and 75% of horizontal speed. A 30 m ground pass at 15 m/s takes 2.5 s; a soft one stops short.
+- Lofted balls: `loft_for(speed, distance)` solves the launch angle (8–45°) so the first bounce lands on the target. Shots fly at 5° by default.
+- `draw_speed(rng, kind, distance, skill)`: ground 10–22, lofted 14–30, shots 18–32 m/s (harder for longer balls, harder shots for better players).
+- A trajectory stops at the first sample after it crosses a line; `out_of_play()` gives the time and the exact point on the line. `in_goal_mouth(point)`: on a goal line, within 3.66 m of the centre, under 2.44 m.
+- `restart_for(point, last_touch_attacks_right)`: touchline → throw-in; goal line → goal kick if the last touch was by the team attacking that goal, corner otherwise.
+- `deflect(rng, incoming, speed, "block" | "parry")`: keeps 20–60% (block) or 25–55% (parry) of the speed, turned by N(0, 55°) or N(0, 70°), so some go behind for corners.
+
+## Set pieces and out of play (planned: TASK-9.3, TASK-10)
 Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:
 - **TASK-9:** out of play follows the ball's path, and the last touch decides the restart. Clearances, blocked shots, and parried saves can put the ball out.
 - **TASK-10:** corner delivery (`crossing`) and aerial duels (`aerial` + height) leading to headers; direct free kicks within about 30 m (`finishing`); penalties (about 0.76 conversion, composure subtle). Shots tagged `extras.set_piece`.
