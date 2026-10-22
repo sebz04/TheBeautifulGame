@@ -47,8 +47,10 @@ Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario be
 ## Key constants
 _Fill in from `engine/constants.py` once it exists._
 
-## Realism
-_Link the current `docs/realism.md` summary here (pass/fail per check)._
+## Realism (`engine/validate.py`, `engine/realism_ranges.py`, `scripts/realism_report.py`)
+`validate_match(data) -> RealismReport` checks every per-team metric in `RANGES` (check names like `passes:<club_id>`); `team_stats(data)` exposes the raw values. `validate_many(iterable)` averages over team-matches, adds `in_range_share` and `goals_per_match`, and consumes a generator one match at a time. Possession is the share of passes; PPDA = opponent passes in their own 60% ÷ our tackles, interceptions, and fouls in that zone (at least 1 action); distance, top speed, and sprints (> 7.0 m/s for ≥ 1 s) come from outfield players' frames.
+
+Level 1 over 20 seeds (`docs/realism.md`): 6/11 pass. Passing, completion (0.82), shots (12.8), on-target ratio, possession, and distance (9.7 km) are in range. PPDA (3.2) and tackles (91.5) are far off (pressing on every carrier); top speed (7.4 m/s) and sprints (9.6) sit just under (speed caps); goals (2.15 per match) sit just under. The fixes are owned by TASK-8 to TASK-10.
 
 ## Scenarios
 _List the storyline YAML files and what each one tests._

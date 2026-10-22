@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-4.2 · **Code status:** scaffold, schemas, full league with profiles
+**Last updated:** 2026-10-21 · **Latest task:** TASK-5 · **Code status:** scaffold, schemas, full league with profiles
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`).
-- Next: TASK-5 (realism validator). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`).
+- Next: TASK-6 (pitch control). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -36,7 +36,11 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/schemas_profile.py` | Player/club profiles, Transfer, Legend, Profiles | done | 3 |
 | `src/matchmind/engine/pitch.py` | Pitch constants and geometry | done | 2 |
 | `src/matchmind/league/` | Clubs, squads, fixtures, profiles, transfers, legends (done); season history (planned) | wip | 3, 10.4 |
-| `src/matchmind/engine/` | Synthetic match engine + validator | planned | 4–10 |
+| `src/matchmind/engine/match_io.py` | Match files (meta.json, events/frames Parquet) | done | 4.1 |
+| `src/matchmind/engine/lineup.py`, `formations.py` | Line-ups, `MatchMeta`, formation anchors | done | 4.2 |
+| `src/matchmind/engine/baseline.py`, `simulate.py` | Level-1 engine; `simulate_match` dispatch | done | 4.2 |
+| `src/matchmind/engine/validate.py`, `realism_ranges.py` | Realism checks | done | 5 |
+| `src/matchmind/engine/` (levels 2–4) | Kinematics, coupled engine, tactics, scenarios | planned | 8–10 |
 | `src/matchmind/stats/` | Deterministic metrics | planned | 6, 7, 11–14 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |
 | `src/matchmind/pipeline/` | `matchmind build` CLI | planned | 14 |
@@ -47,6 +51,7 @@ Status: `planned` · `wip` · `done`
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |
 | `scripts/check_licenses.py` | Runtime license allowlist gate | done | 1 |
 | `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |
+| `scripts/realism_report.py` | Simulate N seeds and write the realism table | done | 5 |
 | `.github/workflows/ci.yml` | CI | done | 1 |
 
 ## Governing documents

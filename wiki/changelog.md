@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-5 · realism validator (validate_match, validate_many, team_stats), report script, level-1 baseline in docs/realism.md (6/11 pass) · README, engine
 - 2026-10-21 · planning · event-exact `metrics_at` for MCP and the Verifier; snapshots per moment (plan Tasks 14, 15) · stats, decisions
 - 2026-10-21 · TASK-4.2 · level-1 engine: line-ups and match meta, formation anchors, Markov possession chain with consistent pass endpoints, set pieces; schemas.trusted; faster frame reads · README, engine, data-model
 - 2026-10-21 · TASK-4.1 · match file I/O: meta.json, events.parquet, long-format frames.parquet; pyarrow added · README, data-model
