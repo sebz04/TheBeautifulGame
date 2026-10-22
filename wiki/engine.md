@@ -1,16 +1,16 @@
 # Synthetic Match Engine
 
-**Status:** level 1 built (TASK-4); level-2 building blocks built (TASK-8: kinematics, roles, modifiers), wired into the loop in TASK-9; levels 3–4 planned (TASK-9, TASK-10).
+**Status:** level 1 built (TASK-4, fallback); level 3 built (TASK-9: the coupled loop using the TASK-8 kinematics, roles, and modifiers) and the default; level 4 planned (TASK-10).
 
 ## Levels (layered, each keeps the same output format)
 1. Formation-anchored baseline (`engine/baseline.py`). Stays in the code as a fallback.
 2. Kinematic, role-based players (`kinematics.py`): speed and acceleration caps, fatigue.
-3. Event-coupled loop (`simulate.py`, `ball.py`, `decisions.py`): ball physics, on-ball choices scored by pitch control × xT.
+3. Event-coupled loop (`coupled.py`, `ball.py`, `decisions.py`, `constants.py`): ball physics, on-ball choices scored by pitch control × xT.
 4. Tactics and scenarios (`tactics.py`, `scenario.py`, `scenarios/*.yaml`).
 
 ## Entry points
 - `engine/lineup.py`: `match_meta(league, fixture, seed, scenario_id="none") -> MatchMeta`. Squads are ordered **starting XI first** (GK, DF, MF, FW; best by `skill` per line, then by id), then the bench. `starting_xi(squad, formation)`; `FORMATION_LINES` (4-3-3, 4-2-3-1, 4-4-2, 3-5-2). Added time: 1–4 min + 0–59 s (first half), 3–7 min + 0–59 s (second). Kickoff 19:30 Colombia time (UTC-5).
-- `engine/simulate.py`: `simulate_match(meta, scenario=None, level=3, tracking=True)`. `tracking=False` skips frames (identical events, about 2.8 s vs 6.5 s; for training and season history). `level=1` runs the baseline; `level=3` raises `NotImplementedError` until TASK-9. `scenario` is typed `object` until TASK-10 defines `Scenario`.
+- `engine/simulate.py`: `simulate_match(meta, scenario=None, level=3, tracking=True, profiles=None)`. `tracking=False` skips frames (identical events; level 3 about 4 s vs 13 s). `level=1` runs the baseline, `level=3` the coupled loop (`meta.engine_version` becomes `l3-0.1`). `profiles` turns on the modifier layer (`coupled.mods_from_profiles`: kickoff mods with match-day form); without it, mods are neutral. `scenario` is typed `object` until TASK-10.
 - `engine/formations.py`: `formation_anchors(formation) -> (11, 2)` (d, w) in the team frame (attacking toward d = 105; GK 5 m, lines evenly spaced from 30 m to 62 m, at most 16 m apart in width). `to_team_frame(xy, attacks_right)` is its own inverse. Home attacks right in period 1.
 
 ## Level 1 (`engine/baseline.py`)
@@ -26,7 +26,7 @@ Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1�
 
 ## Level 2 kinematics (`engine/kinematics.py`, TASK-8.1)
 `step_player(state: PlayerState(pos, vel, energy), target, urgency, attrs: Player, dt=0.1) -> PlayerState`: seek with arrival (braking speed sqrt(2 · 5 · 0.8 · dist)).
-- Speeds: cruise = top speed × (0.25 + 0.75 · urgency). `v_max(pace) = 8 + 2 · pace` m/s; `max_speed(player, energy)` = `v_max` × (0.85 + 0.15 · energy).
+- Speeds: cruise = top speed × (0.15 + 0.85 · urgency) (0.25 until TASK-9 tuning). `v_max(pace) = 8 + 2 · pace` m/s; `max_speed(player, energy)` = `v_max` × (0.85 + 0.15 · energy).
 - Caps: speeding up by `A_MAX` 3.5 m/s², slowing down by `DECEL_MAX` 5 m/s².
 - Energy drains `8e-5 · v² · (1.3 − 0.6 · stamina)` per second and recovers 0.002 · (1 − energy) per second below 2 m/s. A realistic 10.6 km workload ends at about 0.48 energy (stamina 0.5): 0.39 at stamina 0.2, 0.57 at 0.8.
 - The plan said `9.5 + 0.8 · pace` (about 9.9 m/s for an average player), which is above real top speeds and our 10 m/s realism ceiling.
@@ -47,20 +47,29 @@ Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1�
 - `draw_speed(rng, kind, distance, skill)`: ground 10–22, lofted 14–30, shots 18–32 m/s (harder for longer balls, harder shots for better players).
 - A trajectory stops at the first sample after it crosses a line; `out_of_play()` gives the time and the exact point on the line. `in_goal_mouth(point)`: on a goal line, within 3.66 m of the centre, under 2.44 m.
 - `restart_for(point, last_touch_attacks_right)`: touchline → throw-in; goal line → goal kick if the last touch was by the team attacking that goal, corner otherwise.
-- `deflect(rng, incoming, speed, "block" | "parry")`: keeps 20–60% (block) or 25–55% (parry) of the speed, turned by N(0, 55°) or N(0, 70°), so some go behind for corners.
+- `deflect(rng, incoming, speed, "block" | "parry")`: a block keeps 20–60% of the speed, turned by N(0, 55°); a parry keeps 15–35%, pushed ±85° ± N(0, 30°) to one side, so some go behind for corners.
 
 ## Decisions (`engine/decisions.py`, TASK-9.2)
-- `enumerate_options(frame, carrier_id, ctx: DecisionContext) -> list[Option]`: passes to teammates 4–60 m away (aimed up to 1 s ahead of a moving teammate), through balls 7 m ahead of teammates at least 5 m deeper (within 40 m), three 7 m carries (0°, ±35°), a shot within 30 m, and a clearance when pressed within 3 m in the own third.
-- Score: `score_option(pc, xt_gain, risk) = pc · xt_gain − risk`, where `pc` is offside-filtered pitch control at the end point (0 for a pass to a visibly offside teammate) and `risk = (1 − pc) · (0.01 + opponent xT at the end) / risk_weight`. A shot scores `xg − xT(here)`.
+- `enumerate_options(frame, carrier_id, ctx: DecisionContext) -> list[Option]`: passes to teammates 4–60 m away (aimed up to 1 s ahead of a moving teammate), through balls 7 m ahead of teammates at least 5 m deeper (within 40 m), three 7 m carries (0°, ±35°), a shot within 30 m, and a clearance when pressed within 5 m in the own third.
+- Score: `score_option(pc, xt_gain, risk) = pc · xt_gain − risk`, where `pc` is offside-filtered pitch control at the end point (0 for a pass to a visibly offside teammate) and `risk = (1 − pc) · (0.01 + opponent xT at the end) / risk_weight`. A shot scores `xg − xT(here) − shot_cost`; a clearance adds `clear_bonus` (both set by the engine, `constants.py`).
 - `shot_xg(pos, attacks_right, skill)`: logistic in the goal's opening angle and distance (about 0.49 at 6 m, 0.24 at 11 m, 0.13 at 16 m, 0.05 at 25 m, central), × (0.85 + 0.3·skill).
 - `choose(options, skill, rng, temperature_mult=1.0)`: softmax over min-max normalized scores, temperature `(0.05 + 0.6·(1 − skill)) × decision_temperature`. Skill 0.95 picks the best of a typical set > 70% of the time; skill 0.2 < 45%.
 - `decision_extras(chosen, options)` → `chosen_score`, `best_score`, `best_option` for `Event.extras`. About 1 ms per decision.
 
-## Set pieces and out of play (planned: TASK-9.3, TASK-10)
-Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:
-- **TASK-9:** out of play follows the ball's path, and the last touch decides the restart. Clearances, blocked shots, and parried saves can put the ball out.
-- **TASK-10:** corner delivery (`crossing`) and aerial duels (`aerial` + height) leading to headers; direct free kicks within about 30 m (`finishing`); penalties (about 0.76 conversion, composure subtle). Shots tagged `extras.set_piece`.
-- New realism ranges: throw-ins, goal kicks, corners, fouls, penalties, and set-piece goal share.
+## Level 3 loop (`engine/coupled.py`, TASK-9.3)
+`Coupled(meta, tracking, player_mods, team_mods)`; `simulate_coupled(meta, tracking, profiles)`. Each tick: `logic` → ball position → record → `move` (`step_players`, vectorized `step_player`).
+- **Decisions** every 0.8–2.0 s of possession, on a frame 0.3 s old (`PERCEPTION_LAG_TICKS`). Restarts (throw-in ≤ 30 m, kickoff, goal kick, corner) and keepers only pass or clear.
+- **Kicks** follow `ball.flight` with angle error `PASS_ERR_DEG · (1.5 − skill) · pass_error`. Passes ≥ 30 m and corners are lofted. A ball that would roll into the passer's own net is played softer. At the kick, a Bernoulli draw `pc^0.55 · (0.9 + 0.1·skill)` decides receiver vs the opponent who can reach the path first (6.5 m/s after 0.3 s); with no such opponent, the receiver takes a heavy touch.
+- **Control:** within 1.2 m of the ball's path since the last tick and under 1.8 m high (keepers 2 m in their box, any ball but the shot itself). The pass ends at the receiver's feet (`extras.arrival_t`). After planned arrival + 0.6 s anyone may collect. An opponent winning it logs an `interception`; within 25 m of his goal a defender instead gets a safe touch half the time (a `clearance` with `extras.deflection`, aimed 80% at his goal line, 8–15 m/s, never into his own goal).
+- **Shots:** aim inside a post, error `SHOT_ERR_DEG` 17° · (1.5 − skill), loft 2–18°. A defender within 1.6 m of the line blocks with 0.7 (`extras.blocked`, deflected); on target, the keeper saves with `0.86 − 0.7·xg + 0.25·(skill − 0.5)`, catching 75% of shots under 22 m/s and 30% above, else parrying (`extras.parried`, pushed away from goal).
+- **Out of play:** at the trajectory's crossing point; goal mouth → goal (scorer = shooter, else own goal), else `restart_for` by last touch. `out` events carry `extras.restart`. Throw-ins: nearest opponent; corners: nearest attacker; goal kicks: keeper at 5.5 m.
+- **Duels:** the nearest defender within 1.5 m tries 2.2% per tick; 38% of tries are fouls (free kick to the fouled player, `extras.mods`); wins `0.5 + 0.3·Δskill`, half knock it loose.
+- **Off ball:** formation shape shifted 0.35 with the ball (deadband 3 m, urgency by distance); the defending back four hold `defensive_line`; nearest defender presses (zone 45 + 60·press_intensity m from goal, else contains 4 m off), next covers; two nearest teammates support; after a turnover players over 6 m from their spot sprint back for 5 s.
+- **Runs and offside:** the most advanced forward hovers 0.2 m onside, releasing at the next decision minus `N(0, 0.35 · run_timing_sd)`; offside is judged on the real frame at the kick and flagged when he controls the ball (`offside` event, `timing_error_s`, mods; free kick to the defenders). Tested: 0.5 s early → offside, on time → onside.
+- Events stay dicts until the half ends (sorted by time, then ids assigned), so ends and outcomes are written when the ball is controlled.
+
+## Set pieces (planned: TASK-10)
+Corner delivery (`crossing`) and aerial duels (`aerial` + height) leading to headers; direct free kicks within about 30 m (`finishing`); penalties (about 0.76, composure subtle; box fouls are free kicks until then). Shots tagged `extras.set_piece`. New ranges: penalties and set-piece goal share.
 
 ## Profile → behavior mapping (`engine/modifiers.py`, TASK-8.3)
 Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario beat targets the player or team.
@@ -92,12 +101,16 @@ Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario be
 | career ambitions | narrative only |
 
 ## Key constants
-_Fill in from `engine/constants.py` once it exists._
+All level-3 tunables are in `engine/constants.py` (timing, shape, pressing, runs, control, passing, shooting, duels); tuning changes only that file. `kinematics.MIN_CRUISE_SHARE` is 0.15 (a walk at urgency 0).
 
 ## Realism (`engine/validate.py`, `engine/realism_ranges.py`, `scripts/realism_report.py`)
 `validate_match(data) -> RealismReport` checks every per-team metric in `RANGES` (check names like `passes:<club_id>`); `team_stats(data)` exposes the raw values. `validate_many(iterable)` averages over team-matches, adds `in_range_share` and `goals_per_match`, and consumes a generator one match at a time. Possession is the share of passes; PPDA = opponent passes in their own 60% ÷ our tackles, interceptions, and fouls in that zone (at least 1 action); distance, top speed, and sprints (> 7.0 m/s for ≥ 1 s) come from outfield players' frames.
 
-Level 1 over 20 seeds (`docs/realism.md`): 6/11 pass. Passing, completion (0.82), shots (12.8), on-target ratio, possession, and distance (9.7 km) are in range. PPDA (3.2) and tackles (91.5) are far off (pressing on every carrier); top speed (7.4 m/s) and sprints (9.6) sit just under (speed caps); goals (2.15 per match) sit just under. The fixes are owned by TASK-8 to TASK-10.
+Also per team: offsides 0–6, throw-ins 15–30, goal kicks 4–12, corners 2–9 (credited to the team awarded the restart, i.e. the opponent of the last touch), fouls 8–18.
+
+Level 3 over 20 seeds (`docs/realism.md`): **16/16 pass** (passes 623, completion 0.83, shots 13.1, on target 0.37, PPDA 8.8, tackles 19.7, 11.7 km, top speed 9.1, sprints 10.8, offsides 1.9, throw-ins 26.3, goal kicks 5.7, corners 2.4, fouls 11.6, 2.25 goals per match). Thin margins: sprints, corners, goals.
+
+Level 1 over 20 seeds: 6/11 pass. Passing, completion (0.82), shots (12.8), on-target ratio, possession, and distance (9.7 km) are in range. PPDA (3.2) and tackles (91.5) are far off (pressing on every carrier); top speed (7.4 m/s) and sprints (9.6) sit just under (speed caps); goals (2.15 per match) sit just under. The fixes are owned by TASK-8 to TASK-10.
 
 ## Scenarios
 _List the storyline YAML files and what each one tests._

@@ -3,7 +3,6 @@ from functools import cache
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from matchmind.engine.lineup import match_meta
 from matchmind.engine.match_io import read_match, write_match
@@ -122,11 +121,6 @@ def test_event_ids_sequential_and_time_ordered() -> None:
     assert ids == [f"{data.meta.match_id}-e{i:05d}" for i in range(len(ids))]
     keys = [(e.period, e.t) for e in data.events]
     assert keys == sorted(keys)
-
-
-def test_level_three_not_ready() -> None:
-    with pytest.raises(NotImplementedError):
-        simulate_match(_meta(7), level=3)
 
 
 def test_simulated_match_round_trips(tmp_path: Path) -> None:

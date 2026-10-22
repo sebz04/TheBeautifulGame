@@ -591,52 +591,9 @@ class _Baseline:
         self.rec_ball.append((float(self.ball[0]), float(self.ball[1]), float(self.ball_z)))
 
     def flush_frames(self) -> None:
-        """Turn this period's recorded arrays into `TrackingFrame`s (rounded to 1 cm).
-
-        The cyclic GC is paused while about 650k small objects are created: they hold no
-        cycles, and repeated full collections would otherwise dominate the run time.
-        """
-        enabled = gc.isenabled()
-        gc.disable()
-        try:
-            self._build_frames()
-        finally:
-            if enabled:
-                gc.enable()
-
-    def _build_frames(self) -> None:
-        pos = np.round(np.stack(self.rec_pos), 2).tolist()
-        vel = np.round(np.stack(self.rec_vel), 2).tolist()
-        ball = np.round(np.array(self.rec_ball), 2).tolist()
-        teams = [self.team_ids[int(t)] for t in self.team_of]
-        for k, (p_k, v_k, b_k) in enumerate(zip(pos, vel, ball, strict=True)):
-            players = [
-                trusted(
-                    PlayerPos,
-                    {
-                        "player_id": self.ids[i],
-                        "team_id": teams[i],
-                        "x": p_k[i][0],
-                        "y": p_k[i][1],
-                        "vx": v_k[i][0],
-                        "vy": v_k[i][1],
-                    },
-                )
-                for i in range(22)
-            ]
-            self.frames.append(
-                trusted(
-                    TrackingFrame,
-                    {
-                        "match_id": self.meta.match_id,
-                        "frame": len(self.frames),
-                        "period": self.period,
-                        "t": round(k * DT, 1),
-                        "ball": (b_k[0], b_k[1], b_k[2]),
-                        "players": players,
-                    },
-                )
-            )
+        self.frames += build_frames(
+            self.meta, self.period, len(self.frames), self.rec_pos, self.rec_vel, self.rec_ball
+        )
         self.rec_pos, self.rec_vel, self.rec_ball = [], [], []
 
     def run_period(self, period: Literal[1, 2], added_s: float) -> None:
@@ -664,6 +621,76 @@ class _Baseline:
         for period, added in ((1, self.meta.added_time_s[0]), (2, self.meta.added_time_s[1])):
             self.run_period(period, added)  # type: ignore[arg-type]
         return MatchData(meta=self.meta, events=self.events, frames=self.frames)
+
+
+def build_frames(
+    meta: MatchMeta,
+    period: Literal[1, 2],
+    first_frame: int,
+    rec_pos: list[np.ndarray],
+    rec_vel: list[np.ndarray],
+    rec_ball: list[tuple[float, float, float]],
+) -> list[TrackingFrame]:
+    """One period's recorded (22, 2) positions and velocities and ball points as
+    `TrackingFrame`s, rounded to 1 cm. Players are the two starting XIs, home first.
+
+    The cyclic GC is paused while about 650k small objects are created: they hold no
+    cycles, and repeated full collections would otherwise dominate the run time.
+    """
+    enabled = gc.isenabled()
+    gc.disable()
+    try:
+        return _build_frames(meta, period, first_frame, rec_pos, rec_vel, rec_ball)
+    finally:
+        if enabled:
+            gc.enable()
+
+
+def _build_frames(
+    meta: MatchMeta,
+    period: Literal[1, 2],
+    first_frame: int,
+    rec_pos: list[np.ndarray],
+    rec_vel: list[np.ndarray],
+    rec_ball: list[tuple[float, float, float]],
+) -> list[TrackingFrame]:
+    if not rec_pos:
+        return []
+    ids = [p.player_id for p in meta.home_squad[:11] + meta.away_squad[:11]]
+    teams = [meta.home.club_id] * 11 + [meta.away.club_id] * 11
+    pos = np.round(np.stack(rec_pos), 2).tolist()
+    vel = np.round(np.stack(rec_vel), 2).tolist()
+    ball = np.round(np.array(rec_ball), 2).tolist()
+    frames: list[TrackingFrame] = []
+    for k, (p_k, v_k, b_k) in enumerate(zip(pos, vel, ball, strict=True)):
+        players = [
+            trusted(
+                PlayerPos,
+                {
+                    "player_id": ids[i],
+                    "team_id": teams[i],
+                    "x": p_k[i][0],
+                    "y": p_k[i][1],
+                    "vx": v_k[i][0],
+                    "vy": v_k[i][1],
+                },
+            )
+            for i in range(22)
+        ]
+        frames.append(
+            trusted(
+                TrackingFrame,
+                {
+                    "match_id": meta.match_id,
+                    "frame": first_frame + k,
+                    "period": period,
+                    "t": round(k * DT, 1),
+                    "ball": (b_k[0], b_k[1], b_k[2]),
+                    "players": players,
+                },
+            )
+        )
+    return frames
 
 
 def simulate_baseline(meta: MatchMeta, tracking: bool = True) -> MatchData:

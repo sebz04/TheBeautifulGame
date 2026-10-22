@@ -20,3 +20,7 @@ One entry per decision: date, the decision, and why. Newest first.
 - **2026-10-21 · Primary prize target: Best Multi-Agent System.**
 - **2026-10-21 · Models only through a Foundry `gpt-4.1-mini` deployment.** Claude/ChatGPT consumer subscriptions have no API access, and judges check for Foundry use.
 - **2026-10-22 · Ball drag and rolling constants.** The plan's `k = 0.05` and friction `0.25` made a 15 m/s pass take over 4 s for 30 m, failing the plan's own 2.0–2.6 s test. We use a real ball's quadratic drag (`0.010`/m) and `0.7` m/s² rolling resistance instead.
+- **2026-10-22 · Level-3 interceptions are decided at the kick, then played out physically.** A Bernoulli draw on pitch control (as the plan says) picks receiver or interceptor, and the ball's trajectory then decides who actually reaches it, so events always match the frames.
+- **2026-10-22 · Decisions see the pitch 0.3 s late.** A runner who releases early can look onside to the passer and be offside at the kick. Offsides emerge from runs × timing × the line, and are never set directly.
+- **2026-10-22 · Corners come from defenders' safe touches, blocks, and parries.** Until TASK-10 adds crosses and set-piece delivery, defenders who win the ball within 25 m of their goal get a safe touch half the time, aimed mostly at their goal line (never into it).
+- **2026-10-22 · Restarts count for the team awarded them.** The validator credits throw-ins, goal kicks, and corners to the opponent of the last touch.

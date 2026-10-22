@@ -15,6 +15,11 @@ RANGES: dict[str, tuple[float, float]] = {
     "distance_km_outfield_player": (9.0, 13.0),
     "top_speed_ms": (7.5, 10.0),
     "sprints_per_outfield_player": (10, 50),  # > 7.0 m/s for >= 1 s
+    "offsides": (0, 6),
+    "throw_ins": (15, 30),  # restarts awarded to the team
+    "goal_kicks": (4, 12),
+    "corners": (2, 9),
+    "fouls": (8, 18),  # committed
     "goals_per_match": (2.2, 3.4),  # mean over many matches (validate_many only)
 }
 

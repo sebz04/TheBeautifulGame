@@ -33,7 +33,7 @@ class _Events:
         self.items: list[Event] = []
 
     def add(self, type_: EventType, team: str, x: float = 50.0, outcome: bool | None = True,
-            period: int = 1) -> None:  # fmt: skip
+            period: int = 1, extras: dict[str, object] | None = None) -> None:  # fmt: skip
         n = len(self.items)
         self.items.append(
             Event(
@@ -51,6 +51,7 @@ class _Events:
                 outcome=outcome,
                 receiver_id=None,
                 ball_speed_ms=None,
+                extras=extras or {},
             )  # fmt: skip
         )
 
@@ -170,3 +171,38 @@ def test_validate_many_averages_and_checks_goals() -> None:
     assert value == pytest.approx(3.0) and ok
     passes = next(c for c in many.checks if c.name == "passes")
     assert passes.value == 0 and not passes.ok and passes.in_range_share == 0.0
+
+
+def test_validator_counts_offsides() -> None:
+    ev = _Events()
+    for _ in range(3):
+        ev.add("offside", "h", outcome=None)
+    for _ in range(7):
+        ev.add("offside", "a", outcome=None)
+    report = validate_match(_match(ev.items))
+    assert RANGES["offsides"] == (0, 6)
+    assert _check(report, "offsides:h") == (3, True)
+    assert _check(report, "offsides:a") == (7, False)
+
+
+def test_set_piece_ranges() -> None:
+    assert RANGES["throw_ins"] == (15, 30)
+    assert RANGES["goal_kicks"] == (4, 12)
+    assert RANGES["corners"] == (2, 9)
+    assert RANGES["fouls"] == (8, 18)
+    ev = _Events()
+    # The restart goes to the team that did not touch the ball last.
+    for _ in range(20):
+        ev.add("out", "a", outcome=None, extras={"restart": "throw_in"})
+    for _ in range(5):
+        ev.add("out", "a", outcome=None, extras={"restart": "corner"})
+    for _ in range(3):
+        ev.add("out", "h", outcome=None, extras={"restart": "goal_kick"})
+    for _ in range(10):
+        ev.add("foul", "h", outcome=None)
+    report = validate_match(_match(ev.items))
+    assert _check(report, "throw_ins:h") == (20, True)
+    assert _check(report, "corners:h") == (5, True)
+    assert _check(report, "goal_kicks:a") == (3, False)
+    assert _check(report, "corners:a") == (0, False)
+    assert _check(report, "fouls:h") == (10, True)

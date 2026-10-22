@@ -37,8 +37,9 @@ SHOT_LOFT_DEG = 5.0
 LOFT_RANGE_DEG = (8.0, 45.0)
 
 # Deflections: (speed kept lo, hi), spread of the new direction (degrees, SD).
-DEFLECT_KEEP: dict[str, tuple[float, float]] = {"block": (0.2, 0.6), "parry": (0.25, 0.55)}
-DEFLECT_SPREAD_DEG: dict[str, float] = {"block": 55.0, "parry": 70.0}
+DEFLECT_KEEP: dict[str, tuple[float, float]] = {"block": (0.2, 0.6), "parry": (0.15, 0.35)}
+DEFLECT_SPREAD_DEG: dict[str, float] = {"block": 55.0, "parry": 30.0}
+PARRY_TURN_DEG = 85.0
 
 GROUND_SPEED_MS = (10.0, 22.0)
 LOFTED_SPEED_MS = (14.0, 30.0)
@@ -225,7 +226,7 @@ def draw_speed(rng: np.random.Generator, kind: Kind, distance: float, skill: flo
     """
     lo, hi = _SPEED_RANGE[kind]
     if kind == "ground":
-        base = 9.0 + 0.3 * distance
+        base = 7.5 + 0.2 * distance
     elif kind == "lofted":
         base = 14.0 + 0.28 * distance
     else:
@@ -238,12 +239,16 @@ def deflect(
 ) -> tuple[np.ndarray, float]:
     """New unit direction and speed after a blocked shot or a parried save.
 
-    The ball keeps part of its speed and mostly carries on in its direction, turned by a
-    wide random angle: often sideways, sometimes behind for a corner.
+    The ball keeps part of its speed. A block mostly carries on, turned by a wide random
+    angle; a parry is pushed out to one side (turned about `PARRY_TURN_DEG`), so most go
+    sideways or back into play and some go behind for a corner.
     """
     lo, hi = DEFLECT_KEEP[kind]
     angle = math.atan2(incoming[1], incoming[0])
-    angle += math.radians(float(rng.normal(0.0, DEFLECT_SPREAD_DEG[kind])))
+    turn = float(rng.normal(0.0, DEFLECT_SPREAD_DEG[kind]))
+    if kind == "parry":
+        turn += PARRY_TURN_DEG if rng.random() < 0.5 else -PARRY_TURN_DEG
+    angle += math.radians(turn)
     direction = np.array([math.cos(angle), math.sin(angle)])
     return direction, speed * float(rng.uniform(lo, hi))
 

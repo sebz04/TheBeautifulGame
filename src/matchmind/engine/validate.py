@@ -2,6 +2,8 @@
 
 Possession is the share of passes (the engine has no possession clock). Distance and
 speed come from the tracking frames; a sprint is above 7.0 m/s for at least 1 s.
+Throw-ins, goal kicks, and corners are counted for the team awarded them: the opponent
+of the team whose last touch put the ball out (`out` events' `extras.restart`).
 """
 
 from collections import defaultdict
@@ -45,6 +47,8 @@ def _check(name: str, metric: str, value: float) -> Check:
 def _event_stats(data: MatchData) -> dict[str, dict[str, float]]:
     home_id, away_id = data.meta.home.club_id, data.meta.away.club_id
     count: dict[str, dict[str, int]] = {t: defaultdict(int) for t in (home_id, away_id)}
+    awarded: dict[str, dict[str, int]] = {t: defaultdict(int) for t in (home_id, away_id)}
+    other = {home_id: away_id, away_id: home_id}
     build_up: dict[str, int] = defaultdict(int)  # passes in the team's own 60%
     high_actions: dict[str, int] = defaultdict(int)  # defensive actions in the opponent's 60%
     for e in data.events:
@@ -53,6 +57,8 @@ def _event_stats(data: MatchData) -> dict[str, dict[str, float]]:
         c[e.type] += 1
         if e.type == "pass" and e.outcome:
             c["completed"] += 1
+        if e.type == "out" and "restart" in e.extras:
+            awarded[other[team]][e.extras["restart"]] += 1
         right = attacks_right(team == home_id, e.period)
         depth = e.x if right else PITCH_LENGTH - e.x  # distance from own goal line
         if e.type == "pass" and depth < PPDA_ZONE_SHARE * PITCH_LENGTH:
@@ -74,6 +80,11 @@ def _event_stats(data: MatchData) -> dict[str, dict[str, float]]:
             # No high defensive actions at all: count as one, so PPDA stays finite (JSON-safe).
             "ppda": build_up[opp] / max(high_actions[team], 1),
             "tackles": c["tackle"],
+            "offsides": c["offside"],
+            "throw_ins": awarded[team]["throw_in"],
+            "goal_kicks": awarded[team]["goal_kick"],
+            "corners": awarded[team]["corner"],
+            "fouls": c["foul"],
             "goals": c["goal"],
         }
     return out

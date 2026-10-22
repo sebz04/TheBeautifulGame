@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-22 · TASK-9.3 · level-3 coupled engine (coupled.py, constants.py), vectorized step_players, shared build_frames, set-piece and offside realism checks; 16/16 checks over 20 seeds; level 3 is the default · README, engine, data-model, decisions
 - 2026-10-22 · TASK-9.2 · on-ball decisions (options, offside-filtered pitch control scoring, skill softmax, decision extras), shot_xg, offside EventType · README, engine, data-model
 - 2026-10-22 · TASK-9.1 · ball physics (drag, rolling, bounces, lofted angle solve), out of play at the crossing point, restart by last touch, deflections · README, engine, decisions
 - 2026-10-21 · TASK-8.3 · modifier layer: capped player and team modifiers, pressure, home, fatigue-dependent run timing, match form, pair chemistry, filtered extras · README, engine

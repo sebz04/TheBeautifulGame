@@ -21,7 +21,7 @@ Scenario (YAML or Scenario Designer)
 ## Components
 | Component | Runs where | Status |
 |---|---|---|
-| Engine + stats + build CLI | Local / CI / build job | planned |
+| Engine + stats + build CLI | Local / CI / build job | wip (engine level 3, pitch control, xT done) |
 | API + MCP (one container, `/mcp` mount) | Azure Container Apps | planned |
 | Web | Azure Static Web Apps | planned |
 | Models | Microsoft Foundry deployment (`gpt-4.1-mini`) | planned |

@@ -103,3 +103,41 @@ def test_full_match_energy_is_plausible() -> None:
     assert 9.5 <= km <= 12.0
     assert 0.35 <= energy <= 0.6
     assert final_energy(0.2)[0] < energy < final_energy(0.8)[0]
+
+
+def test_step_players_matches_step_player() -> None:
+    from matchmind.engine.kinematics import step_players
+
+    rng = np.random.default_rng(9)
+    n = 22
+    players = [_player(pace=float(p), stamina=float(s))
+               for p, s in rng.uniform(0, 1, (n, 2))]  # fmt: skip
+    pos = rng.uniform([0, 0], [105, 68], (n, 2))
+    vel = rng.normal(0, 3, (n, 2))
+    vel[3] = 0.0  # standing still
+    energy = rng.uniform(0.2, 1.0, n)
+    energy[5] = 0.95  # recovering while slow
+    targets = rng.uniform([0, 0], [105, 68], (n, 2))
+    targets[7] = pos[7]  # already there
+    urgency = rng.uniform(0, 1, n)
+    drain = rng.uniform(0.94, 1.06, n)
+    pace = np.array([p.pace for p in players])
+    stamina = np.array([p.stamina for p in players])
+    for _ in range(30):
+        new_pos, new_vel, new_energy = step_players(pos, vel, energy, targets, urgency, pace,
+                                                    stamina, drain)  # fmt: skip
+        for i, p in enumerate(players):
+            ref = step_player(PlayerState(pos[i], vel[i], float(energy[i])), targets[i],
+                              float(urgency[i]), p, drain_mult=float(drain[i]))  # fmt: skip
+            assert new_pos[i] == pytest.approx(ref.pos, abs=1e-9)
+            assert new_vel[i] == pytest.approx(ref.vel, abs=1e-9)
+            assert new_energy[i] == pytest.approx(ref.energy, abs=1e-12)
+        pos, vel, energy = new_pos, new_vel, new_energy
+
+
+def test_drain_multiplier_drains_faster() -> None:
+    p = _player()
+    fast = PlayerState(np.array([10.0, 34.0]), np.array([7.0, 0.0]), 1.0)
+    calm = step_player(fast, np.array([90.0, 34.0]), 1.0, p, drain_mult=0.94)
+    keen = step_player(fast, np.array([90.0, 34.0]), 1.0, p, drain_mult=1.06)
+    assert keen.energy < calm.energy

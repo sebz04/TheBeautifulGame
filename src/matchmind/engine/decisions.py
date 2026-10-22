@@ -32,7 +32,7 @@ CARRY_M = 7.0
 CARRY_ANGLES_DEG = (0.0, 35.0, -35.0)
 SHOT_MAX_M = 30.0
 CLEAR_DEPTH_M = 35.0  # own third
-CLEAR_PRESSURE_M = 3.0
+CLEAR_PRESSURE_M = 5.0
 CLEAR_TO = (65.0, 10.0)  # team frame: long, toward the nearer touchline
 LOSS_COST = 0.01
 TEMP_BASE, TEMP_SKILL = 0.05, 0.6
@@ -59,6 +59,8 @@ class DecisionContext:
     goalkeepers: frozenset[str] = frozenset()
     risk_weight: float = 1.0  # PlayerMods.risk_weight (>1 accepts more risk)
     pc_params: PCParams | None = None
+    shot_cost: float = 0.0  # engine tuning: how much better than keeping the ball a shot must be
+    clear_bonus: float = 0.0  # engine tuning: preference for clearing under pressure
 
 
 def _local(p: np.ndarray, right: bool) -> np.ndarray:
@@ -131,14 +133,15 @@ def enumerate_options(frame: TrackingFrame, carrier_id: str, ctx: DecisionContex
         gain = _value(ctx.xt, end) - start_value
         lost_at = np.array([PITCH_LENGTH - end[0], PITCH_WIDTH - end[1]])
         risk = (1.0 - p_ok) * (LOSS_COST + _value(ctx.xt, lost_at)) / ctx.risk_weight
+        score = score_option(p_ok, gain, risk) + (ctx.clear_bonus if kind == "clear" else 0.0)
         options.append(Option(kind, target, (float(end_abs[0]), float(end_abs[1])),
-                              score_option(p_ok, gain, risk), p_ok, gain))  # fmt: skip
+                              score, p_ok, gain))  # fmt: skip
     goal_dist = float(np.hypot(*(GOAL - here)))
     if goal_dist <= SHOT_MAX_M:
         xg = shot_xg(here_abs, right, 0.5)
         goal_abs = _local(GOAL, right)
         options.append(Option("shot", None, (float(goal_abs[0]), float(goal_abs[1])),
-                              xg - start_value, xg, 1.0 - start_value))  # fmt: skip
+                              xg - start_value - ctx.shot_cost, xg, 1.0 - start_value))  # fmt: skip
     return options
 
 
