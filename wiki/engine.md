@@ -24,6 +24,12 @@ Each 0.1 s tick: (1) on-ball logic emits events from the current positions, (2) 
 
 Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1–2 goals, about 180 tackles, 50 fouls, 35 throw-ins, goal kicks, and corners combined. TASK-5 measures realism properly.
 
+## Set pieces and out of play (planned: TASK-9, TASK-10)
+Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:
+- **TASK-9:** out of play follows the ball's path, and the last touch decides the restart. Clearances, blocked shots, and parried saves can put the ball out.
+- **TASK-10:** corner delivery (`crossing`) and aerial duels (`aerial` + height) leading to headers; direct free kicks within about 30 m (`finishing`); penalties (about 0.76 conversion, composure subtle). Shots tagged `extras.set_piece`.
+- New realism ranges: throw-ins, goal kicks, corners, fouls, penalties, and set-piece goal share.
+
 ## Profile → behavior mapping (design; built in TASK-8.3)
 Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario beat targets the player or team. Active modifiers are recorded in `Event.extras["mods"]`.
 
@@ -42,6 +48,7 @@ Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario be
 | home advantage | composure and confidence |
 | chemistry (pair) | pass completion, run timing |
 | tactical_discipline, composure, experience, fatigue | spread of run timing → offsides (subtle) |
+| crossing, aerial + height, finishing, composure | corner delivery, aerial duels, direct free kicks, penalties |
 | tactical identity (club) | shape, pressing triggers, line height, tempo, width, directness |
 | manager style / job security | in-game changes and sub timing when losing |
 | career ambitions | narrative only |
