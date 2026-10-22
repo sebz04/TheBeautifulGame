@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-6.1 · **Code status:** scaffold, schemas, full league with profiles
+**Last updated:** 2026-10-21 · **Latest task:** TASK-7 · **Code status:** scaffold, schemas, full league with profiles
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`).
-- Next: TASK-7 (xT trained on synthetic events). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`).
+- Next: TASK-8.1 (player kinematics). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -42,7 +42,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/engine/validate.py`, `realism_ranges.py` | Realism checks | done | 5 |
 | `src/matchmind/engine/` (levels 2–4) | Kinematics, coupled engine, tactics, scenarios | planned | 8–10 |
 | `src/matchmind/stats/pitch_control.py` | Pitch control (vectorized Spearman) with offside filter | done | 6, 6.1 |
-| `src/matchmind/stats/` (rest) | Deterministic metrics | planned | 7, 11–14 |
+| `src/matchmind/stats/` (rest) | Deterministic metrics | planned | 11–14 |
+| `src/matchmind/stats/xt.py`, `data/models/xt_grid.{npy,json}` | xT model and trained grid | done | 7 |
 | `tests/reference/` | Vendored third-party code for parity tests (test-only) | done | 6 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |
 | `src/matchmind/pipeline/` | `matchmind build` CLI | planned | 14 |
@@ -54,6 +55,7 @@ Status: `planned` · `wip` · `done`
 | `scripts/check_licenses.py` | Runtime license allowlist gate | done | 1 |
 | `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |
 | `scripts/realism_report.py` | Simulate N seeds and write the realism table | done | 5 |
+| `scripts/train_xt.py` | Train and save the xT grid (parallel, events only) | done | 7 |
 | `.github/workflows/ci.yml` | CI | done | 1 |
 
 ## Governing documents

@@ -10,7 +10,7 @@
 
 ## Entry points
 - `engine/lineup.py`: `match_meta(league, fixture, seed, scenario_id="none") -> MatchMeta`. Squads are ordered **starting XI first** (GK, DF, MF, FW; best by `skill` per line, then by id), then the bench. `starting_xi(squad, formation)`; `FORMATION_LINES` (4-3-3, 4-2-3-1, 4-4-2, 3-5-2). Added time: 1–4 min + 0–59 s (first half), 3–7 min + 0–59 s (second). Kickoff 19:30 Colombia time (UTC-5).
-- `engine/simulate.py`: `simulate_match(meta, scenario=None, level=3)`. `level=1` runs the baseline; `level=3` raises `NotImplementedError` until TASK-9. `scenario` is typed `object` until TASK-10 defines `Scenario`.
+- `engine/simulate.py`: `simulate_match(meta, scenario=None, level=3, tracking=True)`. `tracking=False` skips frames (identical events, about 2.8 s vs 6.5 s; for training and season history). `level=1` runs the baseline; `level=3` raises `NotImplementedError` until TASK-9. `scenario` is typed `object` until TASK-10 defines `Scenario`.
 - `engine/formations.py`: `formation_anchors(formation) -> (11, 2)` (d, w) in the team frame (attacking toward d = 105; GK 5 m, lines evenly spaced from 30 m to 62 m, at most 16 m apart in width). `to_team_frame(xy, attacks_right)` is its own inverse. Home attacks right in period 1.
 
 ## Level 1 (`engine/baseline.py`)
@@ -19,6 +19,7 @@ Each 0.1 s tick: (1) on-ball logic emits events from the current positions, (2) 
 - **Pass consistency:** a completed pass's receiver follows a scripted straight run that ends at the pass end point exactly at arrival (runs capped at 8 m/s); the passer holds the ball at release.
 - Tackles: a defender within 1.5 m attempts with probability 0.012 per tick; 20% of attempts are fouls (free kick). Shots: xG from distance and angle; goal, save (the keeper holds), or wide (goal kick). Restarts: throw-in, goal kick, corner, free kick, and kickoff after a goal (45 s pause).
 - No cards or substitutions at level 1.
+- `launch_pass` decides the whole flight (receive, out, or interception) before changing state, and abandons the pass if it would land after the half ends. The 200-seed xT run exposed a crash when this happened after the state had changed (fixed in TASK-7).
 - Frames are recorded as numpy arrays and turned into models once per half with `schemas.trusted` (no validation) and the GC paused. A full match takes about 7 s.
 
 Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1–2 goals, about 180 tackles, 50 fouls, 35 throw-ins, goal kicks, and corners combined. TASK-5 measures realism properly.

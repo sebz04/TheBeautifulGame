@@ -110,8 +110,9 @@ def _clamp_on_pitch(p: np.ndarray, margin: float = 0.5) -> np.ndarray:
 
 
 class _Baseline:
-    def __init__(self, meta: MatchMeta) -> None:
+    def __init__(self, meta: MatchMeta, tracking: bool = True) -> None:
         self.meta = meta
+        self.tracking = tracking
         self.rng = stream(meta.seed, "engine-l1")
         self.players = meta.home_squad[:11] + meta.away_squad[:11]
         self.ids = [p.player_id for p in self.players]
@@ -320,46 +321,48 @@ class _Baseline:
         if kickoff:
             p_ok = 1.0
         height = 0.0 if d < 22.0 else min(10.0, (d - 22.0) * 0.35)
-        extras: dict[str, object] = {}
-        if self.s.restart:
-            extras["restart"] = self.s.restart
-            self.s.restart = None
         type_: EventType = "kickoff" if kickoff else "pass"
-        self.s.owner = None
-        self.s.phase = "flight"
-        self.s.dead = None
+        # Work out where the ball goes first; state changes only once the pass is certain
+        # to finish before the end of the half.
+        receiver: int | None = None
         if self.rng.random() < p_ok:
-            self.s.paths[j] = _Path(self.pos[j].copy(), end, self.k, self.k + n)
-            self.s.flight = _Flight(start, end, self.k, self.k + n, height, "receive", j, team)
-            self.emit(type_, team, i, start, end=end, outcome=True, receiver=j,
-                      speed=round(speed, 3), extras=extras)  # fmt: skip
-            return True
-        if self.rng.random() < 0.18:
+            flight = _Flight(start, end, self.k, self.k + n, height, "receive", j, team)
+            receiver = j
+        elif self.rng.random() < 0.18:
             # Overhit: the ball runs out over the nearer touchline.
             side = 0.0 if end[1] < PITCH_WIDTH / 2 else PITCH_WIDTH
             out = np.array([float(end[0]), side])
             n_out = self.flight_ticks(start, out, speed)
-            if self.k + n_out >= self.n_ticks - 1:
-                return False
-            self.s.flight = _Flight(start, out, self.k, self.k + n_out, height, "out", None, team)
-            self.emit(type_, team, i, start, end=out, outcome=False, speed=round(speed, 3),
-                      extras=extras)  # fmt: skip
-            return True
-        # Intercepted: the ball stops where the best-placed opponent cuts the line.
-        seg = end - start
-        best_q, best_d = end, math.inf
-        for o in self.members(1 - team):
-            u = float(np.clip(np.dot(self.pos[o] - start, seg) / max(np.dot(seg, seg), 1e-9),
-                              0.35, 1.0))  # fmt: skip
-            q = start + u * seg
-            dq = self.dist(o, q)
-            if dq < best_d:
-                best_q, best_d = q, dq
-        q = _clamp_on_pitch(best_q + self.rng.normal(0.0, 0.8, 2))
-        n_q = self.flight_ticks(start, q, speed)
-        self.s.flight = _Flight(start, q, self.k, self.k + n_q, height, "loose", None, team)
-        self.emit(type_, team, i, start, end=q, outcome=False, speed=round(speed, 3),
-                  extras=extras)  # fmt: skip
+            flight = _Flight(start, out, self.k, self.k + n_out, height, "out", None, team)
+        else:
+            # Intercepted: the ball stops where the best-placed opponent cuts the line.
+            seg = end - start
+            best_q, best_d = end, math.inf
+            for o in self.members(1 - team):
+                u = float(np.clip(np.dot(self.pos[o] - start, seg) / max(np.dot(seg, seg), 1e-9),
+                                  0.35, 1.0))  # fmt: skip
+                q = start + u * seg
+                dq = self.dist(o, q)
+                if dq < best_d:
+                    best_q, best_d = q, dq
+            q = _clamp_on_pitch(best_q + self.rng.normal(0.0, 0.8, 2))
+            n_q = self.flight_ticks(start, q, speed)
+            flight = _Flight(start, q, self.k, self.k + n_q, height, "loose", None, team)
+        if flight.k1 >= self.n_ticks - 1:
+            return False
+
+        extras: dict[str, object] = {}
+        if self.s.restart:
+            extras["restart"] = self.s.restart
+            self.s.restart = None
+        self.s.owner = None
+        self.s.phase = "flight"
+        self.s.dead = None
+        self.s.flight = flight
+        if receiver is not None:
+            self.s.paths[receiver] = _Path(self.pos[receiver].copy(), end, self.k, flight.k1)
+        self.emit(type_, team, i, start, end=flight.end, outcome=receiver is not None,
+                  receiver=receiver, speed=round(speed, 3), extras=extras)  # fmt: skip
         return True
 
     def shoot(self, i: int) -> bool:
@@ -651,9 +654,11 @@ class _Baseline:
             self.k = k
             self.logic()
             self.ball_now()
-            self.record()
+            if self.tracking:
+                self.record()
             self.move()
-        self.flush_frames()
+        if self.tracking:
+            self.flush_frames()
 
     def run(self) -> MatchData:
         for period, added in ((1, self.meta.added_time_s[0]), (2, self.meta.added_time_s[1])):
@@ -661,6 +666,9 @@ class _Baseline:
         return MatchData(meta=self.meta, events=self.events, frames=self.frames)
 
 
-def simulate_baseline(meta: MatchMeta) -> MatchData:
-    """Level-1 match: same meta (and seed) gives identical events and frames."""
-    return _Baseline(meta).run()
+def simulate_baseline(meta: MatchMeta, tracking: bool = True) -> MatchData:
+    """Level-1 match: same meta (and seed) gives identical events and frames.
+
+    `tracking=False` returns no frames; events are unchanged (recording uses no RNG).
+    """
+    return _Baseline(meta, tracking).run()

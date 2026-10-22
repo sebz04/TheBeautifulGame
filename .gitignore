@@ -8,7 +8,7 @@ TASKS.md
 !.env.example
 
 # Generated data and build output
-data/
+data/*
 !data/models/
 .venv/
 __pycache__/

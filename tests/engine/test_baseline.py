@@ -2,6 +2,7 @@ from collections import Counter
 from functools import cache
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from matchmind.engine.lineup import match_meta
@@ -134,3 +135,42 @@ def test_simulated_match_round_trips(tmp_path: Path) -> None:
     assert back.events == _match(7).events
     assert back.frames[::997] == _match(7).frames[::997]
     assert len(back.frames) == len(_match(7).frames)
+
+
+class _ScriptedRng:
+    """Stands in for the engine RNG: no noise, and `random()` returns the given draws."""
+
+    def __init__(self, draws: list[float]) -> None:
+        self.draws = iter(draws)
+
+    def uniform(self, lo: float, hi: float) -> float:
+        return lo
+
+    def normal(self, loc: float, scale: float, size: int) -> np.ndarray:
+        return np.zeros(size)
+
+    def random(self) -> float:
+        return next(self.draws)
+
+
+def test_pass_abandoned_near_full_time_leaves_state_unchanged() -> None:
+    # Regression: a misplaced pass that would run out after the half ends used to
+    # leave the ball "in flight" with no flight, crashing the next tick.
+    from matchmind.engine.baseline import _Baseline
+
+    b = _Baseline(_meta(7))
+    b.period, b.n_ticks, b.k = 1, 100, 80
+    b.pos = b.kickoff_shape()
+    b.pos[10], b.pos[9] = (50.0, 30.0), (58.0, 30.0)  # short pass, far from the touchline
+    b.give_ball(10, hold_s=1.0)
+    b.rng = _ScriptedRng([0.999, 0.0])  # the pass fails, and fails out of play
+    assert not b.launch_pass(10, 9)
+    assert (b.s.phase, b.s.owner, b.s.flight) == ("held", 10, None)
+    assert not b.events
+    b.logic()  # the next tick must not crash
+
+
+def test_events_only_mode_gives_identical_events() -> None:
+    data = simulate_match(_meta(7), level=1, tracking=False)
+    assert data.frames == []
+    assert data.events == _match(7).events

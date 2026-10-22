@@ -33,7 +33,7 @@ Test applied to every candidate: (1) a permissive license, (2) it contains no re
 | Project | License | How we use it | Task |
 |---|---|---|---|
 | [Friends-of-Tracking-Data-FoTD/LaurieOnTracking](https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking) | MIT | The reference pitch control implementation, vendored into `tests/reference/` with its license header, for a parity test against our vectorized version | 6 |
-| [ML-KULeuven/socceraction](https://github.com/ML-KULeuven/socceraction) | MIT | Cross-check for our xT implementation (dev dependency). VAEP is a possible later addition, trained on our own synthetic data | 7 |
+| [ML-KULeuven/socceraction](https://github.com/ML-KULeuven/socceraction) | MIT | Reference for the xT method (Singh 2019) only. **Not installed:** socceraction ≥ 1.5 pins numpy < 2 (we use numpy 2) and older releases break on current pandera (checked 2026-10-21). TASK-7 cross-checks against an exact linear solve and a hand-worked example instead. VAEP is a possible later addition, trained on our own synthetic data | 7 |
 | [Alek050/databallpy](https://github.com/Alek050/databallpy), [floodlight-sports/floodlight](https://github.com/floodlight-sports/floodlight) | MIT | Cross-checks for the distance, speed, and sprint metrics | 11 |
 | [martineastwood/penaltyblog](https://github.com/martineastwood/penaltyblog) | MIT | Reference for the Poisson / Dixon-Coles season model (we write our own small version) | 3 |
 | [Azure-Samples/azure-ai-travel-agents](https://github.com/Azure-Samples/azure-ai-travel-agents) | MIT | Reference architecture: MCP + multi-agent on Container Apps, azd and Bicep layout | 24 |
