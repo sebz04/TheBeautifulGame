@@ -1,6 +1,6 @@
 # Synthetic Match Engine
 
-**Status:** level 1 built (TASK-4); levels 2–4 planned (TASK-8 to TASK-10).
+**Status:** level 1 built (TASK-4); level-2 building blocks in progress (TASK-8); levels 3–4 planned (TASK-9, TASK-10).
 
 ## Levels (layered, each keeps the same output format)
 1. Formation-anchored baseline (`engine/baseline.py`). Stays in the code as a fallback.
@@ -23,6 +23,13 @@ Each 0.1 s tick: (1) on-ball logic emits events from the current positions, (2) 
 - Frames are recorded as numpy arrays and turned into models once per half with `schemas.trusted` (no validation) and the GC paused. A full match takes about 7 s.
 
 Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1–2 goals, about 180 tackles, 50 fouls, 35 throw-ins, goal kicks, and corners combined. TASK-5 measures realism properly.
+
+## Level 2 kinematics (`engine/kinematics.py`, TASK-8.1)
+`step_player(state: PlayerState(pos, vel, energy), target, urgency, attrs: Player, dt=0.1) -> PlayerState`: seek with arrival (braking speed sqrt(2 · 5 · 0.8 · dist)).
+- Speeds: cruise = top speed × (0.25 + 0.75 · urgency). `v_max(pace) = 8 + 2 · pace` m/s; `max_speed(player, energy)` = `v_max` × (0.85 + 0.15 · energy).
+- Caps: speeding up by `A_MAX` 3.5 m/s², slowing down by `DECEL_MAX` 5 m/s².
+- Energy drains `8e-5 · v² · (1.3 − 0.6 · stamina)` per second and recovers 0.002 · (1 − energy) per second below 2 m/s. A realistic 10.6 km workload ends at about 0.48 energy (stamina 0.5): 0.39 at stamina 0.2, 0.57 at 0.8.
+- The plan said `9.5 + 0.8 · pace` (about 9.9 m/s for an average player), which is above real top speeds and our 10 m/s realism ceiling.
 
 ## Set pieces and out of play (planned: TASK-9, TASK-10)
 Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:

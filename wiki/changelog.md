@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-8.1 · level-2 kinematics: seek with arrival, speed/accel/decel caps, energy drain calibrated on a 10.6 km workload · README, engine
 - 2026-10-21 · planning · set pieces and out of play: TASK-9/10 additions, new realism ranges, corner_pressure moment · engine, decisions
 - 2026-10-21 · TASK-7 · xT (Singh) trained on 200 level-1 matches; normalize_events; simulate_match(tracking=False); fixed an engine crash on passes abandoned at half end; .gitignore now tracks data/models · README, stats, engine
 - 2026-10-21 · TASK-6.1 · offside_players and the attacks_right option for pitch control; shared engine.pitch.attacks_right (validate.py reuses it) · README, stats, data-model
