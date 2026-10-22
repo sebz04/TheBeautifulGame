@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-21 · TASK-6.1 · offside_players and the attacks_right option for pitch control; shared engine.pitch.attacks_right (validate.py reuses it) · README, stats, data-model
 - 2026-10-21 · planning · offside design: TASK-6.1 pitch-control filter; runs in behind and timing in TASK-8/9/10; offside_trap moment · engine, decisions
 - 2026-10-21 · TASK-6 · vectorized pitch control, Friends of Tracking reference vendored for parity tests, credits in README and notices · README, stats
 - 2026-10-21 · TASK-5 · realism validator (validate_match, validate_many, team_stats), report script, level-1 baseline in docs/realism.md (6/11 pass) · README, engine

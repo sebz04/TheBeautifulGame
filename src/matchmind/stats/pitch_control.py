@@ -5,9 +5,11 @@ Friends of Tracking implementation by Laurie Shaw (LaurieOnTracking,
 `Metrica_PitchControl.py`, MIT License, Copyright (c) 2021 Friends-of-Tracking-Data-FoTD).
 Same model and defaults: each player reacts for `reaction_time` on their current
 velocity, then runs at `max_player_speed`; arrival times are uncertain (logistic,
-`tti_sigma`); control accrues at rate `lambda` until the ball is controlled. Offsides are
-not applied. All targets are integrated at once; each target stops at the step where the
-reference loop would stop, so results match it (checked in tests).
+`tti_sigma`); control accrues at rate `lambda` until the ball is controlled. When the
+attacking direction is given, offside attackers are dropped first (the reference's
+`check_offsides` rule, see `offside_players`). All targets are integrated at once; each
+target stops at the step where the reference loop would stop, so results match it
+(checked in tests).
 """
 
 import math
@@ -45,6 +47,27 @@ class PCParams(BaseModel):
         )
 
 
+def offside_players(
+    frame: TrackingFrame, attacking_team: str, attacks_right: bool, tol: float = 0.2
+) -> set[str]:
+    """Attackers beyond max(second-last defender, ball, halfway line) + `tol`.
+
+    Depth is measured along the attacking direction from the halfway line. Simple rule:
+    no "interfering with play" judgement.
+    """
+    sign = 1.0 if attacks_right else -1.0
+
+    def depth(x: float) -> float:
+        return sign * (x - PITCH_LENGTH / 2)
+
+    defenders = sorted((depth(p.x) for p in frame.players if p.team_id != attacking_team),
+                       reverse=True)  # fmt: skip
+    second_last = defenders[1] if len(defenders) > 1 else -math.inf
+    line = max(second_last, depth(frame.ball[0]), 0.0) + tol
+    return {p.player_id for p in frame.players
+            if p.team_id == attacking_team and depth(p.x) > line}  # fmt: skip
+
+
 def _team_arrays(
     frame: TrackingFrame, attacking_team: str, goalkeepers: Collection[str], params: PCParams
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -66,13 +89,21 @@ def pitch_control_at(
     targets: np.ndarray,
     params: PCParams | None = None,
     goalkeepers: Collection[str] = frozenset(),
+    attacks_right: bool | None = None,
 ) -> np.ndarray:
     """Attacking team's control probability at each target (N, 2) -> (N,), in [0, 1].
 
     The ball starts at `frame.ball`. `goalkeepers` are player ids whose defending
-    control rate is multiplied by `gk_factor` (TrackingFrame has no positions).
+    control rate is multiplied by `gk_factor` (TrackingFrame has no positions). Pass
+    `attacks_right` (see `engine.pitch.attacks_right`) to drop offside attackers; `None`
+    applies no offside rule.
     """
     params = params or PCParams()
+    if attacks_right is not None:
+        offside = offside_players(frame, attacking_team, attacks_right)
+        if offside:
+            keep = [p for p in frame.players if p.player_id not in offside]
+            frame = frame.model_copy(update={"players": keep})
     targets = np.asarray(targets, dtype=float).reshape(-1, 2)
     n = len(targets)
     reacted, lam, attacking, _ = _team_arrays(frame, attacking_team, goalkeepers, params)
@@ -148,10 +179,11 @@ def pitch_control_grid(
     ny: int = 21,
     params: PCParams | None = None,
     goalkeepers: Collection[str] = frozenset(),
+    attacks_right: bool | None = None,
 ) -> np.ndarray:
     """(ny, nx) surface of the attacking team's control; row 0 is y near 0."""
     xs, ys = grid_centres(nx, ny)
     gx, gy = np.meshgrid(xs, ys)
     targets = np.column_stack([gx.ravel(), gy.ravel()])
-    values = pitch_control_at(frame, attacking_team, targets, params, goalkeepers)
+    values = pitch_control_at(frame, attacking_team, targets, params, goalkeepers, attacks_right)
     return values.reshape(ny, nx)

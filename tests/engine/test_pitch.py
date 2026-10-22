@@ -34,3 +34,10 @@ def test_clamp_to_pitch():
 @pytest.mark.parametrize(("a", "b", "expected"), [((0, 0), (3, 4), 5.0), ((1, 1), (1, 1), 0.0)])
 def test_distance(a, b, expected):
     assert math.isclose(distance(a, b), expected)
+
+
+def test_attacks_right_by_period() -> None:
+    from matchmind.engine.pitch import attacks_right
+
+    assert attacks_right(is_home=True, period=1) and not attacks_right(is_home=True, period=2)
+    assert not attacks_right(is_home=False, period=1) and attacks_right(is_home=False, period=2)

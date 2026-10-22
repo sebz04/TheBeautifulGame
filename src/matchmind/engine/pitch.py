@@ -23,3 +23,8 @@ def zone_index(x: float, y: float, nx: int = 16, ny: int = 12) -> tuple[int, int
 
 def distance(a: tuple[float, float], b: tuple[float, float]) -> float:
     return math.hypot(b[0] - a[0], b[1] - a[1])
+
+
+def attacks_right(is_home: bool, period: int) -> bool:
+    """Home attacks toward x = 105 in period 1; teams switch ends at half time."""
+    return is_home == (period == 1)

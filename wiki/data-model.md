@@ -28,7 +28,7 @@
 Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `CueKind`.
 
 ## Geometry (`engine/pitch.py`)
-`PITCH_LENGTH = 105.0`, `PITCH_WIDTH = 68.0`; `clamp_to_pitch(x, y)`; `zone_index(x, y, nx=16, ny=12) -> (col, row)`, with edge and out-of-bounds points clamped into the grid; `distance(a, b)`.
+`PITCH_LENGTH = 105.0`, `PITCH_WIDTH = 68.0`; `attacks_right(is_home, period)` (home attacks right in period 1); `clamp_to_pitch(x, y)`; `zone_index(x, y, nx=16, ny=12) -> (col, row)`, with edge and out-of-bounds points clamped into the grid; `distance(a, b)`.
 
 ## Match files (`engine/match_io.py`)
 `write_match(data, out_dir)` / `read_match(out_dir) -> MatchData`. One directory per match:

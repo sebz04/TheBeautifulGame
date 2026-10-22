@@ -10,7 +10,7 @@ from collections.abc import Iterable
 import numpy as np
 from pydantic import BaseModel
 
-from matchmind.engine.pitch import PITCH_LENGTH
+from matchmind.engine.pitch import PITCH_LENGTH, attacks_right
 from matchmind.engine.realism_ranges import (
     PPDA_ZONE_SHARE,
     RANGES,
@@ -42,10 +42,6 @@ def _check(name: str, metric: str, value: float) -> Check:
     return Check(name=name, value=value, lo=lo, hi=hi, ok=bool(lo <= value <= hi))
 
 
-def _attacks_right(home: bool, period: int) -> bool:
-    return home == (period == 1)
-
-
 def _event_stats(data: MatchData) -> dict[str, dict[str, float]]:
     home_id, away_id = data.meta.home.club_id, data.meta.away.club_id
     count: dict[str, dict[str, int]] = {t: defaultdict(int) for t in (home_id, away_id)}
@@ -57,7 +53,7 @@ def _event_stats(data: MatchData) -> dict[str, dict[str, float]]:
         c[e.type] += 1
         if e.type == "pass" and e.outcome:
             c["completed"] += 1
-        right = _attacks_right(team == home_id, e.period)
+        right = attacks_right(team == home_id, e.period)
         depth = e.x if right else PITCH_LENGTH - e.x  # distance from own goal line
         if e.type == "pass" and depth < PPDA_ZONE_SHARE * PITCH_LENGTH:
             build_up[team] += 1
