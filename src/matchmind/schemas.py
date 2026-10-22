@@ -24,6 +24,7 @@ EventType = Literal[
     "out",
     "save",
     "clearance",
+    "offside",
 ]
 Period = Literal[1, 2]
 Persona = Literal["analyst", "casual", "club_fan", "player_focus"]

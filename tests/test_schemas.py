@@ -217,3 +217,8 @@ def test_trusted_matches_validated_construction() -> None:
     fast = trusted(PlayerPos, dict(data))
     assert fast == PlayerPos(**data)
     assert fast.model_dump() == data
+
+
+def test_offside_event_type() -> None:
+    event = make_event(type="offside", extras={"timing_error_s": 0.5})
+    assert Event.model_validate_json(event.model_dump_json()) == event

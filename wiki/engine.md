@@ -49,6 +49,13 @@ Seed-7 check (first fixture): about 1,000 passes at 83% completion, 17 shots, 1�
 - `restart_for(point, last_touch_attacks_right)`: touchline → throw-in; goal line → goal kick if the last touch was by the team attacking that goal, corner otherwise.
 - `deflect(rng, incoming, speed, "block" | "parry")`: keeps 20–60% (block) or 25–55% (parry) of the speed, turned by N(0, 55°) or N(0, 70°), so some go behind for corners.
 
+## Decisions (`engine/decisions.py`, TASK-9.2)
+- `enumerate_options(frame, carrier_id, ctx: DecisionContext) -> list[Option]`: passes to teammates 4–60 m away (aimed up to 1 s ahead of a moving teammate), through balls 7 m ahead of teammates at least 5 m deeper (within 40 m), three 7 m carries (0°, ±35°), a shot within 30 m, and a clearance when pressed within 3 m in the own third.
+- Score: `score_option(pc, xt_gain, risk) = pc · xt_gain − risk`, where `pc` is offside-filtered pitch control at the end point (0 for a pass to a visibly offside teammate) and `risk = (1 − pc) · (0.01 + opponent xT at the end) / risk_weight`. A shot scores `xg − xT(here)`.
+- `shot_xg(pos, attacks_right, skill)`: logistic in the goal's opening angle and distance (about 0.49 at 6 m, 0.24 at 11 m, 0.13 at 16 m, 0.05 at 25 m, central), × (0.85 + 0.3·skill).
+- `choose(options, skill, rng, temperature_mult=1.0)`: softmax over min-max normalized scores, temperature `(0.05 + 0.6·(1 − skill)) × decision_temperature`. Skill 0.95 picks the best of a typical set > 70% of the time; skill 0.2 < 45%.
+- `decision_extras(chosen, options)` → `chosen_score`, `best_score`, `best_option` for `Event.extras`. About 1 ms per decision.
+
 ## Set pieces and out of play (planned: TASK-9.3, TASK-10)
 Level 1 today, per match: about 31 throw-ins, 13 goal kicks, **0 corners** (nothing makes defenders put the ball out), 45 free kicks (fouls are about 2× too frequent), and **no penalties** (box fouls restart as free kicks). Planned fixes:
 - **TASK-9:** out of play follows the ball's path, and the last touch decides the restart. Clearances, blocked shots, and parried saves can put the ball out.

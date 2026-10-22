@@ -27,6 +27,8 @@
 
 Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `CueKind`.
 
+`EventType`: kickoff, pass, carry, shot, tackle, interception, pressure, foul, card, sub, goal, out, save, clearance, offside. An `offside` event is credited to the attacking team and the flagged player, with `extras.timing_error_s` and the runner's active mods (TASK-9.2).
+
 ## Geometry (`engine/pitch.py`)
 `PITCH_LENGTH = 105.0`, `PITCH_WIDTH = 68.0`; `attacks_right(is_home, period)` (home attacks right in period 1); `clamp_to_pitch(x, y)`; `zone_index(x, y, nx=16, ny=12) -> (col, row)`, with edge and out-of-bounds points clamped into the grid; `distance(a, b)`.
 
