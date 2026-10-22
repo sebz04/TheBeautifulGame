@@ -11,4 +11,4 @@
 | PPDA, field tilt, momentum, control vs. chaos | `stats/team.py` | planned | |
 | Moments | `stats/moments.py` | planned | Rule triggers |
 | Counterfactual | `stats/counterfactual.py` | planned | Reuses the engine's option scoring |
-| Materialization | `stats/metrics.py` | planned | Rows every 30 s for the API and MCP |
+| Materialization | `stats/metrics.py` | planned | `metrics_at(t)`: event-exact, on demand, no look-ahead (agents, MCP, Verifier). Stored rows: 30 s grid for charts plus a snapshot at each moment's `t_end` |
