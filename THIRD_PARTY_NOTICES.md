@@ -19,4 +19,9 @@ checked in CI by `scripts/check_licenses.py`.
 pytest (MIT), pytest-asyncio (Apache-2.0), hypothesis (MPL-2.0), ruff (MIT), mypy (MIT), pip-licenses (MIT).
 
 ## Vendored or adapted code
-_None yet._ Vendored code keeps its original license header and is listed here.
+Vendored code keeps its original license header.
+
+| Code | License | Where | Use |
+|---|---|---|---|
+| Friends of Tracking `Metrica_PitchControl.py` (Laurie Shaw, LaurieOnTracking), Copyright (c) 2021 Friends-of-Tracking-Data-FoTD | MIT | `tests/reference/metrica_pitch_control.py` (verbatim, test-only) | Reference for the pitch control parity test |
+| The same model (Spearman 2018), re-implemented and vectorized | MIT (credited) | `src/matchmind/stats/pitch_control.py` | Pitch control surfaces |

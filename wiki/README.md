@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-21 · **Latest task:** TASK-5 · **Code status:** scaffold, schemas, full league with profiles
+**Last updated:** 2026-10-21 · **Latest task:** TASK-6 · **Code status:** scaffold, schemas, full league with profiles
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`).
-- Next: TASK-6 (pitch control). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control (`stats/pitch_control.py`).
+- Next: TASK-7 (xT trained on synthetic events). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -41,7 +41,9 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/engine/baseline.py`, `simulate.py` | Level-1 engine; `simulate_match` dispatch | done | 4.2 |
 | `src/matchmind/engine/validate.py`, `realism_ranges.py` | Realism checks | done | 5 |
 | `src/matchmind/engine/` (levels 2–4) | Kinematics, coupled engine, tactics, scenarios | planned | 8–10 |
-| `src/matchmind/stats/` | Deterministic metrics | planned | 6, 7, 11–14 |
+| `src/matchmind/stats/pitch_control.py` | Pitch control (vectorized Spearman) | done | 6 |
+| `src/matchmind/stats/` (rest) | Deterministic metrics | planned | 7, 11–14 |
+| `tests/reference/` | Vendored third-party code for parity tests (test-only) | done | 6 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |
 | `src/matchmind/pipeline/` | `matchmind build` CLI | planned | 14 |
 | `src/matchmind/mcp_server/` | MCP stats tools | planned | 15 |

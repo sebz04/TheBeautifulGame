@@ -31,13 +31,15 @@ packages = ["src/matchmind"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["scripts"]
+pythonpath = ["scripts", "tests/reference"]
 asyncio_mode = "auto"
 addopts = "-q"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Third-party code vendored verbatim for test parity checks.
+extend-exclude = ["tests/reference"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
