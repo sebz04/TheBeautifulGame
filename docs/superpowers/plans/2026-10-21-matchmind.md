@@ -210,6 +210,20 @@ Ranges (per team per match unless stated): `passes` 350–650; `pass_completion`
 - [ ] **Step 4: Run** the tests. Expected: PASS. Benchmark: a 32×21 grid in < 50 ms (`pytest -k bench`).
 - [ ] **Step 5: Commit** `TASK-6: pitch control`.
 
+### Task 6.1: Offside filter for pitch control
+
+**Why:** without offside, pitch control credits attackers standing behind the defensive line. Counterfactuals (Task 13) would then recommend illegal passes, and level-3 decisions (Task 9) would reward loitering offside.
+
+**Files:** Modify `src/matchmind/engine/pitch.py`, `src/matchmind/stats/pitch_control.py`, `src/matchmind/engine/validate.py` (reuse the shared direction helper); test `tests/stats/test_offside.py`, `tests/engine/test_pitch.py`.
+
+**Interfaces:**
+- `engine/pitch.py`: `attacks_right(is_home: bool, period: int) -> bool` (home attacks right in period 1).
+- `stats/pitch_control.py`: `offside_players(frame, attacking_team, attacks_right: bool, tol=0.2) -> set[str]`. An attacker is offside when they are beyond `max(second-last defender, ball, halfway line) + tol` in the attacking direction. This is the reference's `check_offsides` rule, with the direction passed in instead of inferred from the keeper. Simple rule only: no "interfering with play" and no VAR margins.
+- `pitch_control_at(..., attacks_right: bool | None = None)` and `pitch_control_grid(...)` take the same argument. When `attacks_right` is given, offside attackers are dropped before integration; `None` keeps the old behavior (no direction known).
+
+- [ ] **Tests:** `test_attacks_right_by_period`; `test_offside_rule_cases` (beyond the second-last defender → offside; level within `tol` → onside; in own half → onside; behind the ball → onside; works in both directions); `test_offside_matches_reference` (same set as the vendored `check_offsides` on the 5 parity frames); `test_offside_striker_gets_no_control` (a lone striker behind the line: control near them falls from > 0.5 to < 0.5 with the filter); `test_parity_with_reference_offsides` (grid within 0.02 of the reference run with `offsides=True`).
+- [ ] **Commit** `TASK-6.1: offside filter for pitch control`.
+
 ### Task 7: xT trained on synthetic events
 
 **Files:** Create `src/matchmind/stats/xt.py`, `tests/stats/test_xt.py`, `scripts/train_xt.py`, `data/models/xt_grid.npy` (generated and committed as a small artifact, 16×12 floats).
@@ -232,7 +246,7 @@ Ranges (per team per match unless stated): `passes` 350–650; `pass_completion`
 
 **Interfaces:** Produces `PlayerState(pos: np.ndarray, vel: np.ndarray, energy: float)`, `step_player(state, target: np.ndarray, urgency: float, attrs: Player, dt=0.1) -> PlayerState`, and the constants `V_MAX = 9.5 + 0.8 * pace` (m/s), `A_MAX = 3.5` (m/s²), `DECEL_MAX = 5.0`. Energy drains with speed², `energy ∈ [0, 1]`, and effective `V_MAX` scales by `0.85 + 0.15 * energy`.
 
-Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`, `press`, `cover`, `support`, `run_in_behind`, `hold_line`, and `gk_position`.
+Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`, `press`, `cover`, `support`, `run_in_behind`, `hold_line`, and `gk_position`. `run_in_behind` aims to arrive level with the last defender as the pass is played. The release moment is the player's **timing**: early release by `timing_error_s` (drawn per run from a normal distribution with SD `RUN_TIMING_SD_S = 0.35`, scaled by the timing modifier from Task 8.3) leaves the runner offside. `hold_line` steps up together to play offside.
 
 - [ ] **Step 1: Failing tests.**
   - `test_speed_cap`: after 10 s chasing a far target, speed ≤ `V_MAX`.
@@ -248,7 +262,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 
 **Files:** Create `src/matchmind/engine/modifiers.py`, `tests/engine/test_modifiers.py`.
 
-**Interfaces:** `Modifiers.for_player(profile, club_profile, ctx) -> PlayerMods` and `Modifiers.for_team(club_profile, ctx) -> TeamMods`. `ctx` = minute, score difference, home/away, energy, confidence state, active scenario beats. Each effect is a multiplier `1 + clip(effect, ±cap)`, with `SUBTLE_CAP = 0.06` by default and `STORYLINE_CAP = 0.20` only while a scenario beat targets that player or team. The mapping is the table in `wiki/engine.md`. Composure scales decision temperature under pressure; aggression raises tackle, foul, and press urgency; confidence is a match state that rises after successes and falls after errors; leadership steadies teammates; consistency sets match-day form variance; work rate drives off-ball distance and energy drain; tactical discipline sets how tightly a player holds their formation anchor; risk tolerance weights xT gain against completion probability; each technical rating drives the error of its own action; injury lowers starting energy; schedule congestion lowers starting energy; home advantage adds composure and confidence; chemistry raises completion between a pair and makes the receiver start runs earlier. Every applied modifier above 0.01 is written to `Event.extras["mods"]` so the Explainer can cite causes.
+**Interfaces:** `Modifiers.for_player(profile, club_profile, ctx) -> PlayerMods` and `Modifiers.for_team(club_profile, ctx) -> TeamMods`. `ctx` = minute, score difference, home/away, energy, confidence state, active scenario beats. Each effect is a multiplier `1 + clip(effect, ±cap)`, with `SUBTLE_CAP = 0.06` by default and `STORYLINE_CAP = 0.20` only while a scenario beat targets that player or team. The mapping is the table in `wiki/engine.md`. Composure scales decision temperature under pressure; aggression raises tackle, foul, and press urgency; confidence is a match state that rises after successes and falls after errors; leadership steadies teammates; consistency sets match-day form variance; work rate drives off-ball distance and energy drain; tactical discipline sets how tightly a player holds their formation anchor; risk tolerance weights xT gain against completion probability; each technical rating drives the error of its own action; injury lowers starting energy; schedule congestion lowers starting energy; home advantage adds composure and confidence; chemistry raises completion between a pair and makes the receiver start runs earlier; **run timing** (the spread of `timing_error_s`) tightens with tactical discipline, composure, and experience and loosens with fatigue (subtle cap, like every player trait). Every applied modifier above 0.01 is written to `Event.extras["mods"]` so the Explainer can cite causes.
 
 - [ ] **Tests:** `test_caps` (no effect exceeds `SUBTLE_CAP` without a beat, or `STORYLINE_CAP` with one); `test_directions` (a +aggression profile gives a higher foul multiplier, and so on for every mapped attribute); `test_mods_recorded_in_extras`.
 - [ ] **Commit** `TASK-8.3: modifier layer`.
@@ -259,7 +273,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 
 **Interfaces:**
 - `ball.py`: `flight(start, end, kind: Literal["ground","lofted","shot"], speed_ms) -> Trajectory` (`positions_at(t)`, `duration`), with drag `k = 0.05`, ground rolling friction `0.25`. Pass speeds are drawn from 10–22 m/s (ground) and shot speeds from 18–32 m/s.
-- `decisions.py`: `Option(kind, target_player_id | None, end: tuple, score: float)`; `enumerate_options(frame, carrier_id, ctx) -> list[Option]`; `score_option(opt, pc_prob, xt_gain, risk) -> float` = `pc_prob * xt_gain − risk_penalty`; `choose(options, skill: float, rng) -> Option`. Choice is softmax with temperature `0.05 + 0.6 * (1 − skill)`, so lower-skill players choose worse options more often. The chosen option and the best-scored alternative are both written into `Event.extras` (`chosen_score`, `best_score`, `best_option`).
+- `decisions.py`: `Option(kind, target_player_id | None, end: tuple, score: float)`; `enumerate_options(frame, carrier_id, ctx) -> list[Option]`; `score_option(opt, pc_prob, xt_gain, risk) -> float` = `pc_prob * xt_gain − risk_penalty`; `choose(options, skill: float, rng) -> Option`. Choice is softmax with temperature `0.05 + 0.6 * (1 − skill)`, so lower-skill players choose worse options more often. Options are scored with offside-filtered pitch control (Task 6.1), so passes to players who are visibly offside score near zero. A pass to a runner who *becomes* offside through a mistimed run is still possible; it ends in an `offside` event (new `EventType`, with `extras.timing_error_s` and active mods) and an indirect free kick to the defending team. The chosen option and the best-scored alternative are both written into `Event.extras` (`chosen_score`, `best_score`, `best_option`).
 - `simulate.py` level 3: a single 10 Hz loop. Tactics (Task 10 stub: fixed phase shape) → role targets → `step_player` → if the carrier has the ball and a decision tick (every 0.8–2.0 s) arrives, `choose` → ball flight → an interception check using pitch control at the arrival point (a Bernoulli draw) → events emitted from simulation state.
 
 - [ ] **Step 1: Failing tests.**
@@ -267,6 +281,8 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
   - `test_choice_skill`: across 1,000 draws, skill 0.95 picks the best option > 70% of the time and skill 0.2 picks it < 45%.
   - `test_level3_consistency`: events and frames agree (Task 4's endpoint test applied at level 3).
   - `test_level3_deterministic`.
+  - `test_offside_called_on_mistimed_run`: a fixture where the runner releases 0.5 s early → the pass produces an `offside` event, then a free kick to the defenders.
+  - `test_validator_counts_offsides`: `RANGES["offsides"] = (0, 6)` per team per match is checked by `validate_match`.
 - [ ] **Step 2: Run** the tests. Expected: FAIL.
 - [ ] **Step 3: Implement** the module functions and the loop.
 - [ ] **Step 4: Run** the tests plus `scripts/realism_report.py --level 3 --seeds 20`, and tune constants until every check passes except `goals_per_match` (tuned in Task 10). **Timebox: 3 hours of tuning.** Put all tunable constants in `engine/constants.py` so tuning never touches logic.
@@ -277,7 +293,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 **Files:** Create `src/matchmind/engine/tactics.py`, `src/matchmind/engine/scenario.py`, `scenarios/*.yaml` (8 storylines); modify `simulate.py`; test `tests/engine/test_tactics.py`, `tests/engine/test_scenario.py`.
 
 **Interfaces:**
-- `Phase = Literal["build_up","mid_block","low_block","counter","high_press","set_piece"]`; `formation_shape(formation: str, phase: Phase, n_players: int) -> np.ndarray[n, 2]` (supports 10 and 9 players by removing the most advanced outfield slot, then re-spacing); `pressing_trigger(frame, team) -> bool` (back pass, poor touch, or receiver facing own goal).
+- `Phase = Literal["build_up","mid_block","low_block","counter","high_press","set_piece"]`; `formation_shape(formation: str, phase: Phase, n_players: int) -> np.ndarray[n, 2]` (supports 10 and 9 players by removing the most advanced outfield slot, then re-spacing); `pressing_trigger(frame, team) -> bool` (back pass, poor touch, or receiver facing own goal). `runs_in_behind_rate(club_profile, role, opponent_line_height) -> float` (runs per minute in possession): rises with the team's directness and tempo, with runner roles (poacher, pressing forward, inside forward rather than target man) and pace, and with the **opponent's** line height (more space behind). These are team tactics, so they are not limited by the ±6% subtle cap; only the individual timing spread is. Offside frequency is never set directly: it emerges from runs × timing × the opponent's line.
 - `Scenario(scenario_id, title, home_club_id, away_club_id, seed, beats: list[Beat])`, where `Beat(minute: float, kind: Literal["red_card","goal","sub","tactic_change","press_intensity","fatigue_spike"], team: Literal["home","away"], params: dict)`. Beats bias probabilities at their minute; they never teleport the state. `load_scenario(path) -> Scenario`.
 - The 8 storylines: `comeback_red_card`, `press_collapse`, `keeper_heroics`, `late_sub_wins_it`, `derby_chaos`, `chess_match_0_0`, `underdog_low_block`, `counter_attack_masterclass`.
 
@@ -286,6 +302,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
   - `test_ten_men_stats_finite`: run the Task 6/7 functions on a frame after the red card → all finite. Task 12 adds its own 10-player test.
   - `test_beats_shift_outcome`: across 20 seeds, `comeback_red_card` gives the 10-man team a higher win rate than the unscripted control.
   - `test_fatigue_late`: the mean outfield top speed in minutes 80–90 is lower than in minutes 0–10.
+  - `test_offsides_follow_tactics` (20 seeds): direct teams facing high lines average more offsides than possession teams facing deep lines.
 - [ ] **Step 2: Run** the tests. Expected: FAIL.
 - [ ] **Step 3: Implement** the module and storylines. Retrain xT with `scripts/train_xt.py --level 3 --seeds 300` and commit the grid.
 - [ ] **Step 4: Run** the full suite plus the realism report at level 3 over 20 seeds. Expected: every check passes. Update `docs/realism.md`.
@@ -304,7 +321,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 
 **Files:** Create `tests/engine/test_effects.py` (marked `slow`, run in CI nightly and before release).
 
-- [ ] **Tests (across ≥ 20 seeds each):** high-aggression teams foul more; high `press_intensity` gives lower PPDA; high-chemistry pairs complete more passes; `returning` players cover less distance after minute 60; home teams win 40–48% of matches; high `risk_tolerance` gives more progressive passes and lower completion; under storyline beats the targeted effect is at least 3× its subtle size.
+- [ ] **Tests (across ≥ 20 seeds each):** high-aggression teams foul more; disciplined, composed strikers are caught offside less often than impulsive ones in otherwise identical matches; high `press_intensity` gives lower PPDA; high-chemistry pairs complete more passes; `returning` players cover less distance after minute 60; home teams win 40–48% of matches; high `risk_tolerance` gives more progressive passes and lower completion; under storyline beats the targeted effect is at least 3× its subtle size.
 - [ ] **Commit** `TASK-10.5: attribute effect tests`.
 
 ### Task 11: Pass quality, speed metrics, player alerts
@@ -337,7 +354,7 @@ Roles produce targets: `role_target(role, ctx) -> (target, urgency)` for `mark`,
 - `field_tilt(events, team_id, t_from, t_to) -> float` (share of final-third passes).
 - `momentum_series(events, xt_grid, window_s=300, step_s=30) -> pd.DataFrame[t, home, away, diff]` (rolling xT-added plus shot xG proxy).
 - `control_chaos(events, frames, t_from, t_to) -> float in [0,1]` (0 = control, 1 = chaos), built from turnover rate, mean possession length, pitch-control volatility, and direct-play share, each normalized by the `RANGES` midpoints.
-- `detect_moments(match: MatchData, xt_grid: np.ndarray) -> list[Moment]` (computes the metrics it needs through the functions above) with rules: momentum `diff` changes sign and |Δ| > 0.08 within 5 min → `momentum_swing`; PPDA rises > 60% between consecutive 10-minute windows → `pressing_collapse`; mean player position changes from one formation template to another (nearest-template classifier) and stays changed for 3 min → `formation_shift`; shot with xG proxy > 0.25 → `big_chance`; goals, red cards. Moments closer than 60 s merge.
+- `detect_moments(match: MatchData, xt_grid: np.ndarray) -> list[Moment]` (computes the metrics it needs through the functions above) with rules: momentum `diff` changes sign and |Δ| > 0.08 within 5 min → `momentum_swing`; PPDA rises > 60% between consecutive 10-minute windows → `pressing_collapse`; mean player position changes from one formation template to another (nearest-template classifier) and stays changed for 3 min → `formation_shift`; shot with xG proxy > 0.25 → `big_chance`; 3 or more offsides against one team within 20 minutes → `offside_trap` (team level; add the literal to `MomentKind`); goals, red cards. Moments closer than 60 s merge.
 
 - [ ] **Step 1: Failing tests.**
   - `test_ppda_known_values`: a fixture of 20 opponent passes and 4 actions → 5.0.

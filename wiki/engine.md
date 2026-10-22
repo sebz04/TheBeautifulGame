@@ -40,6 +40,7 @@ Caps: `SUBTLE_CAP = 0.06` by default, `STORYLINE_CAP = 0.20` while a scenario be
 | injury / schedule | starting energy |
 | home advantage | composure and confidence |
 | chemistry (pair) | pass completion, run timing |
+| tactical_discipline, composure, experience, fatigue | spread of run timing → offsides (subtle) |
 | tactical identity (club) | shape, pressing triggers, line height, tempo, width, directness |
 | manager style / job security | in-game changes and sub timing when losing |
 | career ambitions | narrative only |
