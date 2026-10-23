@@ -206,3 +206,17 @@ def test_set_piece_ranges() -> None:
     assert _check(report, "goal_kicks:a") == (3, False)
     assert _check(report, "corners:a") == (0, False)
     assert _check(report, "fouls:h") == (10, True)
+
+
+def test_distance_and_sprints_scale_to_full_match_minutes() -> None:
+    # A substitute on for half the frames covers half the distance: same per-match rate.
+    full = [5.0] * 600
+    half = [5.0] * 600  # dropped from the frames after the 300th below
+    match = _match([], {"h-p": full, "a-p": [3.0] * 600})
+    sub = _match([], {"h-p": full, "h-s": half, "a-p": [3.0] * 600})
+    for f in sub.frames[300:]:
+        f.players = [p for p in f.players if p.player_id != "h-s"]
+    km = _check(validate_match(match), "distance_km_outfield_player:h")[0]
+    assert _check(validate_match(sub), "distance_km_outfield_player:h")[0] == pytest.approx(
+        km, rel=0.02
+    )

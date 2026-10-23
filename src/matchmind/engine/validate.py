@@ -2,7 +2,9 @@
 
 Possession is the share of passes (the engine has no possession clock). Distance and
 speed come from the tracking frames; a sprint is above 7.0 m/s for at least 1 s.
-Throw-ins, goal kicks, and corners are counted for the team awarded them: the opponent
+Distance and sprints are per full match: each outfield player who played at least a
+sixth of it is scaled to the whole match (substitutes, sent-off players). Throw-ins,
+goal kicks, and corners are counted for the team awarded them: the opponent
 of the team whose last touch put the ball out (`out` events' `extras.restart`).
 """
 
@@ -22,6 +24,7 @@ from matchmind.engine.realism_ranges import (
 from matchmind.schemas import MatchData
 
 DT = 0.1
+MIN_SHARE = 1 / 6  # players on for at least 15 of 90 minutes count toward the averages
 _DEFENSIVE_ACTIONS = {"tackle", "interception", "foul"}
 
 
@@ -115,7 +118,9 @@ def _tracking_stats(data: MatchData) -> dict[str, dict[str, float]]:
     dist: dict[str, float] = defaultdict(float)
     top: dict[str, float] = defaultdict(float)
     sprints: dict[str, int] = defaultdict(int)
+    frames_on: dict[str, int] = defaultdict(int)
     for (pid, _period), points in xy.items():
+        frames_on[pid] += len(points)
         arr = np.asarray(points)
         dist[pid] += float(np.hypot(*np.diff(arr, axis=0).T).sum()) if len(arr) > 1 else 0.0
         sp = np.asarray(speed[(pid, _period)])
@@ -123,12 +128,16 @@ def _tracking_stats(data: MatchData) -> dict[str, dict[str, float]]:
         sprints[pid] += _sprints(sp)
     out: dict[str, dict[str, float]] = {}
     for team in (data.meta.home.club_id, data.meta.away.club_id):
-        players = [pid for pid, t in team_of.items() if t == team]
+        everyone = [pid for pid, t in team_of.items() if t == team]
+        full = max((frames_on[p] for p in everyone), default=0)
+        # Scale each player to the full match; skip cameos under MIN_SHARE of it.
+        players = [p for p in everyone if frames_on[p] >= MIN_SHARE * full]
+        scale = {p: full / frames_on[p] for p in players}
         n = max(len(players), 1)
         out[team] = {
-            "distance_km_outfield_player": sum(dist[p] for p in players) / n / 1000,
-            "top_speed_ms": max((top[p] for p in players), default=0.0),
-            "sprints_per_outfield_player": sum(sprints[p] for p in players) / n,
+            "distance_km_outfield_player": sum(dist[p] * scale[p] for p in players) / n / 1000,
+            "top_speed_ms": max((top[p] for p in everyone), default=0.0),
+            "sprints_per_outfield_player": sum(sprints[p] * scale[p] for p in players) / n,
         }
     return out
 

@@ -25,12 +25,12 @@ ATTACK_PUSH_M = 6.0
 DEFEND_DROP_M = 3.0
 ATTACK_WIDTH = 1.1
 DEFEND_WIDTH = 0.75
-SHAPE_URGENCY_PER_M = 1 / 35  # off-ball urgency grows with the distance to the target
+SHAPE_URGENCY_PER_M = 1 / 45  # off-ball urgency grows with the distance to the target
 SHAPE_DEADBAND_M = 5.0  # a player keeps his spot until his shape target moves this far
 TRANSITION_S = 5.0  # after a turnover, players far from their spot sprint back into shape
 TRANSITION_MIN_M = 6.0
 TRANSITION_URGENCY = 0.85
-SHAPE_URGENCY = (0.05, 0.6)
+SHAPE_URGENCY = (0.05, 0.5)
 SUPPORT_URGENCY = 0.7
 CHASE_URGENCY = 1.0
 DRIBBLE_URGENCY = 0.5
@@ -77,13 +77,13 @@ EXEC_BASE, EXEC_SKILL = 0.90, 0.10
 # ---- shooting ---------------------------------------------------------------------------
 SHOT_AIM_INSIDE_M = 0.6  # aim this far inside a post, at most
 SHOT_COST = 0.03  # a shot must beat keeping the ball by this much xT
-SHOT_KEEP_WEIGHT = 0.7  # keeping the ball in a crowded box is worth half its xT
+SHOT_KEEP_WEIGHT = 0.55  # keeping the ball in a crowded box is worth half its xT
 CLEAR_BONUS = 0.01  # under pressure in the own third, clearing is preferred
 SHOT_ERR_DEG = 17.0
 SHOT_LOFT_DEG = (2.0, 18.0)
 BLOCK_REACH_M = 1.6
-BLOCK_PROB = 0.7
-SAVE_XG, SAVE_SKILL = 2.5, 0.15  # save = 1 - 2.5 xg (+ keeper skill), about 1 / on-target share
+BLOCK_PROB = 0.5
+SAVE_XG, SAVE_SKILL = 2.7, 0.15  # save = 1 - 2.5 xg (+ keeper skill), about 1 / on-target share
 SAVE_RANGE = (0.3, 0.97)
 CATCH_SPEED_MS = 22.0  # slower shots are usually caught, faster ones parried
 CATCH_PROB = (0.75, 0.30)  # below / above CATCH_SPEED_MS
@@ -91,8 +91,9 @@ SAVE_LEAD_S = 0.1
 
 # ---- duels ------------------------------------------------------------------------------
 TACKLE_RANGE_M = 1.5
-TACKLE_RATE_PER_TICK = 0.022
-FOUL_SHARE = 0.38
+TACKLE_RATE_PER_TICK = 0.026
+FOUL_SHARE = 0.45
+BOX_FOUL_FACTOR = 0.18  # defenders are careful in their own box
 TACKLE_WIN = 0.5  # + 0.3 * (defender skill - carrier skill)
 TACKLE_LOOSE_SHARE = 0.5  # won tackles that knock the ball loose rather than keep it
 PROTECT_S = 1.0  # after receiving, a carrier cannot be tackled for this long
@@ -137,3 +138,30 @@ ROLE_RUN_FACTOR: dict[str, float] = {
     "target_man": 0.6,
 }
 OTHER_ROLE_RUN_FACTOR = 0.7
+
+# ---- level 4: match flow (cards, subs, beats) ---------------------------------------------
+DEFAULT_HEIGHT_CM = 182.0  # without profiles
+YELLOW_SHARE = 0.20  # of fouls (x the fouler's foul_rate modifier)
+RED_SHARE = 0.006
+PENDING_RED_TACKLE_MULT = 3.0  # a red-card beat: the team tackles more until it fouls
+OFF_PITCH = (-10.0, -10.0)  # parked spot of a sent-off player (left out of frames)
+MAX_SUBS = 5
+AUTO_SUB_MINUTES = (60.0, 68.0, 76.0, 84.0)  # managers' changes, made at the next stoppage
+MOD_UPDATE_S = 300.0  # modifiers follow minute, score, and energy every 5 minutes
+STORYLINE_WINDOW_S = 900.0  # a beat's team plays under the storyline cap for 15 minutes
+GOAL_BEAT_WINDOW_S = 900.0
+GOAL_BEAT_XG_MULT = 1.5  # a goal beat lifts the team's chance quality
+FATIGUE_SPIKE = 0.2
+
+# ---- level 4: set pieces ----------------------------------------------------------------
+PENALTY_PAUSE_S = (40.0, 70.0)
+PENALTY_SAVE_SHARE = 0.65  # of missed penalties (the rest go wide)
+SHORT_CORNER_SHARE = 0.1
+DIRECT_FK_SHARE = 0.55  # free kicks in the 17-30 m band struck at goal
+CORNER_ATTACKERS = 5
+CORNER_SPOTS = ((99.0, 31.0), (98.5, 37.5), (96.0, 34.0), (94.0, 28.5), (93.0, 40.0))
+HEADER_REACH_M = 2.0
+HEADER_SPEED_MS = 14.0
+HEADER_HEIGHT_M = 2.8
+PENALTY_SPEED_MS = (21.0, 27.0)
+FREE_KICK_LOFT_DEG = (8.0, 14.0)

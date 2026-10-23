@@ -26,3 +26,5 @@ One entry per decision: date, the decision, and why. Newest first.
 - **2026-10-22 · Restarts count for the team awarded them.** The validator credits throw-ins, goal kicks, and corners to the opponent of the last touch.
 - **2026-10-23 · Scenario files are TOML, not YAML.** PyYAML is not on the Adopt list; Python's built-in `tomllib` reads TOML with no new dependency.
 - **2026-10-23 · Goals track xG.** Saves are `1 − 2.5·xg` (clipped), so an on-target share of about 40% gives goals ≈ xG on average. The xG curve was lowered to public-model levels, shots include pressure, and losing the ball now costs the xT we had. The result is about 27 shots, 2.2 xG, and 2.5 goals per match from open play, with a median shot distance of 17 m.
+- **2026-10-23 · Engine level 4 has its own wiki page** (`engine-level4.md`), keeping `engine.md` under 150 lines.
+- **2026-10-23 · Distance and sprints are per full match.** With substitutes and red cards, players don't all play 90 minutes; each one who plays a sixth of the match or more is scaled to the whole match. This is the usual way the metric is reported.

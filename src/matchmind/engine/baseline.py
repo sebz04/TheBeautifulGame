@@ -630,9 +630,13 @@ def build_frames(
     rec_pos: list[np.ndarray],
     rec_vel: list[np.ndarray],
     rec_ball: list[tuple[float, float, float]],
+    rosters: list[tuple[str | None, ...]] | None = None,
+    roster_idx: list[int] | None = None,
 ) -> list[TrackingFrame]:
     """One period's recorded (22, 2) positions and velocities and ball points as
-    `TrackingFrame`s, rounded to 1 cm. Players are the two starting XIs, home first.
+    `TrackingFrame`s, rounded to 1 cm. Players are the two starting XIs, home first,
+    unless `rosters` (who is in each of the 22 slots, None once sent off) and the roster
+    of each frame (`roster_idx`) say otherwise.
 
     The cyclic GC is paused while about 650k small objects are created: they hold no
     cycles, and repeated full collections would otherwise dominate the run time.
@@ -640,7 +644,8 @@ def build_frames(
     enabled = gc.isenabled()
     gc.disable()
     try:
-        return _build_frames(meta, period, first_frame, rec_pos, rec_vel, rec_ball)
+        return _build_frames(meta, period, first_frame, rec_pos, rec_vel, rec_ball, rosters,
+                             roster_idx)  # fmt: skip
     finally:
         if enabled:
             gc.enable()
@@ -653,16 +658,23 @@ def _build_frames(
     rec_pos: list[np.ndarray],
     rec_vel: list[np.ndarray],
     rec_ball: list[tuple[float, float, float]],
+    rosters: list[tuple[str | None, ...]] | None = None,
+    roster_idx: list[int] | None = None,
 ) -> list[TrackingFrame]:
     if not rec_pos:
         return []
-    ids = [p.player_id for p in meta.home_squad[:11] + meta.away_squad[:11]]
+    start: tuple[str | None, ...] = tuple(
+        p.player_id for p in meta.home_squad[:11] + meta.away_squad[:11]
+    )
+    rosters = rosters or [start]
+    roster_idx = roster_idx or [0] * len(rec_pos)
     teams = [meta.home.club_id] * 11 + [meta.away.club_id] * 11
     pos = np.round(np.stack(rec_pos), 2).tolist()
     vel = np.round(np.stack(rec_vel), 2).tolist()
     ball = np.round(np.array(rec_ball), 2).tolist()
     frames: list[TrackingFrame] = []
     for k, (p_k, v_k, b_k) in enumerate(zip(pos, vel, ball, strict=True)):
+        ids = rosters[roster_idx[k]]
         players = [
             trusted(
                 PlayerPos,
@@ -676,6 +688,7 @@ def _build_frames(
                 },
             )
             for i in range(22)
+            if ids[i] is not None
         ]
         frames.append(
             trusted(
