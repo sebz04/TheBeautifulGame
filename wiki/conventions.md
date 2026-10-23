@@ -18,7 +18,7 @@
 | Purpose | Command |
 |---|---|
 | Install | `uv sync` |
-| Test | `uv run pytest` |
+| Test | `uv run pytest` (skips `slow`); `uv run pytest -m slow` for season budget and effect tests (nightly in CI) |
 | Lint / format | `uv run ruff check .` · `uv run ruff format .` |
 | Types | `uv run mypy src` (strict) |
 | License gate | `uv run python scripts/check_licenses.py` |

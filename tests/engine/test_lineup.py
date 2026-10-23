@@ -30,3 +30,15 @@ def test_match_meta_deterministic_and_complete() -> None:
     for club, squad in ((meta.home, meta.home_squad), (meta.away, meta.away_squad)):
         assert len(squad) == 20  # starting XI first, then the bench
         assert squad[:11] == starting_xi(league.squads[club.club_id], club.formation)
+
+
+def test_unavailable_players_miss_the_match() -> None:
+    league = build_league()
+    fixture = build_fixtures(league, seed=2026)[0]
+    full = match_meta(league, fixture, seed=1)
+    banned = {full.home_squad[1].player_id, full.away_squad[10].player_id}
+    meta = match_meta(league, fixture, seed=1, unavailable=frozenset(banned))
+    picked = {p.player_id for p in meta.home_squad + meta.away_squad}
+    assert not banned & picked
+    assert len(meta.home_squad[:11]) == 11 and len(meta.away_squad[:11]) == 11
+    assert meta.home_squad[1].position == full.home_squad[1].position  # like for like

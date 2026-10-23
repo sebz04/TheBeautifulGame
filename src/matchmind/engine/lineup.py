@@ -41,8 +41,21 @@ def _ordered_squad(squad: list[Player], formation: str) -> list[Player]:
     return xi + [p for p in squad if p.player_id not in chosen]
 
 
-def match_meta(league: League, fixture: Fixture, seed: int, scenario_id: str = "none") -> MatchMeta:
-    """Squads are ordered starting XI first (GK, DF, MF, FW), then the bench."""
+def _available(league: League, club_id: str, unavailable: frozenset[str]) -> list[Player]:
+    return [p for p in league.squads[club_id] if p.player_id not in unavailable]
+
+
+def match_meta(
+    league: League,
+    fixture: Fixture,
+    seed: int,
+    scenario_id: str = "none",
+    unavailable: frozenset[str] = frozenset(),
+) -> MatchMeta:
+    """Squads are ordered starting XI first (GK, DF, MF, FW), then the bench.
+
+    `unavailable` players (suspended) are left out of both.
+    """
     rng = stream(seed, f"meta:{fixture.match_id}")
     clubs = {c.club_id: c for c in league.clubs}
     home, away = clubs[fixture.home_id], clubs[fixture.away_id]
@@ -54,8 +67,8 @@ def match_meta(league: League, fixture: Fixture, seed: int, scenario_id: str = "
         seed=seed,
         home=home,
         away=away,
-        home_squad=_ordered_squad(league.squads[home.club_id], home.formation),
-        away_squad=_ordered_squad(league.squads[away.club_id], away.formation),
+        home_squad=_ordered_squad(_available(league, home.club_id, unavailable), home.formation),
+        away_squad=_ordered_squad(_available(league, away.club_id, unavailable), away.formation),
         scenario_id=scenario_id,
         engine_version=ENGINE_VERSION,
         stadium=stadium,

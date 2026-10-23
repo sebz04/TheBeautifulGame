@@ -30,3 +30,5 @@ One entry per decision: date, the decision, and why. Newest first.
 - **2026-10-23 · Distance and sprints are per full match.** With substitutes and red cards, players don't all play 90 minutes; each one who plays a sixth of the match or more is scaled to the whole match. This is the usual way the metric is reported.
 - **2026-10-23 · Realism and xT use profiles at level 3.** Showcase and season matches always have profiles, so the realism report and xT training run that way too.
 - **2026-10-23 · Goal beats bias finishing, not just volume.** A ten-man team rarely creates chances, so lifting chance quality alone didn't move results. A goal window makes the team shoot sooner, with sharper aim and weaker saves. It never forces a goal.
+- **2026-10-23 · Season history uses the engine's own motion tally, not 2 Hz frames.** Exact distance, speed, and sprints, with no frame building (the plan said 2 Hz tracking).
+- **2026-10-23 · Slow tests run nightly.** Tests marked `slow` (season budget, attribute effects) are skipped by default (`-m 'not slow'`) and run in `.github/workflows/nightly.yml`.

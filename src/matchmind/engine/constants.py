@@ -49,6 +49,12 @@ CONTAIN_M = 4.0  # not pressing: stand this far goal-side of the ball
 # ---- runs in behind -------------------------------------------------------------------
 RUN_BALL_DEPTH_M = 40.0  # runners only make runs once the ball is past this depth
 RUN_MAX_S = 2.5
+FINAL_THIRD_M = 70.0  # ball this deep: two more attackers run into the box
+BOX_RUNNERS = 2
+BOX_RUN_SPOTS = ((95.0, 27.0), (93.0, 41.0))  # team frame
+BOX_RUN_URGENCY = 0.75
+MARK_RUNNER_ZONE_M = 60.0  # ball within this of a team's goal: a defender marks the runner
+MARK_GOAL_SIDE_M = 1.5
 
 # ---- ball control -----------------------------------------------------------------------
 CONTROL_RANGE_M = 1.2
@@ -142,8 +148,9 @@ OTHER_ROLE_RUN_FACTOR = 0.7
 # ---- level 4: match flow (cards, subs, beats) ---------------------------------------------
 DEFAULT_HEIGHT_CM = 182.0  # without profiles
 YELLOW_SHARE = 0.20  # of fouls (x the fouler's foul_rate modifier)
-RED_SHARE = 0.006
-PENDING_RED_TACKLE_MULT = 3.0  # a red-card beat: the team tackles more until it fouls
+RED_SHARE = 0.003
+PENDING_RED_TACKLE_MULT = 3.0
+BOOKED_CAUTION = 0.5  # a booked player tackles, and fouls, half as readily
 OFF_PITCH = (-10.0, -10.0)  # parked spot of a sent-off player (left out of frames)
 MAX_SUBS = 5
 AUTO_SUB_MINUTES = (60.0, 68.0, 76.0, 84.0)  # managers' changes, made at the next stoppage

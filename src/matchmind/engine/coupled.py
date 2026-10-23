@@ -50,6 +50,7 @@ from matchmind.engine.modifiers import (
     match_form,
 )
 from matchmind.engine.pitch import PITCH_LENGTH, PITCH_WIDTH
+from matchmind.engine.realism_ranges import SPRINT_MIN_S, SPRINT_SPEED_MS
 from matchmind.engine.roles import (
     COVER_SHARE,
     GK_BASE_M,
@@ -104,10 +105,21 @@ from matchmind.stats.xt import load_xt
 
 ENGINE_VERSION = "l4-0.1"  # the level-3 loop with level-4 tactics, set pieces, scenarios
 CENTRE = np.array([PITCH_LENGTH / 2, PITCH_WIDTH / 2])
+SPRINT_TICKS = round(SPRINT_MIN_S / C.DT)
 Chooser = Callable[[list[Option]], Option]
 EventDict = dict[str, Any]
 _PASS_ONLY = {"throw_in", "kickoff", "goal_kick", "corner"}
 _NO_OFFSIDE = {"throw_in", "goal_kick", "corner"}
+
+
+@dataclass
+class Motion:
+    """A player's running for one match, tallied at 10 Hz as the frames would show it."""
+
+    distance_m: float = 0.0
+    top_speed_ms: float = 0.0
+    sprints: int = 0  # above SPRINT_SPEED_MS for at least SPRINT_MIN_S
+    minutes: float = 0.0
 
 
 @dataclass
@@ -248,6 +260,14 @@ class Coupled:
         self.xt = load_xt() if xt is None else xt
         self.energy = np.array([min(1.0, m.start_energy) for m in self.pmods])
         self.sent_off: set[int] = set()
+        self.motion: dict[str, Motion] = {}
+        self._dist, self._top = np.zeros(22), np.zeros(22)
+        self._sprints, self._ticks, self._run = (
+            np.zeros(22, int),
+            np.zeros(22, int),
+            np.zeros(22, int),
+        )
+        self._last = np.full((22, 2), np.nan)
         self.chooser: Chooser | None = None
         self.events: list[EventDict] = []  # this period, resolved at its end
         self.all_events: list[Event] = []
@@ -947,14 +967,15 @@ class Coupled:
         o = self.nearest(self.pos[i], 1 - team)
         if self.dist(o, self.pos[i]) > C.TACKLE_RANGE_M:
             return
-        rate = C.TACKLE_RATE_PER_TICK * self.pmods[o].tackle_rate
+        booked = C.BOOKED_CAUTION if self.yellows.get(self.ids[o], 0) else 1.0
+        rate = C.TACKLE_RATE_PER_TICK * self.pmods[o].tackle_rate * booked
         if self.pending_red[1 - team]:
             rate *= C.PENDING_RED_TACKLE_MULT
         if self.rng.random() > rate:
             return
         at = self.ball.copy()
         careful = C.BOX_FOUL_FACTOR if in_box(self.local(np.array(at), team)) else 1.0
-        foul = self.rng.random() < C.FOUL_SHARE * careful * self.pmods[o].foul_rate
+        foul = self.rng.random() < C.FOUL_SHARE * careful * booked * self.pmods[o].foul_rate
         if foul or self.pending_red[1 - team]:
             self.award_foul(o, i, at)
             return
@@ -1024,6 +1045,7 @@ class Coupled:
         self.send_off(fouler)
 
     def send_off(self, slot: int) -> None:
+        self.flush_motion(slot)
         self.active[slot] = False
         self.sent_off.add(slot)
         self.pos[slot], self.vel[slot] = C.OFF_PITCH, 0.0
@@ -1058,6 +1080,7 @@ class Coupled:
         self.bench[team].remove(incoming)
         ev = self.emit("sub", team, out, self.pos[out], extras={"minute": round(self.minute(), 1)})
         ev["receiver"] = incoming.player_id
+        self.flush_motion(out)
         self.load_slot(out, incoming)
         self.energy[out] = 1.0
         self.subs_used[team] += 1
@@ -1345,6 +1368,8 @@ class Coupled:
             p = b + SUPPORT_DIST_M * np.array([math.cos(ang), side * math.sin(ang)])
             tgt[j] = self.local(_clamp(p, 1.0), team)
             urg[j] = C.SUPPORT_URGENCY
+        if b[0] >= C.FINAL_THIRD_M:
+            self.box_runs(tgt, urg, team, [carrier, runner, *cands[:0]])
         if runner is None or b[0] < C.RUN_BALL_DEPTH_M:
             return
         opp = self.pos[self.on(1 - team)]
@@ -1356,6 +1381,33 @@ class Coupled:
         tgt[runner] = self.local(_clamp(np.array([depth, here[1]]), 0.5), team)
         urg[runner] = 1.0 if running else RUN_WAIT_URGENCY
 
+    def mark_runner(self, tgt: np.ndarray, urg: np.ndarray, team: int) -> None:
+        """Out of possession near its own goal, the defender nearest the opponents' runner
+        stays goal-side of him."""
+        runner = self.s.runner
+        if runner is None or self.local(self.ball, team)[0] > C.MARK_RUNNER_ZONE_M:
+            return
+        defenders = [j for j in self.on(team) if self.is_df[j] and urg[j] < C.SUPPORT_URGENCY]
+        if not defenders:
+            return
+        marker = min(defenders, key=lambda j: self.dist(j, self.pos[runner]))
+        opp = self.local(self.pos[runner], team)
+        p = opp + C.MARK_GOAL_SIDE_M * _unit(np.array([0.0, CENTRE[1]]) - opp)
+        tgt[marker], urg[marker] = self.local(_clamp(p, 0.5), team), C.SUPPORT_URGENCY
+
+    def box_runs(self, tgt: np.ndarray, urg: np.ndarray, team: int, busy: list[int | None]) -> None:
+        """With the ball in the final third, the two nearest midfielders or forwards (not
+        the carrier, runner, or supports) arrive in the box, staying onside."""
+        opp = self.pos[self.on(1 - team)]
+        line = offside_line(opp, self.ball, self.right(team))
+        onside = float(self.local(np.array([line, 0.0]), team)[0]) - C.ONSIDE_MARGIN_M
+        free = [j for j in self.on(team) if j % 11 != 0 and not self.is_df[j] and j not in busy
+                and urg[j] < C.SUPPORT_URGENCY]  # fmt: skip
+        free.sort(key=lambda j: -float(self.local(self.pos[j], team)[0]))
+        for j, spot in zip(free[: C.BOX_RUNNERS], C.BOX_RUN_SPOTS, strict=False):
+            p = np.array([min(spot[0], onside), spot[1]])
+            tgt[j], urg[j] = self.local(p, team), C.BOX_RUN_URGENCY
+
     def targets(self) -> tuple[np.ndarray, np.ndarray]:
         s = self.s
         tgt, urg = self.shape()
@@ -1364,6 +1416,7 @@ class Coupled:
             team = int(self.team_of[i])
             self.attack_ball(tgt, urg, team, i)
             self.defend_ball(tgt, urg, 1 - team)
+            self.mark_runner(tgt, urg, 1 - team)
             if s.carry_end is not None:
                 tgt[i], urg[i] = s.carry_end, C.DRIBBLE_URGENCY
             else:
@@ -1440,6 +1493,31 @@ class Coupled:
 
     # ---- loop ---------------------------------------------------------------------------
 
+    def tally(self) -> None:
+        """Add this tick to each player's motion: what the frame records now."""
+        on = self.active
+        step = np.hypot(*(self.pos - self._last).T)
+        self._dist += np.where(on & np.isfinite(step), step, 0.0)
+        self._last = np.where(on[:, None], self.pos, np.nan)
+        speed = np.hypot(*self.vel.T)
+        self._top = np.where(on, np.maximum(self._top, speed), self._top)
+        fast = on & (speed > SPRINT_SPEED_MS)
+        ended = ~fast & (self._run >= SPRINT_TICKS)
+        self._sprints += ended
+        self._run = np.where(fast, self._run + 1, 0)
+        self._ticks += on
+
+    def flush_motion(self, slot: int) -> None:
+        """Bank the slot's tally under its current player (substitution, red, half end)."""
+        m = self.motion.setdefault(self.ids[slot], Motion())
+        m.distance_m += float(self._dist[slot])
+        m.top_speed_ms = max(m.top_speed_ms, float(self._top[slot]))
+        m.sprints += int(self._sprints[slot]) + int(self._run[slot] >= SPRINT_TICKS)
+        m.minutes += float(self._ticks[slot]) * C.DT / 60.0
+        self._dist[slot] = self._top[slot] = 0.0
+        self._sprints[slot] = self._ticks[slot] = self._run[slot] = 0
+        self._last[slot] = np.nan
+
     def setup_period(self, period: Literal[1, 2], added_s: float) -> None:
         self.period = period
         self.n_ticks = round((C.HALF_S + added_s) / C.DT)
@@ -1465,6 +1543,7 @@ class Coupled:
         self.logic()
         self.update_ball()
         self.history.append((self.pos.copy(), self.vel.copy()))
+        self.tally()
         if self.tracking:
             self.rec_pos.append(self.pos.copy())
             self.rec_vel.append(self.vel.copy())
@@ -1475,6 +1554,9 @@ class Coupled:
 
     def finish_period(self) -> None:
         s = self.s
+        for slot in range(22):
+            if self.active[slot]:
+                self.flush_motion(slot)
         self.end_carry(True)
         if s.flight is not None:
             self.resolve(s.flight.event, self.ball, False)
@@ -1520,6 +1602,18 @@ def mods_from_profiles(
     team_mods = (Modifiers.for_team(clubs[0], MatchContext(is_home=True)),
                  Modifiers.for_team(clubs[1], MatchContext(is_home=False)))  # fmt: skip
     return player_mods, team_mods
+
+
+def simulate_with_motion(
+    meta: MatchMeta,
+    tracking: bool = True,
+    profiles: Profiles | None = None,
+    scenario: Scenario | None = None,
+) -> tuple[MatchData, dict[str, Motion]]:
+    """A match plus each player's `Motion` (exact without frames: for season history)."""
+    eng = Coupled(meta, tracking, profiles, scenario=scenario)
+    data = eng.run()
+    return data, eng.motion
 
 
 def simulate_coupled(

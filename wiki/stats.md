@@ -5,6 +5,7 @@
 | Metric | Module | Status | Notes |
 |---|---|---|---|
 | Pitch control | `stats/pitch_control.py` | done | Spearman 2018; vectorized; parity-tested against Friends of Tracking |
+| Player match lines | `stats/player_lines.py` | done | Per-player stat lines (season history, live) |
 | xT | `stats/xt.py` | done | Singh 2019 value iteration on synthetic events only; grid in `data/models/xt_grid.npy` |
 | Pass quality | `stats/passes.py` | planned | Distance, accuracy, difficulty |
 | Speed and alerts | `stats/speed.py` | planned | Sprint > 7.0 m/s for ≥ 1 s |
@@ -29,3 +30,7 @@
 - Moves are passes and carries. Kickoffs are restarts, not choices, so they're excluded.
 - **Checks:** a 2-cell example worked by hand, and value iteration agrees with an exact `np.linalg.solve` (1e-9 at 500 iterations, 1e-3 at the default 50). socceraction can't be installed (it pins numpy < 2).
 - **Current grid (TASK-10.3):** level 3 with profiles (engine `l4-0.1`), 300 seeds, 533k events, provenance in `data/models/xt_grid.json`. Own half about 0.002–0.005, rising through the final third to about 0.30 in front of goal. Cells with no actions are 0. Training takes about 4 min on 8 cores (`scripts/train_xt.py --level 3 --seeds 300`, `tracking=False`). Goals are read from `shot.outcome`; level 3 sets it on every scoring shot, including deflected ones.
+
+## Player match lines (`stats/player_lines.py`, TASK-10.4)
+`player_match_lines(data, motion, round_, xt=None) -> list[PlayerMatchLine]`, one per player who appeared. Fields: minutes, passes, completed, forward (5+ m gained), progressive (completed, 10+ m and ≥ 25% closer to goal), key passes and assists (the receiver's next action is a shot or a goal, with only his own carries between), xT added (completed passes and carries), shots, on target (scored or saved next), xG, dribbles (carries), tackles, interceptions, pressures, fouls, distance, sprints, top speed (from `Motion`), box touches, goals, assists, yellow, red.
+

@@ -194,3 +194,31 @@ def test_scoring_shots_are_marked_as_goals() -> None:
         for g in goals:
             shot = next(e for e in reversed(events[: events.index(g)]) if e.type == "shot")
             assert shot.outcome and shot.player_id == g.player_id, g.event_id
+
+
+def test_motion_matches_frames() -> None:
+    """The engine's own motion tally (used without frames) agrees with the frames."""
+    from matchmind.engine.coupled import simulate_with_motion
+    from matchmind.engine.validate import _sprints
+
+    data, motion = simulate_with_motion(_meta(7), profiles=_profiles())
+    assert data.events == _tracked(7).events
+    speeds: dict[str, list[list[float]]] = {}
+    xy: dict[str, list[list[tuple[float, float]]]] = {}
+    for f in data.frames:
+        for p in f.players:
+            runs = speeds.setdefault(p.player_id, [[], []])
+            runs[f.period - 1].append(float(np.hypot(p.vx, p.vy)))
+            xy.setdefault(p.player_id, [[], []])[f.period - 1].append((p.x, p.y))
+    for pid, m in motion.items():
+        if pid not in speeds:
+            continue
+        frame_dist = sum(float(np.hypot(*np.diff(np.array(seg), axis=0).T).sum())
+                         for seg in xy[pid] if len(seg) > 1)  # fmt: skip
+        assert m.distance_m == pytest.approx(frame_dist, rel=0.01, abs=5.0), pid
+        top = max(max(seg, default=0.0) for seg in speeds[pid])
+        assert m.top_speed_ms == pytest.approx(top, abs=0.02), pid
+        sprints = sum(_sprints(np.array(seg)) for seg in speeds[pid])
+        assert abs(m.sprints - sprints) <= 1, pid
+        frames_on = sum(len(seg) for seg in speeds[pid])
+        assert m.minutes == pytest.approx(frames_on * 0.1 / 60, abs=0.05), pid

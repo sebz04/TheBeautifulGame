@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-10.3 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-22 · **Latest task:** TASK-10.4 · **Code status:** league, profiles, level-3 engine passing all realism checks
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
 - Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
-- Next: TASK-10.4 (season history from the engine). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Next: TASK-10.5 (slow attribute-effect tests). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -36,7 +36,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/schemas.py` | All shared pydantic models | done | 2 |
 | `src/matchmind/schemas_profile.py` | Player/club profiles, Transfer, Legend, Profiles | done | 3 |
 | `src/matchmind/engine/pitch.py` | Pitch constants and geometry | done | 2 |
-| `src/matchmind/league/` | Clubs, squads, fixtures, profiles, transfers, legends (done); season history (planned) | wip | 3, 10.4 |
+| `src/matchmind/league/` | Clubs, squads, fixtures, profiles, transfers, legends, engine-played season history (`season.py`) | done | 3, 10.4 |
+| `src/matchmind/stats/player_lines.py` | Per-player match stat lines | done | 10.4 |
 | `src/matchmind/engine/match_io.py` | Match files (meta.json, events/frames Parquet) | done | 4.1 |
 | `src/matchmind/engine/lineup.py`, `formations.py` | Line-ups, `MatchMeta`, formation anchors | done | 4.2 |
 | `src/matchmind/engine/baseline.py`, `simulate.py` | Level-1 engine (fallback), shared `build_frames`; `simulate_match` dispatch | done | 4.2, 9.3 |
@@ -65,7 +66,7 @@ Status: `planned` · `wip` · `done`
 | `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |
 | `scripts/realism_report.py` | Simulate N seeds and write the realism table | done | 5 |
 | `scripts/train_xt.py` | Train and save the xT grid (parallel, events only) | done | 7 |
-| `.github/workflows/ci.yml` | CI | done | 1 |
+| `.github/workflows/ci.yml`, `nightly.yml` | CI; nightly `slow` tests | done | 1, 10.4 |
 
 ## Governing documents
 `CONSTITUTION.md` (rules) · `TASKS.md` (tracking) · `docs/superpowers/plans/2026-10-21-matchmind.md` (plan) · `docs/research/open-source-review.md` (allowed dependencies)

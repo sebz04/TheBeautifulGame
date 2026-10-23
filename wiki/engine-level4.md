@@ -20,9 +20,12 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
   - `aerial`, `crossing`, `finishing`, height, role and match-day form from the profile;
   - without profiles: skill for every rating, 182 cm, neutral role and form.
 - Modifiers refresh every 5 minutes, and after goals, substitutions and beats. The refresh uses the minute, score difference, energy, home side and storyline window (`update_mods`). Tactic overrides from beats are applied on top (`_with_tactics`).
-- **Cards (`book`):** each foul is a yellow with probability 0.20 × the fouler's foul_rate modifier, or a red with 0.006 × foul_rate. Keepers are never sent off. A second yellow adds a `card` event with `extras.second_yellow`, then the red.
+- **Cards (`book`):** each foul is a yellow with probability 0.20 × the fouler's foul_rate modifier, or a red with 0.003 × foul_rate. A booked player tackles, and fouls, half as readily (`BOOKED_CAUTION`). Keepers are never sent off. A second yellow adds a `card` event with `extras.second_yellow`, then the red.
 - **Sent off (`send_off`):** the slot leaves the pitch for good. It's parked off the pitch, left out of frames, decision frames and pitch control, and every nearest-player or interception check. The phase shape then uses `n_players = 10` (or 9).
 - **Substitutions:** managers make changes at minutes 60, 68, 76 and 84 (at most 5), at the next dead ball. The most tired outfield player makes way for the best bench player of the same position, who comes on with full energy. The `sub` event has `player_id` = off and `receiver_id` = on. Frames follow `rosters` (who is in each slot, per frame; `baseline.build_frames(..., rosters, roster_idx)`).
+
+- **Final third (TASK-10.4):** with the ball 70+ m from goal, the two most advanced free midfielders or forwards run into the box, staying onside (urgency 0.75). With the ball within 60 m of a team's own goal, the defender nearest the opponents' runner marks him, 1.5 m goal-side.
+- **Motion:** `Coupled.motion`, and `simulate_with_motion(meta, ...) -> (MatchData, {player_id: Motion(distance_m, top_speed_ms, sprints, minutes)})`. It's tallied each tick exactly as the frames would show it (tested against frames), so season history needs no frames.
 
 ## Set pieces (`engine/set_pieces.py`, TASK-10.2)
 - **Fouls (`award_foul`):** inside the attacked box → `penalty`; within 17–30 m of goal → a free kick taken by the best finisher; otherwise the fouled player restarts. Defenders foul 0.18× as often in their own box.

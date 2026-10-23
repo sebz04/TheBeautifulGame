@@ -33,7 +33,8 @@ packages = ["src/matchmind"]
 testpaths = ["tests"]
 pythonpath = ["scripts", "tests/reference"]
 asyncio_mode = "auto"
-addopts = "-q"
+addopts = "-q -m 'not slow'"
+markers = ["slow: long simulations (season budget, attribute effects); run with -m slow"]
 
 [tool.ruff]
 line-length = 100

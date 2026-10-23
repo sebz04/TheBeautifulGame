@@ -1,6 +1,6 @@
 # League, Profiles and Fixtures
 
-**Status:** TASK-3 done (re-themed to Colombia in TASK-3.5): clubs, squads, fixtures, player and club profiles, chemistry, origins, transfers, legends. Season history and baselines: TASK-10.4 and TASK-12.3.
+**Status:** TASK-3 done (re-themed to Colombia in TASK-3.5): clubs, squads, fixtures, player and club profiles, chemistry, origins, transfers, legends. Season history (rounds 1–9, engine-played) built in TASK-10.4; baselines in TASK-12.3.
 
 ## Clubs (`league/clubs.py`)
 `CLUBS`: the 20 approved clubs named after barrios in 8 Colombian cities (`ClubSeed`: id slug, name, 3-letter short, fictional stadium, capacity, founded, curated kit colors, `region` = city slug). Bogotá 5 (Chapinero, Usaquén, La Candelaria, Teusaquillo, Suba), Medellín 4 (Laureles, El Poblado, Belén, Manrique), Cali 3 (San Antonio, San Fernando, Siloé), Barranquilla 3 (El Prado, Barrio Abajo, Rebolo), Cartagena 2 (Getsemaní, Manga), and one each in Bucaramanga (Cabecera), Santa Marta (El Rodadero), and Manizales (Chipre). `derbies()` lists 5 same-city pairs: Chapinero–Usaquén, Laureles–El Poblado, San Antonio–San Fernando, El Prado–Barrio Abajo, Getsemaní–Manga; `derby_rival(club_id)`. Barrio names avoid clashes with real clubs, which are named after cities. Kits: derby primaries differ by more than 100 RGB units; every kit pair differs (primary + secondary).
@@ -55,3 +55,16 @@ Entry point: **`build_profiles(league, seed) -> Profiles(players, clubs, transfe
 - **Legends:** per club, a record scorer (FW, 110–260 goals, always above any current player) and a record-appearances player (450–640 apps), with a fictional name and an era decade.
 
 Seed-2026 check: academy 25%, signed 56%, free 13%, loan 6%; 31.5% new signings; 6 former derby rivals; permanent fees median $0.36m, mean $0.81m, max $7.2m; 6 former derby rivals.
+
+## Season history (`league/season.py`, TASK-10.4)
+`simulate_history(league, profiles, fixtures, rounds=9, workers=None) -> Season(rounds, results, standings, player_lines, milestones, discipline, unavailable)`.
+- **How it runs:** each round's 10 matches play in parallel processes, through the real engine with profiles and no frames (`coupled.simulate_with_motion` tallies motion exactly). Rounds run in order.
+- **Seeds:** `match_seed(fixture)`, so every match is reproducible. `history_meta(league, fixtures, match_id, unavailable)` rebuilds any match.
+- **Discipline:** `update_discipline` applies a one-match ban for a red, or on reaching each multiple of 5 yellows (`suspended_until_round`). `unavailable_for(discipline, round)` lists the suspended players, and `match_meta(..., unavailable=...)` leaves them out. `Season.discipline` is the state before round 10; `Season.unavailable` records who sat out each match.
+- **Standings:** `standings(results, club_ids)` gives 3/1/0 points, sorted by points, goal difference, goals for, then club id.
+- **Milestones (`milestones_for(season, id)`):**
+  - Players: first goal of the season, hat-tricks, every 50th appearance and every 25th goal for the club (counting `origin` apps and goals), red cards, 2+ clean sheets for keepers, suspended for round 10.
+  - Clubs: won the last 3+, unbeaten in 4+, lost the last 3+, derby wins, top and bottom of the table.
+- **Seeds 2026, rounds 1–9:** about 6 minutes on 8 cores. 2.4 goals per match, home W/D/L about 41/22/37%, about 0.2 reds and 4.5 yellows per match. The `slow`-marked `test_runtime_budget` checks it stays under 30 minutes.
+- **Known limit:** shots concentrate on the most advanced forward (top scorers about 6 goals in 4 rounds). Forwards score about 70% of goals, against about 50% in real leagues.
+
