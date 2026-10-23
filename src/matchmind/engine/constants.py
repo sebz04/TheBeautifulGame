@@ -31,6 +31,7 @@ TRANSITION_S = 5.0  # after a turnover, players far from their spot sprint back 
 TRANSITION_MIN_M = 6.0
 TRANSITION_URGENCY = 0.85
 SHAPE_URGENCY = (0.05, 0.5)
+TIRED_URGENCY = 0.6  # shape urgency at zero energy, as a share of a fresh player's
 SUPPORT_URGENCY = 0.7
 CHASE_URGENCY = 1.0
 DRIBBLE_URGENCY = 0.5

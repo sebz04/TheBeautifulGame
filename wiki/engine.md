@@ -111,7 +111,7 @@ All level-3 tunables are in `engine/constants.py` (timing, shape, pressing, runs
 
 Distance and sprints are per full match (players on for a sixth of it or more, scaled to the whole match), so substitutes don't dilute them. Per match over many matches: goals 2.2–3.4, penalties 0.2–0.4, set-piece goal share 0.20–0.35. Also per team: offsides 0–6, throw-ins 15–30, goal kicks 4–12, corners 2–9 (credited to the team awarded the restart, i.e. the opponent of the last touch), fouls 8–18.
 
-Level 3 with profiles, set pieces, and the retrained xT (TASK-10.3, `docs/realism.md`): **18/18 pass**. Passes 626, completion 0.83, shots 12.0, on target 0.40, PPDA 8.2, tackles 16.8, 12.4 km, top speed 9.2, sprints 26.4, offsides 1.75, throw-ins 25.9, goal kicks 4.5, corners 2.9, fouls 11.8, 2.45 goals and 0.25 penalties per match, set-piece goal share 0.20. Thin margins: set-piece share, goal kicks.
+Level 3 with profiles, set pieces, and the retrained xT (TASK-10.5, `docs/realism.md`): **18/18 pass**. Passes 620, completion 0.82, shots 12.5, on target 0.42, PPDA 7.7, tackles 17.6, 12.3 km, top speed 9.2, sprints 29.6, offsides 2.45, throw-ins 26.2, goal kicks 4.1, corners 3.0, fouls 10.9, 2.90 goals and 0.30 penalties per match, set-piece goal share 0.22. Thin margins: goal kicks, set-piece share.
 
 Earlier, at TASK-9 (no profiles): **16/16 pass** (passes 623, completion 0.83, shots 13.1, on target 0.37, PPDA 8.8, tackles 19.7, 11.7 km, top speed 9.1, sprints 10.8, offsides 1.9, throw-ins 26.3, goal kicks 5.7, corners 2.4, fouls 11.6, 2.25 goals per match). Thin margins: sprints, corners, goals.
 

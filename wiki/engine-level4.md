@@ -25,6 +25,8 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 - **Substitutions:** managers make changes at minutes 60, 68, 76 and 84 (at most 5), at the next dead ball. The most tired outfield player makes way for the best bench player of the same position, who comes on with full energy. The `sub` event has `player_id` = off and `receiver_id` = on. Frames follow `rosters` (who is in each slot, per frame; `baseline.build_frames(..., rosters, roster_idx)`).
 
 - **Final third (TASK-10.4):** with the ball 70+ m from goal, the two most advanced free midfielders or forwards run into the box, staying onside (urgency 0.75). With the ball within 60 m of a team's own goal, the defender nearest the opponents' runner marks him, 1.5 m goal-side.
+- **Chemistry (TASK-10.5):** `league.profiles.chemistry` is computed for both squads. A pass's completion draw is multiplied by `pair_mods(chemistry).completion` (subtle cap, or 20% in a storyline window; `pair_completion(i, j)`).
+- **Off-ball effort (TASK-10.5):** shape urgency × `urgency_factor()` = work rate (`offball_distance`) × (0.6 + 0.4 · energy). Tired, returning, or low-work-rate players jog less.
 - **Motion:** `Coupled.motion`, and `simulate_with_motion(meta, ...) -> (MatchData, {player_id: Motion(distance_m, top_speed_ms, sprints, minutes)})`. It's tallied each tick exactly as the frames would show it (tested against frames), so season history needs no frames.
 
 ## Set pieces (`engine/set_pieces.py`, TASK-10.2)
@@ -65,5 +67,15 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 | `underdog_low_block` | siloe v el-poblado | home line 0.1, press 0.2, directness 0.85, goal 71' |
 | `counter_attack_masterclass` | barrio-abajo v usaquen | home directness 0.95, tempo 0.9; away line 0.9; home goals 28', 63' |
 
-Over seeds 1–20, `comeback_red_card` gives the ten-man home side 8 wins against 7 without beats, and +0.65 goals per match (`test_beats_shift_outcome`).
+Over seeds 1–20, `comeback_red_card` gives the ten-man home side 8 wins against 7 without beats, and +0.7 goals scored per match; it also concedes more with ten men (`test_beats_shift_outcome`).
+
+## Effect tests (`tests/engine/test_effects.py`, TASK-10.5, `slow`)
+The same fixture is played over 24 seeds with two versions of the home club's profiles, which differ only in the attribute under test. Each of these holds:
+- aggression → fouls; press intensity → lower PPDA; chemistry (joined together in 2018 vs this season) → completion;
+- returning from injury → less distance per 90; risk tolerance → more progressive passes and lower completion;
+- direct, high-tempo play against a high line → more offsides; disciplined, composed strikers → fewer offsides (60 seeds);
+- home win rate 40–48% (120 matches across the calendar);
+- storyline cap ≥ 3× the subtle cap for the same trait.
+
+Run with `uv run pytest -m slow` (nightly in CI).
 

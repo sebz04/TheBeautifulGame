@@ -48,6 +48,7 @@ from matchmind.engine.modifiers import (
     PlayerMods,
     TeamMods,
     match_form,
+    pair_mods,
 )
 from matchmind.engine.pitch import PITCH_LENGTH, PITCH_WIDTH
 from matchmind.engine.realism_ranges import SPRINT_MIN_S, SPRINT_SPEED_MS
@@ -89,6 +90,7 @@ from matchmind.engine.tactics import (
     trigger,
 )
 from matchmind.league.dist import stream
+from matchmind.league.profiles import chemistry
 from matchmind.schemas import (
     Event,
     EventType,
@@ -253,6 +255,13 @@ class Coupled:
         self.pmods: list[PlayerMods] = [PlayerMods() for _ in range(n)]
         self.tmods: tuple[TeamMods, TeamMods] = (TeamMods(), TeamMods())
         self.update_mods()
+        self.chem: dict[tuple[str, str], float] = {}
+        if profiles is not None:
+            for team, squad in enumerate((meta.home_squad, meta.away_squad)):
+                club = self.clubs[team]
+                assert club is not None
+                profs = [profiles.players[p.player_id] for p in squad]
+                self.chem.update(chemistry(profs, club.management.manager_tenure_years))
         self.rosters: list[tuple[str | None, ...]] = []
         self.rec_roster: list[int] = []
         self.formations = (meta.home.formation, meta.away.formation)
@@ -310,6 +319,18 @@ class Coupled:
             self.height[slot] = prof.status.height_cm
             self.roles[slot] = prof.style.role
             self.form[slot] = match_form(prof, self.form_rng)
+
+    def pair_chemistry(self, i: int, j: int) -> float:
+        a, b = sorted((self.ids[i], self.ids[j]))
+        return self.chem.get((a, b), 0.5)
+
+    def pair_completion(self, i: int, j: int) -> float:
+        """Pass completion multiplier for passer i and receiver j (chemistry, capped)."""
+        if not self.chem:
+            return 1.0
+        team = int(self.team_of[i])
+        story = self.match_s() <= self.storyline_until[team] if self.n_ticks else False
+        return pair_mods(self.pair_chemistry(i, j), story).completion
 
     def minute(self) -> float:
         return (0.0 if self.period == 1 else 45.0) + self.k * C.DT / 60.0
@@ -816,6 +837,8 @@ class Coupled:
                    and self.ids[target] in offside_players(self.frame(), self.team_ids[team],
                                                            self.right(team)))  # fmt: skip
         p_ok = 1.0 if sure else opt.pc_prob**C.PC_EXP * (C.EXEC_BASE + C.EXEC_SKILL * skill)
+        if target is not None and not sure:
+            p_ok = min(p_ok * self.pair_completion(i, target), 1.0)
         collector, heavy = target, False
         collect_from = self.k + 2
         if self.rng.random() >= p_ok:
@@ -1322,10 +1345,15 @@ class Coupled:
         self.spot[moved] = tgt[moved]
         tgt = self.spot.copy()
         dist = np.hypot(*(tgt - self.pos).T)
-        urg = np.clip(dist * C.SHAPE_URGENCY_PER_M, *C.SHAPE_URGENCY)
+        urg = np.clip(dist * C.SHAPE_URGENCY_PER_M, *C.SHAPE_URGENCY) * self.urgency_factor()
         if self.k < s.transition_until:
             urg[dist > C.TRANSITION_MIN_M] = C.TRANSITION_URGENCY
         return tgt, urg
+
+    def urgency_factor(self) -> np.ndarray:
+        """Off-ball effort: work rate (`offball_distance`), and tired players jog less."""
+        work = np.array([m.offball_distance for m in self.pmods])
+        return work * (C.TIRED_URGENCY + (1.0 - C.TIRED_URGENCY) * np.clip(self.energy, 0, 1))
 
     def defend_ball(self, tgt: np.ndarray, urg: np.ndarray, team: int) -> None:
         """Out of possession: the nearest player presses (or contains), the next covers."""

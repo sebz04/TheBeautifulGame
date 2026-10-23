@@ -6,6 +6,7 @@ from functools import cache
 import numpy as np
 import pytest
 
+from matchmind.engine import constants as C
 from matchmind.engine import coupled
 from matchmind.engine.coupled import Coupled
 from matchmind.engine.lineup import match_meta
@@ -222,3 +223,28 @@ def test_motion_matches_frames() -> None:
         assert abs(m.sprints - sprints) <= 1, pid
         frames_on = sum(len(seg) for seg in speeds[pid])
         assert m.minutes == pytest.approx(frames_on * 0.1 / 60, abs=0.05), pid
+
+
+def test_chemistry_raises_pair_completion() -> None:
+    eng = Coupled(_meta(7), tracking=False, profiles=_profiles())
+    pairs = [(i, j) for i in range(1, 11) for j in range(i + 1, 11)]
+    chem = {p: eng.pair_chemistry(*p) for p in pairs}
+    best, worst = max(pairs, key=chem.__getitem__), min(pairs, key=chem.__getitem__)
+    assert chem[best] > chem[worst]
+    assert eng.pair_completion(*best) > eng.pair_completion(*worst)
+    assert 1 - SUBTLE_CAP - 1e-9 <= eng.pair_completion(*worst) <= 1 + SUBTLE_CAP + 1e-9
+    neutral = Coupled(_meta(7), tracking=False)
+    assert neutral.pair_completion(*best) == 1.0
+
+
+def test_tired_and_low_work_rate_players_jog_less() -> None:
+    eng = Coupled(_meta(7), tracking=False, profiles=_profiles())
+    eng.setup_period(1, 0.0)
+    eng.pos[:] = eng.kickoff_shape() + 20.0  # everyone far from his spot
+    _, fresh = eng.shape()
+    eng.energy[:] = 0.3
+    _, tired = eng.shape()
+    assert np.all(tired[1:11] < fresh[1:11])
+    factor = eng.urgency_factor()
+    work = np.array([m.offball_distance for m in eng.pmods])
+    assert factor == pytest.approx(work * (C.TIRED_URGENCY + (1 - C.TIRED_URGENCY) * 0.3))

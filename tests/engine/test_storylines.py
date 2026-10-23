@@ -69,8 +69,9 @@ def test_beats_shift_outcome() -> None:
     scripted = [h > a for _, _, h, a in results[:20]]
     control = [h > a for _, _, h, a in results[20:]]
     assert sum(scripted) > sum(control)
-    margin = [h - a for _, _, h, a in results[:20]], [h - a for _, _, h, a in results[20:]]
-    assert sum(margin[0]) - sum(margin[1]) >= 10  # at least +0.5 goals per match
+    # The goal beats' direct effect: the ten-man side scores at least 0.5 more per match.
+    scored = sum(h for _, _, h, _ in results[:20]), sum(h for _, _, h, _ in results[20:])
+    assert scored[0] - scored[1] >= 10
 
 
 def test_scenario_round_trip(tmp_path: Path) -> None:
