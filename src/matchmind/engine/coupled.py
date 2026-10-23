@@ -14,7 +14,7 @@ Tunable numbers live in `engine/constants.py`.
 import math
 from collections import deque
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Literal
 
 import numpy as np
@@ -37,7 +37,6 @@ from matchmind.engine.decisions import (
     choose,
     decision_extras,
     enumerate_options,
-    shot_xg,
 )
 from matchmind.engine.formations import formation_anchors
 from matchmind.engine.kinematics import step_players
@@ -64,6 +63,13 @@ from matchmind.engine.roles import (
     defensive_line,
     offside_line,
 )
+from matchmind.engine.tactics import (
+    Phase,
+    formation_shape,
+    runs_in_behind_rate,
+    shape_lines,
+    trigger,
+)
 from matchmind.league.dist import stream
 from matchmind.schemas import (
     Event,
@@ -74,7 +80,7 @@ from matchmind.schemas import (
     TrackingFrame,
     trusted,
 )
-from matchmind.schemas_profile import Profiles
+from matchmind.schemas_profile import ClubProfile, Profiles
 from matchmind.stats.pitch_control import offside_players
 from matchmind.stats.xt import load_xt
 
@@ -140,6 +146,8 @@ class _State:
     run_end_k: int = 0
     run_error_s: float = 0.0
     transition_until: int = 0
+    won_k: int = -(10**6)  # tick the team in possession won the ball in open play
+    trigger_until: list[int] = field(default_factory=lambda: [0, 0])  # per pressing team
 
 
 def _unit(v: np.ndarray) -> np.ndarray:
@@ -157,8 +165,7 @@ class Coupled:
         self,
         meta: MatchMeta,
         tracking: bool = True,
-        player_mods: list[PlayerMods] | None = None,
-        team_mods: tuple[TeamMods, TeamMods] | None = None,
+        profiles: Profiles | None = None,
         xt: np.ndarray | None = None,
     ) -> None:
         self.meta = meta
@@ -177,8 +184,18 @@ class Coupled:
         self.pace = np.array([p.pace for p in self.players])
         self.stamina = np.array([p.stamina for p in self.players])
         self.goalkeepers = frozenset({self.ids[0], self.ids[11]})
-        self.pmods = player_mods or [PlayerMods() for _ in range(22)]
-        self.tmods = team_mods or (TeamMods(), TeamMods())
+        self.profiles = profiles
+        if profiles is None:
+            self.pmods: list[PlayerMods] = [PlayerMods() for _ in range(22)]
+            self.tmods: tuple[TeamMods, TeamMods] = (TeamMods(), TeamMods())
+            self.clubs: tuple[ClubProfile | None, ClubProfile | None] = (None, None)
+            self.roles: list[str | None] = [None] * 22
+        else:
+            self.pmods, self.tmods = mods_from_profiles(meta, profiles)
+            self.clubs = (profiles.clubs[meta.home.club_id], profiles.clubs[meta.away.club_id])
+            self.roles = [profiles.players[pid].style.role for pid in self.ids]
+        self.formations = (meta.home.formation, meta.away.formation)
+        self.active = np.ones(22, dtype=bool)  # False once sent off
         self.drain = np.array([m.energy_drain for m in self.pmods])
         self.xt = load_xt() if xt is None else xt
         self.energy = np.array([min(1.0, m.start_energy) for m in self.pmods])
@@ -331,6 +348,8 @@ class Coupled:
         if s.poss_team != int(self.team_of[i]):
             s.runner = None
             s.transition_until = self.k + round(C.TRANSITION_S / C.DT)
+            if s.phase != "dead":
+                s.won_k = self.k
         s.phase, s.owner, s.poss_team = "held", i, int(self.team_of[i])
         s.decide_k = self.k + max(1, round(hold_s / C.DT))
         s.protect_until = self.k + round(protect_s / C.DT)
@@ -353,8 +372,21 @@ class Coupled:
             s.runner = self.pick_runner(team)
         if s.runner is None:
             return
+        window_min = max(s.decide_k - self.k, 1) * C.DT / 60.0
+        if self.rng.random() >= 1.0 - math.exp(-self.run_rate(team, s.runner) * window_min):
+            s.run_start_k = None  # no run this time: he holds the line
+            return
         sd = RUN_TIMING_SD_S * self.pmods[s.runner].run_timing_sd
         self.set_run(s.runner, float(self.rng.normal(0.0, sd)))
+
+    def run_rate(self, team: int, runner: int) -> float:
+        """Runs per minute in possession (`tactics.runs_in_behind_rate`)."""
+        club = self.clubs[team]
+        line = self.tmods[1 - team].line_height
+        pace = float(self.pace[runner])
+        if club is None:
+            return C.RUN_RATE_BASE * (0.7 + 0.6 * pace) * (0.5 + line)
+        return runs_in_behind_rate(club, self.roles[runner], line, pace)
 
     def set_run(self, runner: int, error_s: float) -> None:
         s = self.s
@@ -443,9 +475,16 @@ class Coupled:
         s = self.s
         team = int(self.team_of[i])
         self.end_carry(True)
-        ctx = DecisionContext(self.team_ids[team], self.right(team), self.xt, self.goalkeepers,
-                              risk_weight=self.pmods[i].risk_weight, shot_cost=C.SHOT_COST,
-                              clear_bonus=C.CLEAR_BONUS)  # fmt: skip
+        ctx = DecisionContext(
+            self.team_ids[team],
+            self.right(team),
+            self.xt,
+            self.goalkeepers,
+            risk_weight=self.pmods[i].risk_weight,
+            shot_cost=C.SHOT_COST,
+            clear_bonus=C.CLEAR_BONUS,
+            keep_weight=C.SHOT_KEEP_WEIGHT,
+        )
         options = enumerate_options(self.frame(lagged=True), self.ids[i], ctx)
         restart = s.restart
         if restart in _PASS_ONLY or i % 11 == 0:
@@ -470,7 +509,7 @@ class Coupled:
         elif opt.kind == "carry":
             self.start_carry(i, opt, extras)
         elif opt.kind == "shot":
-            self.shoot(i, extras)
+            self.shoot(i, extras, opt.pc_prob)
         else:
             self.clear(i, opt, extras)
 
@@ -577,11 +616,12 @@ class Coupled:
         free = self.k + max(3, round(traj.duration / C.DT))
         self.launch(_Flight(traj, self.k, team, i, None, free, free, ev))
 
-    def shoot(self, i: int, extras: dict[str, object]) -> None:
+    def shoot(self, i: int, extras: dict[str, object], base_xg: float) -> None:
+        """`base_xg`: the option's xG (pressure included, average skill)."""
         team = int(self.team_of[i])
         skill = float(self.skill[i])
         start = self.ball.copy()
-        xg = shot_xg(start, self.right(team), skill)
+        xg = min(base_xg * (0.85 + 0.3 * skill), 0.95)
         aim_local = np.array([PITCH_LENGTH, PITCH_WIDTH / 2 + float(self.rng.uniform(
             -(3.66 - C.SHOT_AIM_INSIDE_M), 3.66 - C.SHOT_AIM_INSIDE_M))])  # fmt: skip
         aim = self.local(aim_local, team)
@@ -627,8 +667,9 @@ class Coupled:
         if traj.out is None or not in_goal_mouth(traj.out[1]):
             return None
         gk = 11 * (1 - team)
-        p_save = C.SAVE_BASE - C.SAVE_XG * xg + C.SAVE_SKILL * (float(self.skill[gk]) - 0.5)
-        p_save = min(max(p_save / self.pmods[gk].gk_error, 0.05), 0.95)
+        # On-target shots score about xg / ON_TARGET_SHARE, so goals track xG on average.
+        p_save = 1.0 - C.SAVE_XG * xg + C.SAVE_SKILL * (float(self.skill[gk]) - 0.5)
+        p_save = min(max(p_save / self.pmods[gk].gk_error, C.SAVE_RANGE[0]), C.SAVE_RANGE[1])
         if self.rng.random() >= p_save:
             return None
         speed = float(np.hypot(*(traj.xyz[1, :2] - traj.xyz[0, :2]))) / C.DT
@@ -727,6 +768,7 @@ class Coupled:
             traj = flight(start, start + 10.0 * np.array([math.cos(a), math.sin(a)]), "ground",
                           float(self.rng.uniform(*C.HEAVY_TOUCH_SPEED)))  # fmt: skip
             self.launch(_Flight(traj, self.k, team, j, None, self.k + 3, self.k + 3))
+            self.press_trigger(1 - team, "poor_touch")
             return
         if team == f.last_team and f.offside and j == f.target:
             self.resolve(f.event, at, False, j)
@@ -750,6 +792,50 @@ class Coupled:
             self.emit("interception", team, j, feet, outcome=True)
         s.flight = None
         self.give_ball(j)
+        if team == f.last_team:
+            ev = f.event
+            back = False
+            if ev is not None and ev["type"] == "pass" and ev["end"] is not None:
+                end_depth = float(self.local(ev["end"], team)[0])
+                gain = end_depth - float(self.local(ev["at"], team)[0])
+                back = gain < -C.BACK_PASS_M and end_depth <= C.BACK_PASS_ZONE_M
+            facing = self.local_vel(j, team)[0] < -C.FACING_OWN_GOAL_MS
+            if trigger(back, False, facing):
+                self.press_trigger(1 - team, "back_pass" if back else "facing_own_goal")
+
+    def local_vel(self, j: int, team: int) -> np.ndarray:
+        v: np.ndarray = self.vel[j] if self.right(team) else -self.vel[j]
+        return v
+
+    def press_trigger(self, team: int, kind: str) -> None:
+        """`team` reads a cue to press (`tactics.pressing_trigger`); how often it reacts
+        is its press intensity (a tactic, uncapped)."""
+        presser = self.nearest(self.ball, team)
+        if self.dist(presser, self.ball) > C.TRIGGER_RANGE_M:
+            return
+        if self.rng.random() >= self.tmods[team].press_intensity:
+            return
+        self.s.trigger_until[team] = self.k + round(C.TRIGGER_S / C.DT)
+        self.emit("pressure", team, presser, self.pos[presser], extras={"trigger": kind})
+
+    def team_phase(self, team: int) -> Phase:
+        s = self.s
+        depth = float(self.local(self.ball, team)[0])
+        if s.poss_team == team:
+            return "counter" if self.k < s.won_k + round(C.COUNTER_S / C.DT) else "build_up"
+        if (s.phase == "dead" and s.dead is not None and s.dead.restart in ("corner", "free_kick")
+                and depth <= C.LOW_BLOCK_DEPTH_M):  # fmt: skip
+            return "set_piece"
+        intensity = self.tmods[team].press_intensity
+        if self.k < s.trigger_until[team] or (
+            depth >= C.HIGH_PRESS_DEPTH_M and intensity >= C.HIGH_PRESS_MIN_INTENSITY
+        ):
+            return "high_press"
+        if depth < C.LOW_BLOCK_DEPTH_M or (
+            intensity < C.DEEP_TEAM_INTENSITY and depth < C.DEEP_TEAM_LOW_BLOCK_M
+        ):
+            return "low_block"
+        return "mid_block"
 
     def flight_logic(self) -> None:
         f = self.s.flight
@@ -819,22 +905,24 @@ class Coupled:
         if s.reset_shape:
             tgt = self.kickoff_shape()
         else:
-            tgt = np.zeros((22, 2))
+            tgt = self.pos.copy()  # players sent off keep their (off-pitch) spot
             for team in (0, 1):
-                idx = slice(11 * team, 11 * team + 11)
+                slots = [j for j in self.members(team) if self.active[j]]
+                phase = self.team_phase(team)
+                a = formation_shape(self.formations[team], phase, len(slots))
+                df = np.array([line == "DF" for line in shape_lines(self.formations[team],
+                                                                    len(slots))])  # fmt: skip
                 b = self.local(self.ball, team)
-                a = self.anchors[idx]
-                shift = C.BLOCK_SHIFT * (b[0] - CENTRE[0])
-                side = C.BALL_SIDE_SHIFT * (b[1] - CENTRE[1])
+                d = a[:, 0] + C.BLOCK_SHIFT * (b[0] - CENTRE[0])
+                w = a[:, 1] + C.BALL_SIDE_SHIFT * (b[1] - CENTRE[1])
                 if s.poss_team == team:
-                    d = a[:, 0] + shift + C.ATTACK_PUSH_M
-                    w = CENTRE[1] + (a[:, 1] - CENTRE[1]) * C.ATTACK_WIDTH + side
-                    d[0] = min(C.GK_DEPTH_IN_POSSESSION, max(b[0] - 20.0, 4.0))
+                    d[0] = min(a[0, 0], max(b[0] - 20.0, 4.0))
                     w[0] = CENTRE[1]
+                    opp = self.pos[[j for j in self.members(1 - team) if self.active[j]]]
+                    line = offside_line(opp, self.ball, self.right(team))
+                    onside = float(self.local(np.array([line, 0.0]), team)[0]) - C.ONSIDE_MARGIN_M
+                    d[1:] = np.minimum(d[1:], onside)
                 else:
-                    d = a[:, 0] + shift - C.DEFEND_DROP_M
-                    w = CENTRE[1] + (a[:, 1] - CENTRE[1]) * C.DEFEND_WIDTH + side
-                    df = self.is_df[idx]
                     if df.any():
                         d[df] = defensive_line(a[df, 0], float(b[0]),
                                                self.tmods[team].line_height)  # fmt: skip
@@ -845,7 +933,7 @@ class Coupled:
                     d[0], w[0] = g[0], g[1]
                 local = np.column_stack([np.clip(d, 0.5, PITCH_LENGTH - 0.5),
                                          np.clip(w, 0.5, PITCH_WIDTH - 0.5)])  # fmt: skip
-                tgt[idx] = self.local(local, team)
+                tgt[slots] = self.local(local, team)
         moved = np.hypot(*(tgt - self.spot).T) > C.SHAPE_DEADBAND_M
         self.spot[moved] = tgt[moved]
         tgt = self.spot.copy()
@@ -864,6 +952,13 @@ class Coupled:
         own_goal = np.array([0.0, CENTRE[1]])
         intensity = self.tmods[team].press_intensity
         presser, cover = int(order[0]), int(order[1])
+        if self.k < self.s.trigger_until[team]:
+            # A triggered press: the nearest two close the ball down at full speed.
+            p = b + PRESS_GOAL_SIDE_M * _unit(own_goal - b)
+            tgt[presser], urg[presser] = self.local(_clamp(p, 0.5), team), 1.0
+            q = b + 2.5 * _unit(own_goal - b)
+            tgt[cover], urg[cover] = self.local(_clamp(q, 0.5), team), C.TRIGGER_COVER_URGENCY
+            return
         if b[0] <= C.PRESS_BASE_M + intensity * C.PRESS_ZONE_M:
             p = b + PRESS_GOAL_SIDE_M * _unit(own_goal - b)
             u = C.PRESS_URGENCY[0] + intensity * (C.PRESS_URGENCY[1] - C.PRESS_URGENCY[0])
@@ -1045,13 +1140,11 @@ def mods_from_profiles(
     return player_mods, team_mods
 
 
-def simulate_coupled(meta: MatchMeta, tracking: bool = True, profiles: Profiles | None = None
-                     ) -> MatchData:  # fmt: skip
-    """Level-3 match: same meta (and seed) gives identical events and frames.
+def simulate_coupled(
+    meta: MatchMeta, tracking: bool = True, profiles: Profiles | None = None
+) -> MatchData:
+    """Same meta (and seed) gives identical events and frames.
 
     `tracking=False` returns no frames; events are unchanged (recording uses no RNG).
     """
-    if profiles is None:
-        return Coupled(meta, tracking).run()
-    player_mods, team_mods = mods_from_profiles(meta, profiles)
-    return Coupled(meta, tracking, player_mods, team_mods).run()
+    return Coupled(meta, tracking, profiles).run()

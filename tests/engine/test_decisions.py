@@ -148,3 +148,16 @@ def test_decision_extras() -> None:
     assert extras["chosen_score"] == pytest.approx(0.5)
     assert extras["best_score"] == pytest.approx(0.9)
     assert extras["best_option"] == {"kind": "pass", "target": "p1", "end": [50.0, 34.0]}
+
+
+def test_pressure_lowers_shot_xg() -> None:
+    home = [(5.0, 34.0), (92.0, 34.0), (45.0, 15.0), (60.0, 50.0), (78.0, 30.0)]
+    free = [(102.0, 34.0), (80.0, 20.0), (80.0, 40.0), (60.0, 52.0), (55.0, 20.0)]
+    marked = [(102.0, 34.0), (93.0, 34.5), (80.0, 40.0), (60.0, 52.0), (55.0, 20.0)]
+
+    def shot(away: list[tuple[float, float]]) -> Option:
+        frame = _frame(home, away, home[1])
+        return next(o for o in enumerate_options(frame, "home-1", _ctx()) if o.kind == "shot")
+
+    assert shot(marked).pc_prob < 0.8 * shot(free).pc_prob
+    assert shot(free).pc_prob == pytest.approx(shot_xg((92.0, 34.0), True, 0.5))

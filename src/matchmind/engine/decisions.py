@@ -3,7 +3,7 @@
 Each option is scored `pc_prob * xt_gain - risk` (`score_option`): `pc_prob` is the
 offside-filtered pitch control at the option's end point (Task 6.1), `xt_gain` the xT
 change, and `risk` the cost of losing the ball there, `(1 - pc) * (LOSS_COST +
-opponent xT at the end)`, divided by the player's risk weight. Passes to teammates who
+our xT here + opponent xT at the end)`, divided by the player's risk weight. Passes to teammates who
 are visibly offside get `pc_prob = 0`. A shot scores `xg - xT(here)`: shoot when the
 chance beats keeping the ball. `choose` is a softmax over min-max normalized scores
 with temperature `0.05 + 0.6 * (1 - skill)`, so weaker players pick worse options more
@@ -38,7 +38,10 @@ LOSS_COST = 0.01
 TEMP_BASE, TEMP_SKILL = 0.05, 0.6
 GOAL = np.array([PITCH_LENGTH, PITCH_WIDTH / 2])  # team frame
 GOAL_HALF_WIDTH = 3.66
-XG_BIAS, XG_ANGLE, XG_DIST = -1.3, 1.6, -0.08
+XG_BIAS, XG_ANGLE, XG_DIST = -1.7, 1.6, -0.08
+PRESSURE_M, PRESSURE_FACTOR = 1.5, 0.6  # each defender this close to the shooter
+LANE_M, LANE_FACTOR = 1.0, 0.8  # each defender this close to the line to goal
+KEEPER_CLOSE_M, KEEPER_FACTOR = 3.0, 0.6  # a keeper rushing out
 
 
 @dataclass(frozen=True)
@@ -61,6 +64,7 @@ class DecisionContext:
     pc_params: PCParams | None = None
     shot_cost: float = 0.0  # engine tuning: how much better than keeping the ball a shot must be
     clear_bonus: float = 0.0  # engine tuning: preference for clearing under pressure
+    keep_weight: float = 1.0  # a shot is weighed against keep_weight * xT(here)
 
 
 def _local(p: np.ndarray, right: bool) -> np.ndarray:
@@ -86,6 +90,30 @@ def shot_xg(pos: tuple[float, float] | np.ndarray, attacks_right: bool, skill: f
     angle = abs(math.atan2(dy + GOAL_HALF_WIDTH, dx) - math.atan2(dy - GOAL_HALF_WIDTH, dx))
     xg = 1.0 / (1.0 + math.exp(-(XG_BIAS + XG_ANGLE * angle + XG_DIST * dist)))
     return float(min(max(xg * (0.85 + 0.3 * skill), 0.005), 0.95))
+
+
+def pressure_factor(here: np.ndarray, opponents: list[tuple[float, float, bool]],
+                    right: bool) -> float:  # fmt: skip
+    """xG multiplier for defenders around the shooter and on the line to goal.
+
+    `here` and the goal are in the team frame; opponents are absolute (x, y, is_keeper)."""
+    factor = 1.0
+    seg = GOAL - here
+    length = float(np.hypot(*seg))
+    for x, y, keeper in opponents:
+        p = _local(np.array([x, y]), right)
+        d = float(np.hypot(*(p - here)))
+        if keeper:
+            factor *= KEEPER_FACTOR if d < KEEPER_CLOSE_M else 1.0
+            continue
+        if d < PRESSURE_M:
+            factor *= PRESSURE_FACTOR
+            continue
+        u = float((p - here) @ seg) / max(length, 1e-9)
+        perp = abs(float((p - here)[0] * seg[1] - (p - here)[1] * seg[0])) / max(length, 1e-9)
+        if 0.0 < u < length and perp < LANE_M:
+            factor *= LANE_FACTOR
+    return factor
 
 
 def _value(grid: np.ndarray, local: np.ndarray) -> float:
@@ -132,16 +160,21 @@ def enumerate_options(frame: TrackingFrame, carrier_id: str, ctx: DecisionContex
         p_ok = 0.0 if target in offside else float(prob)
         gain = _value(ctx.xt, end) - start_value
         lost_at = np.array([PITCH_LENGTH - end[0], PITCH_WIDTH - end[1]])
-        risk = (1.0 - p_ok) * (LOSS_COST + _value(ctx.xt, lost_at)) / ctx.risk_weight
+        # Losing the ball costs what we had here plus what the opponent gets there.
+        lost = LOSS_COST + start_value + _value(ctx.xt, lost_at)
+        risk = (1.0 - p_ok) * lost / ctx.risk_weight
         score = score_option(p_ok, gain, risk) + (ctx.clear_bonus if kind == "clear" else 0.0)
         options.append(Option(kind, target, (float(end_abs[0]), float(end_abs[1])),
                               score, p_ok, gain))  # fmt: skip
     goal_dist = float(np.hypot(*(GOAL - here)))
     if goal_dist <= SHOT_MAX_M:
-        xg = shot_xg(here_abs, right, 0.5)
+        keepers = ctx.goalkeepers
+        around = [(p.x, p.y, p.player_id in keepers) for p in opps]
+        xg = shot_xg(here_abs, right, 0.5) * pressure_factor(here, around, right)
         goal_abs = _local(GOAL, right)
         options.append(Option("shot", None, (float(goal_abs[0]), float(goal_abs[1])),
-                              xg - start_value - ctx.shot_cost, xg, 1.0 - start_value))  # fmt: skip
+                              xg - ctx.keep_weight * start_value - ctx.shot_cost, xg,
+                              1.0 - start_value))  # fmt: skip
     return options
 
 

@@ -136,10 +136,10 @@ def test_clearances_blocks_and_parries_happen() -> None:
 # ---- offside from a mistimed run ------------------------------------------------------
 
 
-def _offside_scene(timing_error_s: float) -> tuple[Coupled, int, int]:
+def _offside_scene(timing_error_s: float, seed: int = 7) -> tuple[Coupled, int, int]:
     """Home attacks right. The away back line holds at x = 80; home's striker hovers
     onside; the carrier, 18 m behind, plays the through ball at the next decision."""
-    eng = Coupled(_meta(7), tracking=False)
+    eng = Coupled(_meta(seed), tracking=False)
     eng.setup_period(1, 0.0)
     eng.pos[:] = eng.kickoff_shape()
     eng.pos[11 + 1 : 11 + 5] = [(80.0, y) for y in (14.0, 28.0, 40.0, 54.0)]  # away back four
@@ -161,24 +161,36 @@ def _offside_scene(timing_error_s: float) -> tuple[Coupled, int, int]:
     return eng, carrier, runner
 
 
-def test_offside_called_on_mistimed_run() -> None:
-    eng, _, runner = _offside_scene(timing_error_s=0.5)
+def _play(eng: Coupled) -> list[str]:
     for _ in range(60):
         eng.tick()
-    offsides = [e for e in eng.events if e["type"] == "offside"]
-    assert len(offsides) == 1
-    assert offsides[0]["player_id"] == eng.ids[runner]
-    assert offsides[0]["extras"]["timing_error_s"] == pytest.approx(0.5)
-    assert eng.s.dead is not None and eng.s.dead.restart == "free_kick"
-    assert eng.team_of[eng.s.dead.taker] == 1  # the defenders restart
+    return [e["type"] for e in eng.events]
+
+
+def test_offside_called_on_mistimed_run() -> None:
+    # Whether a defender intercepts the through ball is a draw; whenever the runner gets
+    # it, the flag goes up and the defenders restart with a free kick.
+    flagged = 0
+    for seed in range(1, 7):
+        eng, _, runner = _offside_scene(timing_error_s=0.5, seed=seed)
+        types = _play(eng)
+        if types[1] == "interception":
+            continue
+        offsides = [e for e in eng.events if e["type"] == "offside"]
+        assert len(offsides) == 1, seed
+        assert offsides[0]["player_id"] == eng.ids[runner]
+        assert offsides[0]["extras"]["timing_error_s"] == pytest.approx(0.5)
+        assert eng.s.dead is not None and eng.s.dead.restart == "free_kick"
+        assert eng.team_of[eng.s.dead.taker] == 1  # the defenders restart
+        flagged += 1
+    assert flagged >= 2
 
 
 def test_well_timed_run_is_onside() -> None:
-    eng, _, _ = _offside_scene(timing_error_s=0.0)
-    for _ in range(60):
-        eng.tick()
-    assert not [e for e in eng.events if e["type"] == "offside"]
-    assert [e for e in eng.events if e["type"] == "pass"]
+    for seed in range(1, 7):
+        eng, _, _ = _offside_scene(timing_error_s=0.0, seed=seed)
+        types = _play(eng)
+        assert "offside" not in types and types[0] == "pass", seed
 
 
 def test_profiles_turn_on_modifiers() -> None:

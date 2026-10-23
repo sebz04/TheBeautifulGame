@@ -25,12 +25,12 @@ ATTACK_PUSH_M = 6.0
 DEFEND_DROP_M = 3.0
 ATTACK_WIDTH = 1.1
 DEFEND_WIDTH = 0.75
-SHAPE_URGENCY_PER_M = 1 / 25  # off-ball urgency grows with the distance to the target
-SHAPE_DEADBAND_M = 3.0  # a player keeps his spot until his shape target moves this far
+SHAPE_URGENCY_PER_M = 1 / 35  # off-ball urgency grows with the distance to the target
+SHAPE_DEADBAND_M = 5.0  # a player keeps his spot until his shape target moves this far
 TRANSITION_S = 5.0  # after a turnover, players far from their spot sprint back into shape
 TRANSITION_MIN_M = 6.0
-TRANSITION_URGENCY = 0.95
-SHAPE_URGENCY = (0.05, 0.75)
+TRANSITION_URGENCY = 0.85
+SHAPE_URGENCY = (0.05, 0.6)
 SUPPORT_URGENCY = 0.7
 CHASE_URGENCY = 1.0
 DRIBBLE_URGENCY = 0.5
@@ -77,12 +77,14 @@ EXEC_BASE, EXEC_SKILL = 0.90, 0.10
 # ---- shooting ---------------------------------------------------------------------------
 SHOT_AIM_INSIDE_M = 0.6  # aim this far inside a post, at most
 SHOT_COST = 0.03  # a shot must beat keeping the ball by this much xT
+SHOT_KEEP_WEIGHT = 0.7  # keeping the ball in a crowded box is worth half its xT
 CLEAR_BONUS = 0.01  # under pressure in the own third, clearing is preferred
 SHOT_ERR_DEG = 17.0
 SHOT_LOFT_DEG = (2.0, 18.0)
 BLOCK_REACH_M = 1.6
 BLOCK_PROB = 0.7
-SAVE_BASE, SAVE_XG, SAVE_SKILL = 0.86, 0.70, 0.25
+SAVE_XG, SAVE_SKILL = 2.5, 0.15  # save = 1 - 2.5 xg (+ keeper skill), about 1 / on-target share
+SAVE_RANGE = (0.3, 0.97)
 CATCH_SPEED_MS = 22.0  # slower shots are usually caught, faster ones parried
 CATCH_PROB = (0.75, 0.30)  # below / above CATCH_SPEED_MS
 SAVE_LEAD_S = 0.1
@@ -94,3 +96,44 @@ FOUL_SHARE = 0.38
 TACKLE_WIN = 0.5  # + 0.3 * (defender skill - carrier skill)
 TACKLE_LOOSE_SHARE = 0.5  # won tackles that knock the ball loose rather than keep it
 PROTECT_S = 1.0  # after receiving, a carrier cannot be tackled for this long
+
+# ---- level 4: phases (tactics.py) ---------------------------------------------------------
+# phase: (depth offset m, depth spread scale, width scale, keeper depth m), applied to the
+# formation anchors around SHAPE_PIVOT_M.
+SHAPE_PIVOT_M = 46.0
+PHASE_SHAPE: dict[str, tuple[float, float, float, float]] = {
+    "build_up": (4.0, 1.15, 1.15, 10.0),
+    "counter": (12.0, 1.3, 1.0, 12.0),
+    "mid_block": (-4.0, 0.8, 0.8, 8.0),
+    "low_block": (-16.0, 0.6, 0.7, 4.0),
+    "high_press": (10.0, 0.8, 0.85, 16.0),
+    "set_piece": (-28.0, 0.3, 0.55, 2.0),  # defending a corner or a free kick near goal
+}
+COUNTER_S = 6.0  # after winning the ball, the team counters for this long
+HIGH_PRESS_DEPTH_M = 70.0  # ball this far from the defending team's goal (and intense press)
+HIGH_PRESS_MIN_INTENSITY = 0.55
+LOW_BLOCK_DEPTH_M = 35.0
+DEEP_TEAM_INTENSITY = 0.35  # teams pressing less than this sit in a low block sooner
+DEEP_TEAM_LOW_BLOCK_M = 55.0
+
+# ---- level 4: pressing triggers ---------------------------------------------------------
+BACK_PASS_M = 6.0  # a pass losing this much depth is a back pass ...
+BACK_PASS_ZONE_M = 40.0  # ... into the passer's last 40 m
+ONSIDE_MARGIN_M = 1.0  # players in possession (but the runner) stay this far onside
+FACING_OWN_GOAL_MS = 2.5  # a receiver moving toward his own goal this fast faces it
+TRIGGER_S = 3.0  # a triggered press lasts this long
+TRIGGER_RANGE_M = 10.0  # only a defender this close can jump on the cue
+TRIGGER_COVER_URGENCY = 0.9
+
+# ---- level 4: runs in behind ------------------------------------------------------------
+RUN_RATE_BASE = 0.7  # runs per minute in possession for a neutral runner and opponent
+ROLE_RUN_FACTOR: dict[str, float] = {
+    "poacher": 1.35,
+    "pressing_forward": 1.2,
+    "inside_forward": 1.2,
+    "winger": 1.1,
+    "shadow_striker": 1.0,
+    "false_nine": 0.8,
+    "target_man": 0.6,
+}
+OTHER_ROLE_RUN_FACTOR = 0.7

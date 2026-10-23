@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-23 · TASK-10.1 · tactics.py (phase shapes for 11/10/9, pressing triggers, run rates) wired into the engine; Coupled takes profiles; pressure-aware xG, lower xG curve, risk counts current xT, xG-calibrated saves · README, engine, decisions
 - 2026-10-22 · TASK-9.3 · level-3 coupled engine (coupled.py, constants.py), vectorized step_players, shared build_frames, set-piece and offside realism checks; 16/16 checks over 20 seeds; level 3 is the default · README, engine, data-model, decisions
 - 2026-10-22 · TASK-9.2 · on-ball decisions (options, offside-filtered pitch control scoring, skill softmax, decision extras), shot_xg, offside EventType · README, engine, data-model
 - 2026-10-22 · TASK-9.1 · ball physics (drag, rolling, bounces, lofted angle solve), out of play at the crossing point, restart by last touch, deflections · README, engine, decisions
