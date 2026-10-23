@@ -1,0 +1,17 @@
+scenario_id = "late_sub_wins_it"
+title = "Off the bench, into the story"
+home_club_id = "san-antonio"
+away_club_id = "manrique"
+seed = 104
+
+# A tight game turned by a change in attack with twenty minutes left.
+[[beats]]
+minute = 70
+kind = "sub"
+team = "home"
+params = { slot = 10 }
+
+[[beats]]
+minute = 76
+kind = "goal"
+team = "home"

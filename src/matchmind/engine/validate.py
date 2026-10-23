@@ -148,8 +148,11 @@ def team_stats(data: MatchData) -> dict[str, dict[str, float]]:
     return {team: {**events[team], **tracking[team]} for team in events}
 
 
+_PER_MATCH = {"goals_per_match", "penalties_per_match", "set_piece_goal_share"}
+
+
 def _per_team_metrics() -> list[str]:
-    return [m for m in RANGES if m != "goals_per_match"]
+    return [m for m in RANGES if m not in _PER_MATCH]
 
 
 def validate_match(data: MatchData) -> RealismReport:
@@ -163,15 +166,22 @@ def validate_match(data: MatchData) -> RealismReport:
 
 
 def validate_many(datas: Iterable[MatchData]) -> RealismReport:
-    """Mean of each metric over all team-matches, plus mean goals per match.
+    """Mean of each metric over all team-matches, plus per-match goals and penalties and
+    the share of goals from set pieces.
 
     Consumes the matches one at a time, so a generator keeps memory flat.
     """
     values: dict[str, list[float]] = defaultdict(list)
     goals: list[float] = []
+    penalties: list[int] = []
+    set_piece_goals = 0
     for data in datas:
         stats = team_stats(data)
         goals.append(sum(v["goals"] for v in stats.values()))
+        penalties.append(sum(e.type == "shot" and e.extras.get("set_piece") == "penalty"
+                             for e in data.events))  # fmt: skip
+        set_piece_goals += sum(e.type == "goal" and bool(e.extras.get("set_piece"))
+                               for e in data.events)  # fmt: skip
         for team_values in stats.values():
             for metric in _per_team_metrics():
                 values[metric].append(team_values[metric])
@@ -183,4 +193,8 @@ def validate_many(datas: Iterable[MatchData]) -> RealismReport:
         c.in_range_share = float(np.mean((vs >= lo) & (vs <= hi))) if len(vs) else 0.0
         checks.append(c)
     checks.append(_check("goals_per_match", "goals_per_match", float(np.mean(goals))))
+    checks.append(_check("penalties_per_match", "penalties_per_match",
+                         float(np.mean(penalties)) if penalties else 0.0))  # fmt: skip
+    share = set_piece_goals / sum(goals) if sum(goals) else 0.0
+    checks.append(_check("set_piece_goal_share", "set_piece_goal_share", share))
     return RealismReport(checks=checks, ok=all(c.ok for c in checks))

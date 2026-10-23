@@ -1,0 +1,28 @@
+scenario_id = "counter_attack_masterclass"
+title = "Space behind, and pace to use it"
+home_club_id = "barrio-abajo"
+away_club_id = "usaquen"
+seed = 108
+
+# A high visiting line meets a home side built to break at speed.
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "home"
+params = { directness = 0.95, tempo = 0.9, line_height = 0.3, press_intensity = 0.35 }
+
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "away"
+params = { line_height = 0.9, press_intensity = 0.7 }
+
+[[beats]]
+minute = 28
+kind = "goal"
+team = "home"
+
+[[beats]]
+minute = 63
+kind = "goal"
+team = "home"

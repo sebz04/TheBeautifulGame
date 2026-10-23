@@ -1,0 +1,27 @@
+scenario_id = "keeper_heroics"
+title = "One man against the storm"
+home_club_id = "getsemani"
+away_club_id = "el-prado"
+seed = 103
+
+# The visitors pour forward all night; the home side sits deep behind its keeper.
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "home"
+params = { line_height = 0.15, press_intensity = 0.2 }
+
+[[beats]]
+minute = 15
+kind = "goal"
+team = "away"
+
+[[beats]]
+minute = 45
+kind = "goal"
+team = "away"
+
+[[beats]]
+minute = 72
+kind = "goal"
+team = "away"

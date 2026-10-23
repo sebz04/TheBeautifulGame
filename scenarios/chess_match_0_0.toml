@@ -1,0 +1,18 @@
+scenario_id = "chess_match_0_0"
+title = "Ninety minutes of patience"
+home_club_id = "laureles"
+away_club_id = "san-antonio"
+seed = 106
+
+# Two cautious coaches: no press, slow tempo, nobody risks the ball.
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "home"
+params = { press_intensity = 0.15, tempo = 0.15, directness = 0.15, line_height = 0.3 }
+
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "away"
+params = { press_intensity = 0.15, tempo = 0.15, directness = 0.15, line_height = 0.3 }

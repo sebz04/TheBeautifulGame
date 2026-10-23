@@ -14,6 +14,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from matchmind.engine.lineup import match_meta
+from matchmind.league.fixtures import build_fixtures
+from matchmind.league.league import League
+from matchmind.schemas import MatchMeta
+
+SCENARIO_DIR = Path(__file__).resolve().parents[3] / "scenarios"
 BeatKind = Literal["red_card", "goal", "sub", "tactic_change", "press_intensity", "fatigue_spike"]
 TACTIC_KEYS = frozenset({"press_intensity", "line_height", "tempo", "width", "directness"})
 
@@ -54,3 +60,12 @@ class Scenario(BaseModel):
 def load_scenario(path: Path) -> Scenario:
     with Path(path).open("rb") as f:
         return Scenario.model_validate(tomllib.load(f))
+
+
+def scenario_meta(league: League, scenario: Scenario, fixture_seed: int = 2026) -> MatchMeta:
+    """Match setup for the scenario's fixture (home vs away in the league calendar)."""
+    fixture = next(
+        f for f in build_fixtures(league, seed=fixture_seed)
+        if (f.home_id, f.away_id) == (scenario.home_club_id, scenario.away_club_id)
+    )  # fmt: skip
+    return match_meta(league, fixture, seed=scenario.seed, scenario_id=scenario.scenario_id)

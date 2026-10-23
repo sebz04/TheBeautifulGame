@@ -1,0 +1,17 @@
+scenario_id = "underdog_low_block"
+title = "Park the bus, steal the points"
+home_club_id = "siloe"
+away_club_id = "el-poblado"
+seed = 107
+
+# The home side defends deep and breaks; one chance late is enough.
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "home"
+params = { line_height = 0.1, press_intensity = 0.2, directness = 0.85 }
+
+[[beats]]
+minute = 71
+kind = "goal"
+team = "home"

@@ -64,9 +64,14 @@ def test_frame_rate_and_eleven_per_side() -> None:
     data = _match(7)
     assert len(data.frames) == sum(round((2700 + a) * 10) for a in data.meta.added_time_s)
     assert [f.frame for f in data.frames] == list(range(len(data.frames)))
-    home, away = data.meta.home.club_id, data.meta.away.club_id
+    # Eleven a side, minus one per sending-off so far.
+    reds = [(e.period, e.t, e.team_id) for e in data.events
+            if e.type == "card" and e.extras["card"] == "red"]  # fmt: skip
     for f in data.frames[::97]:
-        assert Counter(p.team_id for p in f.players) == {home: 11, away: 11}
+        off = Counter(team for period, t, team in reds if (period, t) < (f.period, f.t))
+        on = Counter(p.team_id for p in f.players)
+        for team in (data.meta.home.club_id, data.meta.away.club_id):
+            assert on[team] == 11 - off[team], (f.period, f.t, team)
 
 
 def test_level3_consistency() -> None:
@@ -209,5 +214,8 @@ def test_profiles_turn_on_modifiers() -> None:
 
 
 def test_level3_matches_carry_their_engine_version() -> None:
-    assert _match(7).meta.engine_version == "l3-0.1"
+    from matchmind.engine.simulate import engine_version
+
+    assert engine_version(1) == "l1-0.1" and engine_version(3) == "l4-0.1"
+    assert _match(7).meta.engine_version == "l4-0.1"
     assert _match(7).meta.model_copy(update={"engine_version": "x"}) != _meta(7)

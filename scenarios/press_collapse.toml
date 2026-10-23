@@ -1,0 +1,23 @@
+scenario_id = "press_collapse"
+title = "The press that ran out of legs"
+home_club_id = "el-poblado"
+away_club_id = "san-fernando"
+seed = 102
+
+# The visitors press everything early, then fade and get punished.
+[[beats]]
+minute = 0
+kind = "press_intensity"
+team = "away"
+params = { value = 0.95 }
+
+[[beats]]
+minute = 58
+kind = "fatigue_spike"
+team = "away"
+params = { amount = 0.3 }
+
+[[beats]]
+minute = 66
+kind = "goal"
+team = "home"

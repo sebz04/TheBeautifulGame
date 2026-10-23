@@ -2,7 +2,8 @@
 
 Usage:
   uv run python scripts/realism_report.py --level 1 --seeds 20
-  uv run python scripts/realism_report.py --level 1 --seeds 20 --out docs/realism.md
+  uv run python scripts/realism_report.py --level 3 --seeds 20 --out docs/realism.md
+Level 3 runs with the league's profiles (tactics, roles, modifiers), as real matches do.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from matchmind.engine.simulate import simulate_match
 from matchmind.engine.validate import RealismReport, validate_many
 from matchmind.league.fixtures import Fixture, build_fixtures
 from matchmind.league.league import build_league
+from matchmind.league.profiles import build_profiles
 from matchmind.schemas import MatchData
 
 
@@ -47,10 +49,11 @@ def render_markdown(report: RealismReport, level: int, seeds: int) -> str:
 def _matches(level: int, seeds: int) -> Iterator[MatchData]:
     league = build_league()
     fixtures = build_fixtures(league, seed=2026)
+    profiles = build_profiles(league, seed=2026) if level == 3 else None
     for seed in range(1, seeds + 1):
         start = time.perf_counter()
         meta = match_meta(league, fixture_for_seed(fixtures, seed), seed=seed)
-        data = simulate_match(meta, level=level)  # type: ignore[arg-type]
+        data = simulate_match(meta, level=level, profiles=profiles)  # type: ignore[arg-type]
         print(f"seed {seed}: {meta.match_id} in {time.perf_counter() - start:.1f}s",
               file=sys.stderr)  # fmt: skip
         yield data

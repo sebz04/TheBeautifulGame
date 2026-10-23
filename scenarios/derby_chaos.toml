@@ -1,0 +1,33 @@
+scenario_id = "derby_chaos"
+title = "Barrio derby: Chapinero vs Usaquén"
+home_club_id = "chapinero"
+away_club_id = "usaquen"
+seed = 105
+
+# Both sides at full throttle; tempers flare after the hour.
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "home"
+params = { press_intensity = 0.9, tempo = 0.9 }
+
+[[beats]]
+minute = 0
+kind = "tactic_change"
+team = "away"
+params = { press_intensity = 0.9, tempo = 0.9 }
+
+[[beats]]
+minute = 38
+kind = "goal"
+team = "away"
+
+[[beats]]
+minute = 64
+kind = "red_card"
+team = "away"
+
+[[beats]]
+minute = 80
+kind = "goal"
+team = "home"

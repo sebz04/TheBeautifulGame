@@ -156,7 +156,8 @@ def test_report_json_serializable() -> None:
         json.loads(json.dumps(report.model_dump(), allow_nan=False))
     )
     assert back == report
-    assert {c.name.split(":")[0] for c in report.checks} >= set(RANGES) - {"goals_per_match"}
+    per_match = {"goals_per_match", "penalties_per_match", "set_piece_goal_share"}
+    assert {c.name.split(":")[0] for c in report.checks} >= set(RANGES) - per_match
 
 
 def test_validate_many_averages_and_checks_goals() -> None:
@@ -220,3 +221,18 @@ def test_distance_and_sprints_scale_to_full_match_minutes() -> None:
     assert _check(validate_match(sub), "distance_km_outfield_player:h")[0] == pytest.approx(
         km, rel=0.02
     )
+
+
+def test_validate_many_checks_penalties_and_set_piece_goals() -> None:
+    assert RANGES["penalties_per_match"] == (0.2, 0.4)
+    assert RANGES["set_piece_goal_share"] == (0.20, 0.35)
+    matches = []
+    for k in range(4):
+        ev = _Events()
+        ev.add("shot", "h", outcome=k == 0, extras={"set_piece": "penalty"} if k < 1 else {})
+        ev.add("goal", "h", extras={"set_piece": "penalty"} if k == 0 else {})
+        ev.add("goal", "a", extras={"set_piece": "corner"} if k == 1 else {})
+        matches.append(_match(ev.items))
+    many = validate_many(matches)
+    assert _check(many, "penalties_per_match") == (pytest.approx(0.25), True)
+    assert _check(many, "set_piece_goal_share") == (pytest.approx(0.25), True)

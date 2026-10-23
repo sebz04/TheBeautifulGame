@@ -83,7 +83,7 @@ SHOT_ERR_DEG = 17.0
 SHOT_LOFT_DEG = (2.0, 18.0)
 BLOCK_REACH_M = 1.6
 BLOCK_PROB = 0.5
-SAVE_XG, SAVE_SKILL = 2.7, 0.15  # save = 1 - 2.5 xg (+ keeper skill), about 1 / on-target share
+SAVE_XG, SAVE_SKILL = 3.0, 0.15  # save = 1 - 3 xg (+ keeper skill), about 1 / on-target share
 SAVE_RANGE = (0.3, 0.97)
 CATCH_SPEED_MS = 22.0  # slower shots are usually caught, faster ones parried
 CATCH_PROB = (0.75, 0.30)  # below / above CATCH_SPEED_MS
@@ -150,7 +150,9 @@ AUTO_SUB_MINUTES = (60.0, 68.0, 76.0, 84.0)  # managers' changes, made at the ne
 MOD_UPDATE_S = 300.0  # modifiers follow minute, score, and energy every 5 minutes
 STORYLINE_WINDOW_S = 900.0  # a beat's team plays under the storyline cap for 15 minutes
 GOAL_BEAT_WINDOW_S = 900.0
-GOAL_BEAT_XG_MULT = 1.5  # a goal beat lifts the team's chance quality
+GOAL_BEAT_XG_MULT = 4.0  # a goal beat lifts the team's chance quality ...
+GOAL_BEAT_SHOT_COST, GOAL_BEAT_KEEP_WEIGHT = 0.0, 0.3  # ... and its appetite to shoot
+GOAL_BEAT_AIM, GOAL_BEAT_SAVE = 0.5, 0.4  # sharper finishing, weaker saves in the window
 FATIGUE_SPIKE = 0.2
 
 # ---- level 4: set pieces ----------------------------------------------------------------

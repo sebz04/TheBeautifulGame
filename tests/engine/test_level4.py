@@ -181,3 +181,16 @@ def test_fatigue_late() -> None:
         return float(np.mean(list(top.values())))
 
     assert mean_top(2, 35 * 60, 45 * 60) < mean_top(1, 0, 10 * 60)
+
+
+def test_scoring_shots_are_marked_as_goals() -> None:
+    # Regression (TASK-10.3): xT reads goals from `shot.outcome`; level 3 marked every shot
+    # False, including those that went in (directly or off a block or a parry).
+    for seed in (1, 2, 3, 4):
+        events = _events(seed).events
+        goals = [e for e in events if e.type == "goal" and not e.extras.get("own_goal")]
+        scored = [e for e in events if e.type == "shot" and e.outcome]
+        assert len(scored) == len(goals), seed
+        for g in goals:
+            shot = next(e for e in reversed(events[: events.index(g)]) if e.type == "shot")
+            assert shot.outcome and shot.player_id == g.player_id, g.event_id

@@ -38,6 +38,7 @@ from matchmind.engine.decisions import (
     choose,
     decision_extras,
     enumerate_options,
+    shot_xg,
 )
 from matchmind.engine.formations import formation_anchors
 from matchmind.engine.kinematics import step_players
@@ -101,7 +102,7 @@ from matchmind.schemas_profile import ClubProfile, Profiles
 from matchmind.stats.pitch_control import offside_players
 from matchmind.stats.xt import load_xt
 
-ENGINE_VERSION = "l3-0.1"
+ENGINE_VERSION = "l4-0.1"  # the level-3 loop with level-4 tactics, set pieces, scenarios
 CENTRE = np.array([PITCH_LENGTH / 2, PITCH_WIDTH / 2])
 Chooser = Callable[[list[Option]], Option]
 EventDict = dict[str, Any]
@@ -135,6 +136,7 @@ class _Flight:
     shooter: int | None = None
     is_shot: bool = False  # the shot itself (not a deflection of it)
     set_piece: str | None = None  # carried by the shot and its deflections
+    shot_event: EventDict | None = None  # the shot, marked a goal if this ball goes in
     header: bool = False  # a corner delivery: the winner of the duel heads it
 
 
@@ -570,7 +572,7 @@ class Coupled:
         ev = self.emit("shot", team, i, start, speed=round(speed, 2), extras=extras)
         never = self.k + len(traj.t) + 1
         f = _Flight(traj, self.k, team, i, None, never, never, ev, shooter=i, is_shot=True,
-                    set_piece="penalty")  # fmt: skip
+                    set_piece="penalty", shot_event=ev)  # fmt: skip
         if saved and traj.out is not None:
             k_save = self.k + max(1, math.floor((traj.out[0] - C.SAVE_LEAD_S) / C.DT))
             f.shot = _ShotPlan("save", k_save, 11 * (1 - team), catch=False)
@@ -651,8 +653,16 @@ class Coupled:
         scoring = self.scores_for(point)
         if f.shooter is not None and int(self.team_of[f.shooter]) == scoring:
             scorer: int | None = f.shooter
+            if f.shot_event is not None:
+                f.shot_event["outcome"] = True
         else:
             scorer = f.last_player if f.last_team == scoring else None
+            if scorer is not None:
+                # A pass or cross that goes straight in still counts as a shot.
+                start = f.traj.xyz[0, :2]
+                xg = shot_xg(start, self.right(scoring), float(self.skill[scorer]))
+                self.emit("shot", scoring, scorer, start, end=point, outcome=True,
+                          extras={"xg": round(xg, 3), "from_pass": True})  # fmt: skip
         own_goal = scorer is None
         extras: dict[str, object] = {"own_goal": True} if own_goal else {}
         if f.set_piece:
@@ -672,15 +682,16 @@ class Coupled:
         s = self.s
         team = int(self.team_of[i])
         self.end_carry(True)
+        boosted = self.match_s() <= self.goal_boost_until[team]
         ctx = DecisionContext(
             self.team_ids[team],
             self.right(team),
             self.xt,
             self.goalkeepers,
             risk_weight=self.pmods[i].risk_weight,
-            shot_cost=C.SHOT_COST,
+            shot_cost=C.GOAL_BEAT_SHOT_COST if boosted else C.SHOT_COST,
             clear_bonus=C.CLEAR_BONUS,
-            keep_weight=C.SHOT_KEEP_WEIGHT,
+            keep_weight=C.GOAL_BEAT_KEEP_WEIGHT if boosted else C.SHOT_KEEP_WEIGHT,
         )
         options = enumerate_options(self.frame(lagged=True), self.ids[i], ctx)
         restart = s.restart
@@ -820,13 +831,15 @@ class Coupled:
         skill = float(self.skill[i])
         start = self.ball.copy()
         xg = base_xg * (0.85 + 0.3 * skill)
-        if self.match_s() <= self.goal_boost_until[team]:
+        boosted = self.match_s() <= self.goal_boost_until[team]
+        if boosted:
             xg *= C.GOAL_BEAT_XG_MULT
         xg = min(xg, 0.95)
         aim_local = np.array([PITCH_LENGTH, PITCH_WIDTH / 2 + float(self.rng.uniform(
             -(3.66 - C.SHOT_AIM_INSIDE_M), 3.66 - C.SHOT_AIM_INSIDE_M))])  # fmt: skip
         aim = self.local(aim_local, team)
         err = C.SHOT_ERR_DEG * (1.5 - skill) * self.pmods[i].shot_error
+        err *= C.GOAL_BEAT_AIM if boosted else 1.0
         angle = math.atan2(aim[1] - start[1], aim[0] - start[0])
         angle += math.radians(float(self.rng.normal(0.0, err)))
         d = float(np.hypot(*(aim - start)))
@@ -837,7 +850,8 @@ class Coupled:
         extras = {**extras, "xg": round(xg, 3)}
         ev = self.emit("shot", team, i, start, speed=round(speed, 2), extras=extras)
         never = self.k + len(traj.t) + 1
-        f = _Flight(traj, self.k, team, i, None, never, never, ev, shooter=i, is_shot=True)
+        f = _Flight(traj, self.k, team, i, None, never, never, ev, shooter=i, is_shot=True,
+                    shot_event=ev)  # fmt: skip
         f.set_piece = str(extras["set_piece"]) if "set_piece" in extras else None
         f.shot = self.plan_shot(traj, team, xg)
         self.launch(f)
@@ -871,6 +885,8 @@ class Coupled:
         # On-target shots score about xg / ON_TARGET_SHARE, so goals track xG on average.
         p_save = 1.0 - C.SAVE_XG * xg + C.SAVE_SKILL * (float(self.skill[gk]) - 0.5)
         p_save = min(max(p_save / self.pmods[gk].gk_error, C.SAVE_RANGE[0]), C.SAVE_RANGE[1])
+        if self.match_s() <= self.goal_boost_until[team]:
+            p_save *= C.GOAL_BEAT_SAVE
         if self.rng.random() >= p_save:
             return None
         speed = float(np.hypot(*(traj.xyz[1, :2] - traj.xyz[0, :2]))) / C.DT
@@ -904,7 +920,8 @@ class Coupled:
             direction = direction - 2.0 * float(direction @ u) * u
             traj = flight(start, start + 40.0 * direction, "ground", new_speed)
         self.launch(_Flight(traj, self.k, team, player, None, self.k + 2, self.k + 2,
-                            shooter=f.shooter, set_piece=f.set_piece))  # fmt: skip
+                            shooter=f.shooter, set_piece=f.set_piece,
+                            shot_event=f.shot_event))  # fmt: skip
 
     def resolve_shot(self, f: _Flight, at: np.ndarray) -> None:
         plan = f.shot

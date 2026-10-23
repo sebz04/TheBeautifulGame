@@ -36,14 +36,31 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
   - The winner reaches up to 2 m and 2.8 m high. An attacker heads at goal (`header_xg` = 0.55 × `shot_xg`, 14 m/s, `extras.header`); a defender heads it clear (a safe touch).
 - Goals keep the shot's `set_piece` tag, so set-piece and open-play goals can be split.
 
-## Scenarios (`engine/scenario.py`, TASK-10.2)
+## Scenarios (`engine/scenario.py`, TASK-10.2–10.3)
 `Scenario(scenario_id, title, home_club_id, away_club_id, seed, beats)`, read from TOML by `load_scenario(path)`. Beats are sorted by minute, and each is `Beat(minute 0–90, kind, team, params)`. Beats bias the match; they never teleport it. A beat opens a 15-minute storyline window for its team (modifier cap 20%).
 
 | Kind | Effect |
 |---|---|
 | `red_card` | The team's next foul (tackle rate × 3 until then) is a red |
-| `goal` | Team xG × 1.5 for 15 minutes |
+| `goal` | For 15 minutes the team shoots more readily (shot cost 0, keep weight 0.3), with xG × 4, half the aim error, and saves × 0.4 |
 | `sub` | A substitution at the next dead ball (`params.slot` 1–10 to pick who goes off) |
 | `tactic_change` | Overrides `press_intensity`, `line_height`, `tempo`, `width`, `directness` (each 0–1) |
 | `press_intensity` | Overrides press intensity (`params.value`) |
 | `fatigue_spike` | Drains the team's energy (`params.amount`, default 0.2) |
+
+`scenario_meta(league, scenario)` builds the `MatchMeta` for the scenario's fixture with its seed (`meta.scenario_id` set). Pass the scenario to `simulate_match(meta, scenario, ...)`.
+
+### Storylines (`scenarios/*.toml`, TASK-10.3)
+| File | Fixture | Beats |
+|---|---|---|
+| `comeback_red_card` | chapinero v laureles | home red 30', goes direct 52', goals 55', 74', 84', sub 62' |
+| `press_collapse` | el-poblado v san-fernando | away press 0.95 from 0', fatigue spike 58', home goal 66' |
+| `keeper_heroics` | getsemani v el-prado | home deep (line 0.15, press 0.2), away goal beats 15', 45', 72' |
+| `late_sub_wins_it` | san-antonio v manrique | home sub (slot 10) 70', home goal 76' |
+| `derby_chaos` | chapinero v usaquen | both press and tempo 0.9, away goal 38', away red 64', home goal 80' |
+| `chess_match_0_0` | laureles v san-antonio | both press, tempo, directness 0.15, line 0.3 |
+| `underdog_low_block` | siloe v el-poblado | home line 0.1, press 0.2, directness 0.85, goal 71' |
+| `counter_attack_masterclass` | barrio-abajo v usaquen | home directness 0.95, tempo 0.9; away line 0.9; home goals 28', 63' |
+
+Over seeds 1–20, `comeback_red_card` gives the ten-man home side 8 wins against 7 without beats, and +0.65 goals per match (`test_beats_shift_outcome`).
+

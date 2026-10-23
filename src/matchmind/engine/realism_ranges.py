@@ -20,7 +20,10 @@ RANGES: dict[str, tuple[float, float]] = {
     "goal_kicks": (4, 12),
     "corners": (2, 9),
     "fouls": (8, 18),  # committed
-    "goals_per_match": (2.2, 3.4),  # mean over many matches (validate_many only)
+    # Per match, over many matches (validate_many only):
+    "goals_per_match": (2.2, 3.4),
+    "penalties_per_match": (0.2, 0.4),
+    "set_piece_goal_share": (0.20, 0.35),  # goals from corners, free kicks, penalties
 }
 
 SPRINT_SPEED_MS = 7.0

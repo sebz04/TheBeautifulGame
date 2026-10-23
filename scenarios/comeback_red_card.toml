@@ -1,0 +1,37 @@
+scenario_id = "comeback_red_card"
+title = "Ten men, no surrender"
+home_club_id = "chapinero"
+away_club_id = "laureles"
+seed = 101
+
+# Down to ten after half an hour, the home side goes direct and rides the crowd.
+[[beats]]
+minute = 30
+kind = "red_card"
+team = "home"
+
+[[beats]]
+minute = 52
+kind = "tactic_change"
+team = "home"
+params = { directness = 0.85, press_intensity = 0.8, tempo = 0.8 }
+
+[[beats]]
+minute = 55
+kind = "goal"
+team = "home"
+
+[[beats]]
+minute = 62
+kind = "sub"
+team = "home"
+
+[[beats]]
+minute = 74
+kind = "goal"
+team = "home"
+
+[[beats]]
+minute = 84
+kind = "goal"
+team = "home"

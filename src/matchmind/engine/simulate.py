@@ -3,10 +3,16 @@
 from typing import Literal
 
 from matchmind.engine.baseline import simulate_baseline
+from matchmind.engine.coupled import ENGINE_VERSION as COUPLED_VERSION
 from matchmind.engine.coupled import simulate_coupled
+from matchmind.engine.lineup import ENGINE_VERSION as BASELINE_VERSION
 from matchmind.engine.scenario import Scenario
 from matchmind.schemas import MatchData, MatchMeta
 from matchmind.schemas_profile import Profiles
+
+
+def engine_version(level: Literal[1, 3]) -> str:
+    return BASELINE_VERSION if level == 1 else COUPLED_VERSION
 
 
 def simulate_match(

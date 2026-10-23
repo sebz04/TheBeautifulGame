@@ -1,7 +1,8 @@
 """Train the xT grid on synthetic matches and save it (TASK-7; retrained in TASK-10).
 
 Usage:
-  uv run python scripts/train_xt.py --seeds 200 --level 1
+  uv run python scripts/train_xt.py --seeds 300 --level 3
+Level 3 runs with the league's profiles (tactics, roles, modifiers), as real matches do.
 Writes data/models/xt_grid.npy plus xt_grid.json (provenance). Matches are simulated in
 parallel; only their normalized events come back to the main process.
 """
@@ -20,10 +21,11 @@ from typing import Any
 import numpy as np
 from realism_report import fixture_for_seed
 
-from matchmind.engine.lineup import ENGINE_VERSION, match_meta
-from matchmind.engine.simulate import simulate_match
+from matchmind.engine.lineup import match_meta
+from matchmind.engine.simulate import engine_version, simulate_match
 from matchmind.league.fixtures import build_fixtures
 from matchmind.league.league import build_league
+from matchmind.league.profiles import build_profiles
 from matchmind.schemas import Event
 from matchmind.stats.xt import DEFAULT_GRID_PATH, normalize_events, train_xt
 
@@ -32,7 +34,8 @@ def _events_for_seed(args: tuple[int, int]) -> list[Event]:
     seed, level = args
     league = build_league()
     meta = match_meta(league, fixture_for_seed(build_fixtures(league, seed=2026), seed), seed)
-    data = simulate_match(meta, level=level, tracking=False)  # type: ignore[arg-type]
+    profiles = build_profiles(league, seed=2026) if level == 3 else None
+    data = simulate_match(meta, level=level, tracking=False, profiles=profiles)  # type: ignore[arg-type]
     return normalize_events(data)
 
 
@@ -62,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
                       file=sys.stderr)  # fmt: skip
     grid = train_xt(events)
     provenance = {"level": args.level, "seeds": args.seeds, "events": len(events),
-                  "engine_version": ENGINE_VERSION}  # fmt: skip
+                  "engine_version": engine_version(args.level)}  # type: ignore[arg-type]  # fmt: skip
     write_grid(grid, args.out, provenance)
     print(f"saved {args.out} ({len(events)} events)")
     print(np.array2string(grid, precision=3, max_line_width=140))
