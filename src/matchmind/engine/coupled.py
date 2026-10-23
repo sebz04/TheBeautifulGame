@@ -1353,7 +1353,10 @@ class Coupled:
     def urgency_factor(self) -> np.ndarray:
         """Off-ball effort: work rate (`offball_distance`), and tired players jog less."""
         work = np.array([m.offball_distance for m in self.pmods])
-        return work * (C.TIRED_URGENCY + (1.0 - C.TIRED_URGENCY) * np.clip(self.energy, 0, 1))
+        factor: np.ndarray = work * (
+            C.TIRED_URGENCY + (1.0 - C.TIRED_URGENCY) * np.clip(self.energy, 0, 1)
+        )
+        return factor
 
     def defend_ball(self, tgt: np.ndarray, urg: np.ndarray, team: int) -> None:
         """Out of possession: the nearest player presses (or contains), the next covers."""

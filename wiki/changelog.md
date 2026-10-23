@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-23 · TASK-10.5 · type annotation fix for urgency_factor (CI mypy) · changelog
 - 2026-10-23 · TASK-10.5 · slow attribute-effect tests (9 effects), chemistry wired into pass completion, work-rate and fatigue-scaled off-ball urgency · README, engine-level4
 - 2026-10-23 · TASK-10.4 · season history (league/season.py: parallel rounds, suspensions, standings, milestones), player match lines (stats/player_lines.py), exact engine motion tally, unavailable players in match_meta, booked caution, fewer reds, box runs, runner marking, slow marker and nightly workflow · README, league, stats, engine-level4, conventions, decisions
 - 2026-10-23 · TASK-10.3 · 8 storyline TOMLs and scenario_meta; goal beats sharpen finishing; fixed shots never marked as goals at level 3 (and passes that go in now log a shot); xT retrained at level 3 (300 seeds); realism report with profiles: 18/18 incl. penalties and set-piece share · README, engine, engine-level4, stats, decisions
