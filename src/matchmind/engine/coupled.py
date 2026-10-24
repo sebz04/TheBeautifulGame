@@ -1117,7 +1117,8 @@ class Coupled:
         while self.beats and self.beats[0].minute <= now:
             beat = self.beats.pop(0)
             team = 0 if beat.team == "home" else 1
-            self.storyline_until[team] = self.match_s() + C.STORYLINE_WINDOW_S
+            if beat.kind != "red_card":  # an incident, not a push on the team's traits
+                self.storyline_until[team] = self.match_s() + C.STORYLINE_WINDOW_S
             if beat.kind == "red_card":
                 self.pending_red[team] = True
             elif beat.kind == "goal":

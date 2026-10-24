@@ -58,7 +58,7 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 ### Storylines (`scenarios/*.toml`, TASK-10.3)
 | File | Fixture | Beats |
 |---|---|---|
-| `comeback_red_card` | chapinero v laureles | home red 30', goes direct 52', goals 55', 74', 84', sub 62' |
+| `comeback_red_card` | chapinero v laureles | home red 55', goes direct 58', goals 62', 76', 86', sub 64'; away tires 66' and sits deep 70' |
 | `press_collapse` | el-poblado v san-fernando | away press 0.95 from 0', fatigue spike 58', home goal 66' |
 | `keeper_heroics` | getsemani v el-prado | home deep (line 0.15, press 0.2), away goal beats 15', 45', 72' |
 | `late_sub_wins_it` | san-antonio v manrique | home sub (slot 10) 70', home goal 76' |
@@ -67,7 +67,7 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 | `underdog_low_block` | siloe v el-poblado | home line 0.1, press 0.2, directness 0.85, goal 71' |
 | `counter_attack_masterclass` | barrio-abajo v usaquen | home directness 0.95, tempo 0.9; away line 0.9; home goals 28', 63' |
 
-Over seeds 1–20, `comeback_red_card` gives the ten-man home side 8 wins against 7 without beats, and +0.7 goals scored per match; it also concedes more with ten men (`test_beats_shift_outcome`).
+Over seeds 1–30, `comeback_red_card` gives the ten-man home side 18 wins against 13 without beats, and +0.77 goals per match (`test_beats_shift_outcome`; the test's margins are half that, because floating-point results differ slightly across platforms). A `red_card` beat opens no storyline window: amplifying the punished team's flaws made ten men collapse.
 
 ## Effect tests (`tests/engine/test_effects.py`, TASK-10.5, `slow`)
 The same fixture is played over 24 seeds with two versions of the home club's profiles, which differ only in the attribute under test. Each of these holds:

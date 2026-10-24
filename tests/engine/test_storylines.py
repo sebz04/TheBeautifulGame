@@ -53,7 +53,7 @@ def _profiles():  # type: ignore[no-untyped-def]
 
 def test_storylines_run() -> None:
     jobs = [(p.stem, load_scenario(p).seed, True) for p in _paths()]
-    with ProcessPoolExecutor() as pool:
+    with ProcessPoolExecutor(4) as pool:
         results = {sid: types for sid, types, _, _ in pool.map(_run, jobs)}
     s = load_scenario(SCENARIO_DIR / "comeback_red_card.toml")
     assert results["comeback_red_card"][f"card:red:{s.home_club_id}"] >= 1
@@ -62,16 +62,18 @@ def test_storylines_run() -> None:
 
 def test_beats_shift_outcome() -> None:
     """The 10-man team in `comeback_red_card` wins more often than without the beats."""
-    seeds = range(1, 21)
-    jobs = [("comeback_red_card", s, beats) for beats in (True, False) for s in seeds]
-    with ProcessPoolExecutor() as pool:
+    # Margins are about half the effect measured locally: floating-point results differ
+    # slightly across platforms, so a match on CI is not bit-identical to one on macOS.
+    n = 30
+    jobs = [("comeback_red_card", s, beats) for beats in (True, False) for s in range(1, n + 1)]
+    with ProcessPoolExecutor(4) as pool:
         results = list(pool.map(_run, jobs))
-    scripted = [h > a for _, _, h, a in results[:20]]
-    control = [h > a for _, _, h, a in results[20:]]
+    scripted = [h > a for _, _, h, a in results[:n]]
+    control = [h > a for _, _, h, a in results[n:]]
     assert sum(scripted) > sum(control)
-    # The goal beats' direct effect: the ten-man side scores at least 0.5 more per match.
-    scored = sum(h for _, _, h, _ in results[:20]), sum(h for _, _, h, _ in results[20:])
-    assert scored[0] - scored[1] >= 10
+    # The goal beats' direct effect: the ten-man side scores at least 0.4 more per match.
+    scored = sum(h for _, _, h, _ in results[:n]), sum(h for _, _, h, _ in results[n:])
+    assert scored[0] - scored[1] >= 0.4 * n
 
 
 def test_scenario_round_trip(tmp_path: Path) -> None:

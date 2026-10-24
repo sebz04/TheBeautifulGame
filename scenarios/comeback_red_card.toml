@@ -4,34 +4,47 @@ home_club_id = "chapinero"
 away_club_id = "laureles"
 seed = 101
 
-# Down to ten after half an hour, the home side goes direct and rides the crowd.
+# Down to ten after 55 minutes, the home side goes direct, rides the crowd, and the
+# visitors tire and sit on what they have.
 [[beats]]
-minute = 30
+minute = 55
 kind = "red_card"
 team = "home"
 
 [[beats]]
-minute = 52
+minute = 58
 kind = "tactic_change"
 team = "home"
 params = { directness = 0.85, press_intensity = 0.8, tempo = 0.8 }
 
 [[beats]]
-minute = 55
+minute = 62
 kind = "goal"
 team = "home"
 
 [[beats]]
-minute = 62
+minute = 64
 kind = "sub"
 team = "home"
 
 [[beats]]
-minute = 74
+minute = 66
+kind = "fatigue_spike"
+team = "away"
+params = { amount = 0.3 }
+
+[[beats]]
+minute = 70
+kind = "tactic_change"
+team = "away"
+params = { line_height = 0.15, press_intensity = 0.15 }
+
+[[beats]]
+minute = 76
 kind = "goal"
 team = "home"
 
 [[beats]]
-minute = 84
+minute = 86
 kind = "goal"
 team = "home"

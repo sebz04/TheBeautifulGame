@@ -29,9 +29,18 @@ def _match(seed: int) -> MatchData:
 
 
 @cache
+def _profiles():  # type: ignore[no-untyped-def]
+    from matchmind.league.profiles import build_profiles
+
+    return build_profiles(build_league(), seed=2026)
+
+
+@cache
 def _events_only(seed: int) -> MatchData:
+    """Spread over the calendar, with profiles (as real matches are played)."""
     fixtures = len(build_fixtures(build_league(), seed=2026))
-    return simulate_match(_meta(seed, ((seed - 1) * 19) % fixtures), level=3, tracking=False)
+    meta = _meta(seed, ((seed - 1) * 19) % fixtures)
+    return simulate_match(meta, level=3, tracking=False, profiles=_profiles())
 
 
 @cache
