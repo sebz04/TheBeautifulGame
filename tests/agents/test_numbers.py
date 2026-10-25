@@ -165,3 +165,13 @@ def test_unmatched_number_failure_quotes_its_context() -> None:
     check = check_text(text, "en", [_claim(0.409)], _verified)
     (failure,) = check.failures
     assert "'5'" in failure and "from 5 shots" in failure
+
+
+def test_window_length_of_a_cited_window_metric_is_allowed() -> None:
+    ppda = Claim(text="t", metric="ppda_10min", value=9.0, unit="", ref="r")
+    assert check_text("9.0 passes per action over the last 10 minutes", "en", [ppda], _verified).ok
+    assert check_text("٩٫٠ تمريرة في آخر ١٠ دقائق", "ar", [ppda], _verified).ok
+    momentum = Claim(text="t", metric="momentum", value=0.33, unit="", ref="r")
+    assert check_text("0.33 over the last 5 minutes", "en", [momentum], _verified).ok
+    plain = Claim(text="t", metric="possession", value=0.58, unit="%", ref="r")
+    assert not check_text("58% in the last 10 minutes", "en", [plain], _verified).ok

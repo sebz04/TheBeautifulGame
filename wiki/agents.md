@@ -8,7 +8,7 @@
 | Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | done (17.2) |
 | Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | done (18.1) |
 | Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | done (19.2) |
-| Personalization | `agents/personalizer.py` | `prompts/personalizer.v1.md` | `list[PersonalizedText]` | planned |
+| Personalization | `agents/personalizer.py` | `prompts/personalizer.v1.md` | `list[PersonalizedText]` | done (19.3) |
 | Scenario Designer | `agents/scenario_designer.py` | | `Scenario` | phase 2 |
 | Ingest | `agents/ingest.py` | | recovery action | phase 2 |
 | Overlay Director | `agents/overlay_director.py` | | `list[OverlayCue]` | phase 2 |
@@ -91,18 +91,8 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
   - an agent recap in about 4.5 s that got the 3-2, the minutes, and Morejo's hat-trick right.
   - It still mixes stats from different moments in one sentence; that fix is deferred to TASK-25.2.
 
-## Fallback templates (`agents/templates.py`, TASK-19.1)
-- **`render(insight, variant, lang, names) -> PersonalizedText`** is deterministic. It's what a fan sees when an agent text can't be verified: 4 personas × 5 languages, built from the verified claims alone, with `verified=True`.
-- **Numbers** come only from claims, in the language's format: decimal comma for es, pt, and fr; Arabic-Indic digits with `٫` and `٪` for ar; ratios with a `%` unit as percentages.
-  - Labels contain **no digits or number words**: "PPDA (last 10 min)" would read as a minute mark.
-  - Every combination passes `numbers.check_text` (tested).
-- **Per persona:**
-  - `analyst`: up to 5 claims, plain label plus the standard name ("recent pressing (passes allowed per defensive action, PPDA)").
-  - `casual`: 2 claims, plain labels, no team names, and no jargon (`JARGON`: xT, PPDA, field tilt, pitch control).
-  - `club_fan` and `player_focus`: up to 3 claims, that club's or player's first.
-  - `WORD_LIMITS`: analyst 90, casual 45, club_fan and player_focus 60.
-- `PersonalizedText.dir` is `"rtl"` for Arabic (new field, default `"ltr"`).
-- **Known nicety, deferred to TASK-25.2:** French elision ("de Atlético" should be "d'Atlético") and the space before French colons.
+## Personalization
+The Personalizer (4 personas × 5 languages, batched) and the fallback templates are on [personalization.md](personalization.md).
 
 ## Verifier
 The Verifier, its regeneration loop, the number check, and the golden-set evaluation are on [verifier.md](verifier.md).

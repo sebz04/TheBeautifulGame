@@ -237,6 +237,8 @@ def _with_unit(text: str, n: ExtractedNumber) -> ExtractedNumber:
     return n
 
 
+WINDOWS = {"_10min": 10.0, "momentum": 5.0}  # metric suffix -> window length in minutes
+_PLURAL_MINUTES = re.compile(r"\s*(?:minutes|minutos|mins\b|دقائق)", re.IGNORECASE)
 _CLAIM_UNITS = {
     "%": "%", "percent": "%", "pct": "%",
     "km/h": "km/h", "kmh": "km/h", "m/s": "m/s",
@@ -306,11 +308,15 @@ def check_text(
             )
         else:
             verified.append((stored, c.unit))
+    # "over the last 10 minutes" describes a cited window metric's window, not a stat.
+    windows = {w for suffix, w in WINDOWS.items() if any(c.metric.endswith(suffix) for c in claims)}
+    verified += [(w, "") for w in windows]
 
     for n in extract_numbers(text, lang):
         written = text[n.span[0] : n.span[1]]
         if n.unit == "minute":
-            if round(n.value) not in minutes:
+            window = n.value in windows and _PLURAL_MINUTES.match(text[n.span[1] :])
+            if round(n.value) not in minutes and not window:
                 failures.append(f"minute {written!r} matches no event minute")
         elif n.unit == "formation":
             if n.formation not in formations:

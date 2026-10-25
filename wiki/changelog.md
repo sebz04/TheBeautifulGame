@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-19.3 · Personalizer: variants_for and personalize_batch (one call per insight and language; numbers, word limits, jargon, and names checked per variant; one retry for failed variants, then templates); window lengths of cited window metrics allowed; new wiki page personalization.md · README, agents, personalization, decisions
 - 2026-10-25 · TASK-19.2 · Narrative agent: live lines (≤ 140 characters, claims and milestones only, headline fallback) and full-time recap (numbers cited by ref, template fallback); recap_context with milestones from earlier rounds only; Recap schema · README, agents, data-model, decisions
 - 2026-10-25 · TASK-19.1 · deterministic fallback templates, 4 personas × 5 languages, from claims alone (localized numbers, Arabic digits, rtl), jargon check and word limits; PersonalizedText.dir · README, agents, data-model
 - 2026-10-25 · TASK-19.0 · Explainer metric meanings (PPDA, field tilt, territory, momentum, "value at the moment's end"); half check moved from code to the Verifier prompt (it flagged advice about the second half); claim numbers blanked for the Verifier agent; Verifier gaps deferred to TASK-25.2; eval rerun (recall 0.95, precision 1.00) and fixtures re-recorded · agents, verifier, decisions
