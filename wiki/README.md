@@ -65,6 +65,7 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/stats/metrics.py` | Event-exact `metrics_at`, 30 s and per-moment snapshots | done | 14.3 |
 | `src/matchmind/pipeline/build_match.py`, `src/matchmind/cli.py` | `matchmind build` (scenario → stats → store) | done | 14.3 |
 | `src/matchmind/mcp_server/server.py` | MCP stats server (12 read-only tools, event-exact) | done | 15 |
+| `src/matchmind/agents/numbers.py` | Locale-aware number extraction and checking (Verifier rule) | done | 16.2 |
 | `src/matchmind/agents/` | Foundry agents + orchestrator | planned | 16–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |

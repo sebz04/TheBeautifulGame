@@ -39,6 +39,24 @@
 - **Errors:** unknown ids, teams, players, or metric names return `{"error": ...}`, not an exception.
 - **Live, against the built database:** summary 80 ms; first team snapshot about 0.6 s (cached after); deviations 130 ms; season context 1 ms.
 
+## Number checking (`agents/numbers.py`, TASK-16.2)
+The Verifier's deterministic rule: every number an agent writes must match a verified stat, a real event minute, the real score, or a formation actually used. Nothing is skipped.
+
+- `extract_numbers(text, lang) -> list[ExtractedNumber]` reads numbers the way each language writes them:
+  - decimal commas (`es`, `pt`, `fr`: "1,5");
+  - thousands separators ("12.000", "12 000" including narrow spaces, "12,000");
+  - Arabic-Indic digits with Arabic separators ("١٢٬٠٠٠", "٣٫٥");
+  - number words 0–20 in all 5 languages, including Arabic teens ("ثلاثة عشر") and prefixes ("و", "ال").
+- **Units:** `%` (and "por ciento", "pour cent"), `km/h`, `m/s`, `km`, `m`.
+- **Minute marks:** "62'", "62nd minute", "minuto 62", "62e minute", "الدقيقة ٦٢", and "90+3'" (read as 93).
+- **Scorelines** ("2-1", "2 a 1") and **formations** ("4-2-3-1") are read as one token each.
+- A separator that isn't a 3-digit group is read as a decimal point in any language ("1.5" in Spanish is 1.5).
+- Words for 1 (un, una, um, une, one, واحد) are not numbers: they double as articles.
+- `check_text(text, lang, claims, lookup, rel_tol=0.01, abs_tol=0.05, *, minutes, scores, formations) -> NumberCheck(ok, failures)`:
+  - Each claim must agree with its stored value, compared at the claim's own precision.
+  - Each number in the text must match a verified claim. Unit conversion is allowed (km/h ↔ m/s, m ↔ km, ratio ↔ %), and so is rounding to the written precision ("12" for 11.6, but not "12.0").
+  - Minutes, scores (either order) and formations must be in the sets passed in.
+
 ## Gotchas
 - **MCP SDK 2.x:** `mcp.server.fastmcp` no longer exists (`MCPServer` is in `mcp.server.mcpserver`). A raised exception comes back as a generic "Error executing tool", so tools return an `error` dict instead. Tests connect in-process with `mcp.Client(server)`.
 _Add any surprises from the Agent Framework or Foundry APIs here._
