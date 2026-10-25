@@ -58,3 +58,18 @@ def test_runtime_package_missing_from_report_is_a_violation():
 
 def test_numpy_style_compound_permissive_expression_allowed():
     assert is_allowed("BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0")
+
+
+def test_packages_for_other_platforms_are_skipped():
+    from check_licenses import parse_export
+
+    export = "\n".join([
+        "# generated",
+        "pydantic==2.9.0",
+        "pywin32==311 ; sys_platform == 'win32'",
+        "uvloop==0.21 ; sys_platform != 'win32'",
+        "    # via mcp",
+    ])  # fmt: skip
+    names = parse_export(export, {"sys_platform": "darwin"})
+    assert names == {"pydantic", "uvloop"}
+    assert "pywin32" in parse_export(export, {"sys_platform": "win32"})

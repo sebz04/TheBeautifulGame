@@ -240,6 +240,14 @@ class Repo:
             if rows:
                 c.execute(insert(events), rows)
 
+    def get_event(self, event_id: str) -> Event | None:
+        with self.engine.connect() as c:
+            r = c.execute(select(events).where(events.c.event_id == event_id)).mappings().first()
+        if r is None:
+            return None
+        extras = json.loads(r["extras_json"])
+        return Event(**{k: v for k, v in r.items() if k != "extras_json"}, extras=extras)
+
     def list_matches(self) -> list[str]:
         with self.engine.connect() as c:
             return [
@@ -308,6 +316,24 @@ class Repo:
                 for r in c.execute(q).mappings()
             ]
 
+    def get_snapshot(
+        self, match_id: str, period: int, t: float, kind: str = "moment"
+    ) -> list[MetricRow]:
+        """All rows stored at exactly (period, t) of one kind."""
+        q = (
+            select(metrics)
+            .where(
+                metrics.c.match_id == match_id,
+                metrics.c.period == period,
+                metrics.c.t == t,
+                metrics.c.kind == kind,
+            )
+            .order_by(metrics.c.scope, metrics.c.scope_id, metrics.c.name)
+        )
+        with self.engine.connect() as c:
+            rows = c.execute(q).mappings().all()
+        return [MetricRow(**{k: v for k, v in r.items() if k != "id"}) for r in rows]
+
     def get_metric(
         self, match_id: str, name: str, scope: str, scope_id: str, t: MatchTime
     ) -> float | None:
@@ -365,6 +391,15 @@ class Repo:
             )
             for r in rows
         ]
+
+    def get_moment(self, moment_id: str) -> Moment | None:
+        q = select(moments).where(moments.c.moment_id == moment_id)
+        with self.engine.connect() as c:
+            r = c.execute(q).mappings().first()
+        if r is None:
+            return None
+        ids = json.loads(r["event_ids_json"])
+        return Moment(**{k: v for k, v in r.items() if not k.endswith("_json")}, event_ids=ids)
 
     def moment_details(self, moment_id: str) -> dict[str, Any]:
         with self.engine.connect() as c:

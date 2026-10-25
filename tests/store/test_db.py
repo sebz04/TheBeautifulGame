@@ -204,3 +204,20 @@ def test_unknown_match_is_empty() -> None:
     assert repo.get_match_meta("nope") is None and repo.list_moments("nope") == []
     with pytest.raises(ValueError):
         repo.get_events("nope", t_from=(2, 0.0), t_to=(1, 0.0))  # empty window
+
+
+def test_single_lookups() -> None:
+    repo, data = _repo(), _match()
+    mid = data.meta.match_id
+    repo.save_match_data(data)
+    e = data.events[42]
+    assert repo.get_event(e.event_id) == e and repo.get_event("nope") is None
+    m = _moment(0, 100.0)
+    repo.save_moments(mid, [m], details={m.moment_id: {"p_value": 0.002}})
+    assert repo.get_moment(m.moment_id) == m and repo.get_moment("nope") is None
+    rows = _rows(mid) + [MetricRow(match_id=mid, period=1, t=30.0, scope="team", scope_id="h",
+                                   name="ppda", value=8.0, kind="moment")]  # fmt: skip
+    repo.save_metrics(mid, rows)
+    snap = repo.get_snapshot(mid, 1, 30.0, kind="moment")
+    assert [(r.name, r.value, r.kind) for r in snap] == [("ppda", 8.0, "moment")]
+    assert repo.get_snapshot(mid, 1, 31.0, kind="moment") == []

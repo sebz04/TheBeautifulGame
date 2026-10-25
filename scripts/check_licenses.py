@@ -10,6 +10,8 @@ import re
 import subprocess
 import sys
 
+from packaging.markers import Marker
+
 ALLOWED_PATTERNS = [
     r"\bmit\b",
     r"\b0?bsd\b",
@@ -75,11 +77,21 @@ def runtime_packages() -> set[str]:
         capture_output=True,
         text=True,
     ).stdout
-    return {
-        re.split(r"[=<>\[; ]", line, maxsplit=1)[0]
-        for line in out.splitlines()
-        if line and not line.startswith(("#", " "))
-    }
+    return parse_export(out)
+
+
+def parse_export(text: str, environment: dict[str, str] | None = None) -> set[str]:
+    """Package names from `uv export` output, skipping those whose environment marker
+    does not apply here (e.g. `pywin32 ; sys_platform == 'win32'` on macOS or Linux)."""
+    names = set()
+    for line in text.splitlines():
+        if not line or line.startswith(("#", " ")):
+            continue
+        requirement, _, marker = line.partition(";")
+        if marker.strip() and not Marker(marker.strip()).evaluate(environment):
+            continue
+        names.add(re.split(r"[=<>\[ ]", requirement.strip(), maxsplit=1)[0])
+    return names
 
 
 def installed_licenses() -> list[dict[str, str]]:

@@ -34,12 +34,17 @@ class Counterfactual(BaseModel):
 
 def decision_frame(match: MatchData, event: Event) -> TrackingFrame:
     """The pitch as the player saw it when deciding (the engine's lagged frame)."""
-    period = [f for f in match.frames if f.period == event.period]
-    if not period:
+    by_tick = {round(f.t / C.DT): f for f in match.frames if f.period == event.period}
+    if not by_tick:
         raise ValueError(f"no frames for period {event.period}")
     k = round(event.t / C.DT)
-    seen = period[min(max(k - C.PERCEPTION_LAG_TICKS - 1, 0), len(period) - 1)]
-    ball_z = period[min(max(k - 1, 0), len(period) - 1)].ball[2]
+
+    def nearest(tick: int) -> TrackingFrame:
+        """The frame at `tick`, or the closest one there is (start of play)."""
+        return by_tick.get(tick) or by_tick[min(by_tick, key=lambda j: abs(j - tick))]
+
+    seen = nearest(k - C.PERCEPTION_LAG_TICKS - 1)
+    ball_z = nearest(k - 1).ball[2]
     return trusted(TrackingFrame, {**seen.__dict__, "ball": (event.x, event.y, ball_z)})
 
 

@@ -88,3 +88,11 @@ def test_non_decision_event_rejected() -> None:
     tackle = next(e for e in data.events if e.type == "tackle")
     with pytest.raises(ValueError, match="decision"):
         counterfactual(tackle, data.frames[0], GRID, attacks_right=True)
+
+
+def test_decision_frame_from_a_window_of_frames() -> None:
+    data = _match()
+    e, _ = _all()[25]
+    window = [f for f in data.frames if f.period == e.period and e.t - 1.0 <= f.t <= e.t]
+    cut = data.model_copy(update={"frames": window})
+    assert decision_frame(cut, e) == decision_frame(data, e)

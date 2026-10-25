@@ -1,6 +1,6 @@
 """Metric materialization: every team and player metric at a moment, from data up to it.
 
-Two paths over the same code (`_snapshot`):
+Two paths over the same code (`snapshot`):
 - `metrics_at(match, xt_grid, period, t, scope, scope_id)`: event-exact and on demand.
   It reads only events and frames at or before (period, t), so deleting everything later
   changes nothing. Pitch-control territory is evaluated once, at the latest event.
@@ -120,7 +120,7 @@ def _territory(match: MatchData, upto: Sequence[Event]) -> float | None:
     return float(grid.mean())
 
 
-def _snapshot(match: MatchData, grid: np.ndarray, period: int, t: float) -> Snapshot:
+def snapshot(match: MatchData, grid: np.ndarray, period: int, t: float) -> Snapshot:
     when = (period, t)
     upto = [e for e in match.events if (e.period, e.t) <= when]
     home, away = match.meta.home.club_id, match.meta.away.club_id
@@ -149,7 +149,7 @@ def _snapshot(match: MatchData, grid: np.ndarray, period: int, t: float) -> Snap
 def metrics_at(match: MatchData, xt_grid: np.ndarray, period: int, t: float, scope: str,
                scope_id: str) -> dict[str, float]:  # fmt: skip
     """Every metric of a team or player at (period, t), from data up to then only."""
-    return dict(_snapshot(match, xt_grid, period, t).get((scope, scope_id), {}))
+    return dict(snapshot(match, xt_grid, period, t).get((scope, scope_id), {}))
 
 
 def _grid_times(match: MatchData, step_s: float) -> list[MatchTime]:
@@ -169,7 +169,7 @@ def compute_metrics(match: MatchData, xt_grid: np.ndarray, step_s: float = 30.0,
     plan += [(p, t, "moment") for p, t in sorted(set(extra_times))]
     mid = match.meta.match_id
     for period, t, kind in plan:
-        for (scope, scope_id), values in _snapshot(match, xt_grid, period, t).items():
+        for (scope, scope_id), values in snapshot(match, xt_grid, period, t).items():
             rows += [MetricRow(match_id=mid, period=period, t=t, scope=scope,
                                scope_id=scope_id, name=name, value=value, kind=kind)
                      for name, value in sorted(values.items())]  # fmt: skip

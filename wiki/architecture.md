@@ -22,7 +22,7 @@ Scenario (TOML or Scenario Designer)
 | Component | Runs where | Status |
 |---|---|---|
 | Engine + stats + build CLI | Local / CI / build job | done: engine, stats, SQL and tracking stores, `matchmind build` |
-| API + MCP (one container, `/mcp` mount) | Azure Container Apps | planned |
+| API + MCP (one container, `/mcp` mount) | Azure Container Apps | MCP server built (TASK-15); API planned |
 | Web | Azure Static Web Apps | planned |
 | Models | Microsoft Foundry deployment (`gpt-4.1-mini`) | planned |
 | Telemetry | Application Insights (OpenTelemetry) | planned |
