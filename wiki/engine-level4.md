@@ -59,7 +59,7 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 | File | Fixture | Beats |
 |---|---|---|
 | `comeback_red_card` | chapinero v laureles | home red 55', goes direct 58', goals 62', 76', 86', sub 64'; away tires 66' and sits deep 70' |
-| `press_collapse` | el-poblado v san-fernando | away press 0.95 from 0', fatigue spike 58', home goal 66' |
+| `press_collapse` | el-poblado v san-fernando | away press 0.95 from 0', fatigue spike 58', press drops to 0.1 at 59', home goal 66' |
 | `keeper_heroics` | getsemani v el-prado | home deep (line 0.15, press 0.2), away goal beats 15', 45', 72' |
 | `late_sub_wins_it` | san-antonio v manrique | home sub (slot 10) 70', home goal 76' |
 | `derby_chaos` | chapinero v usaquen | both press and tempo 0.9, away goal 38', away red 64', home goal 80' |

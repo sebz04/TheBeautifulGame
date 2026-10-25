@@ -21,3 +21,11 @@ params = { amount = 0.3 }
 minute = 66
 kind = "goal"
 team = "home"
+
+# Out of legs: the press stops.
+[[beats]]
+minute = 59
+kind = "press_intensity"
+team = "away"
+params = { value = 0.1 }
+

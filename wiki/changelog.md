@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-12.2 · press_collapse storyline drops its press at 59'; scripted-collapse test checks 3 seeds (platform differences) · engine-level4
 - 2026-10-25 · TASK-12.3 · shrunk per-90 season baselines, negative-binomial player deviations, player_deviation moments · README, stats, data-model
 - 2026-10-25 · TASK-12.2 · key-moment triggers (goals, reds, big chances, momentum swings, pressing collapses, formation shifts, offside traps, corner pressure) with merging; MomentKind gains offside_trap and corner_pressure · README, stats, data-model
 - 2026-10-25 · TASK-12.1 · team metrics: PPDA (None-safe), field tilt, momentum series, control vs chaos · README, stats, decisions
