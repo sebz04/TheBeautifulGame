@@ -6,6 +6,7 @@
 |---|---|---|---|
 | Pitch control | `stats/pitch_control.py` | done | Spearman 2018; vectorized; parity-tested against Friends of Tracking |
 | Pass quality | `stats/passes.py` | done | Difficulty, xT added, accuracy |
+| Speed and alerts | `stats/speed.py` | done | Ball/shot speed, player motion, speed/distance/name-tag cues |
 | Player match lines | `stats/player_lines.py` | done | Per-player stat lines (season history, live) |
 | xT | `stats/xt.py` | done | Singh 2019 value iteration on synthetic events only; grid in `data/models/xt_grid.npy` |
 | Pass quality | `stats/passes.py` | planned | Distance, accuracy, difficulty |
@@ -43,4 +44,13 @@
   - End points off the pitch are clamped to the edge. `xt_added` is None for failed passes.
 - `player_accuracy(events, player_id, t_to=(period, t))`: completed share of the player's passes up to that moment, inclusive (NaN if he has none). The pair is needed because `t` restarts each half.
 - In a level-3 match, failed passes are harder on average than completed ones (tested).
+
+## Speed, motion, alerts (`stats/speed.py`, TASK-11.2)
+- `ball_speed(event)`: `ball_speed_ms`, else end distance ÷ (`arrival_t` − t), else None. `shot_speed_kmh(event)` = ball speed × 3.6.
+- `player_motion(frames, player_id, t_to=(period, t)) -> Motion(distance_m, top_speed_ms, sprints, minutes)`: position steps within each period, frame velocity, sprints above 7.0 m/s for at least 1 s (runs don't carry over half time).
+- `alerts(frames, t, thresholds=AlertThresholds(sprint_ms=7.0, sprint_min_s=1.0, distance_step_m=1000)) -> list[OverlayCue]`: every cue triggered up to (period, t), in time order.
+  - `speed_alert` (priority 2) plus a `name_tag` (3) at the frame where a run reaches 1 s, once per run.
+  - `distance_alert` (1) at each further 1,000 m.
+  - Cues last 4 s, with ids `{match}-{kind}-{player}-{period}-{t}`.
+- **Cross-check:** distance and top speed agree with floodlight (`DistanceModel` and `VelocityModel`, backward differences) within 2% on a level-3 match (`tests/stats/test_speed.py`). We use backward differences because our frame velocity is the step just taken; central differences smooth the peaks.
 
