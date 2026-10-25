@@ -39,5 +39,21 @@ Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `
 - `frames.parquet`: **long format**, one row per player per frame (`frame, period, t, ball_x, ball_y, ball_z, player_id, team_id, x, y, vx, vy`), rows grouped by frame. This is the shape pandas or numpy readers want.
 Zstd compression, no embedded schema metadata: the same data gives byte-identical files. Reading builds frames with `schemas.trusted` (no validation; they come from our own writer) with the GC paused, and fully validates events. One match: frames about 7.4 MB, events about 40 KB; write about 1 s, read about 3 s.
 
-## Tables
-_None yet._ Planned: matches, events, metrics, moments, insights, personalized, overlay_cues, agent_runs, season_*.
+## Tables (`store/db.py`, TASK-14.1)
+SQLAlchemy Core with portable types only (JSON stored as text), so the same schema runs on SQLite (`MATCHMIND_DB_URL`, default `sqlite:///data/matchmind.db`) and Azure SQL (`pyodbc`, `azure` extra).
+- `matches` (meta JSON); `events` (columns + `extras_json`).
+- `metrics` (`match_id, period, t, scope, scope_id, name, value, kind`), indexed for latest-before-t lookups.
+- `moments` (+ `event_ids_json`, `details_json` for a deviation's expected, baseline per 90, and p-value).
+- `insights`, `personalized` (persona, lang, club_id, player_id), `overlay_cues`, `agent_runs`.
+- `season_results`, `season_standings`, `season_player_lines`, `season_meta` (rounds, milestones, discipline, sat-out lists).
+
+`Repo(url)`:
+- **Matches:** `save_match_data` (meta and events; replaces), `get_match_meta`, `list_matches`, `get_events(match_id, t_from, t_to, types)`.
+- **Metrics:** `save_metrics` (replaces the match's rows), `list_metrics`, `get_metric(match_id, name, scope, scope_id, (period, t))`, which returns the latest value at or before t, or None.
+- **Moments:** `save_moments(match_id, moments, details)`, `list_moments` (time order), `moment_details`.
+- **Insights:** `save_insight` (upsert), `list_insights(match_id)`, `save_personalized`, `list_personalized(match_id, persona, lang)`.
+- **Cues and agent runs:** `save_cues`, `list_cues`, `log_agent_run`, `list_agent_runs(moment_id)`.
+- **Season:** `save_season`, `load_season`.
+- **Rebuilds:** `delete_match`.
+
+`MetricRow` and `AgentRun` are shared models in `schemas.py`.

@@ -222,3 +222,27 @@ class OverlayCue(BaseModel):
     kind: CueKind
     priority: int
     payload: dict[str, Any]
+
+
+class MetricRow(BaseModel):
+    """One materialized metric value at (period, t): a 30 s grid point or a moment's end."""
+
+    match_id: str
+    period: Period
+    t: float
+    scope: Literal["team", "player"]
+    scope_id: str
+    name: str
+    value: float | None
+    kind: Literal["grid", "moment"]
+
+
+class AgentRun(BaseModel):
+    run_id: str
+    agent: str
+    moment_id: str | None
+    status: Literal["ok", "retry", "failed", "fallback"]
+    attempts: int
+    latency_ms: int
+    trace_id: str | None
+    error: str | None

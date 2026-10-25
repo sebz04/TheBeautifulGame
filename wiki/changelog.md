@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-14.1 · SQL stats store (SQLAlchemy Core, SQLite/Azure SQL), Repo with replace-on-save; MetricRow and AgentRun schemas; sqlalchemy dependency, optional azure extra · README, data-model, decisions
 - 2026-10-25 · TASK-13 · counterfactual scorer (engine's own option scoring on the rebuilt decision frame); decision extras unrounded with chosen_option, risk_weight, goal_window; shared filter_options and decision_context · README, stats, engine, data-model
 - 2026-10-25 · TASK-12.2 · scripted pressing-collapse check is statistical (1 of 6 seeds) and nightly; the red-card check stays in CI · stats
 - 2026-10-25 · TASK-12.2 · press_collapse storyline drops its press at 59'; scripted-collapse test checks 3 seeds (platform differences) · engine-level4

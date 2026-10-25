@@ -10,6 +10,14 @@ dependencies = [
     "pydantic-settings>=2.6",
     "numpy>=2.1",
     "pyarrow>=26.0.0",
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+azure = [
+    "azure-identity>=1.17",
+    "azure-storage-blob>=12.20",
+    "pyodbc>=5.1",
 ]
 
 [dependency-groups]
