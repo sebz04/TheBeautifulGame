@@ -6,6 +6,7 @@
 |---|---|---|---|
 | Pitch control | `stats/pitch_control.py` | done | Spearman 2018; vectorized; parity-tested against Friends of Tracking |
 | Pass quality | `stats/passes.py` | done | Difficulty, xT added, accuracy |
+| Team metrics | `stats/team.py` | done | PPDA, field tilt, momentum, control vs chaos |
 | Speed and alerts | `stats/speed.py` | done | Ball/shot speed, player motion, speed/distance/name-tag cues |
 | Player match lines | `stats/player_lines.py` | done | Per-player stat lines (season history, live) |
 | xT | `stats/xt.py` | done | Singh 2019 value iteration on synthetic events only; grid in `data/models/xt_grid.npy` |
@@ -53,4 +54,16 @@
   - `distance_alert` (1) at each further 1,000 m.
   - Cues last 4 s, with ids `{match}-{kind}-{player}-{period}-{t}`.
 - **Cross-check:** distance and top speed agree with floodlight (`DistanceModel` and `VelocityModel`, backward differences) within 2% on a level-3 match (`tests/stats/test_speed.py`). We use backward differences because our frame velocity is the step just taken; central differences smooth the peaks.
+
+## Team metrics (`stats/team.py`, TASK-12.1)
+Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own goal line, which is why the functions take `home_id`.
+- `ppda(events, team_id, home_id, t_from, t_to) -> float | None`: opponent passes in their own 60% ÷ our tackles, interceptions, and fouls in that zone. None when we made no such action; never infinite.
+- `field_tilt(...) -> float`: our share of passes played in a final third (70+ m from the passer's goal); 0.5 when there are none.
+- `momentum_series(events, xt_grid, home_id, window_s=300, step_s=30) -> MomentumSeries(points=[MomentumPoint(period, t, home, away, diff)])`: xT added by completed passes and carries plus shot xG, per team, over the last 5 min of the same half; `diff` = home − away. `.at(period, t)` gives the latest point. A pydantic model, not a DataFrame: pandas is not a runtime dependency.
+- `control_chaos(events, frames, t_from, t_to, home_id) -> [0, 1]`: a weighted mean (renormalized when a part is missing) of:
+  - turnovers per on-ball event (0.4; typical 0.12);
+  - short possessions (0.3; typical 6 on-ball events per possession);
+  - pitch-control volatility (0.15; the SD of the home team's mean control on a 16×10 grid every 10 s, frames only);
+  - long forward passes of 30 m or more (0.15; typical 15%).
+  - Each part is value ÷ (2 × typical), so a typical match sits near 0.5. A level-3 match reads 0.47–0.69 per 10 minutes (about 2 s for a whole match with frames).
 
