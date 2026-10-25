@@ -5,6 +5,8 @@ from concurrent.futures import ProcessPoolExecutor
 from functools import cache
 from pathlib import Path
 
+import pytest
+
 from matchmind.engine.scenario import SCENARIO_DIR, Scenario, load_scenario, scenario_meta
 from matchmind.engine.simulate import simulate_match
 from matchmind.league.league import build_league
@@ -60,20 +62,31 @@ def test_storylines_run() -> None:
     assert all(types["shot"] > 0 for types in results.values())
 
 
-def test_beats_shift_outcome() -> None:
-    """The 10-man team in `comeback_red_card` wins more often than without the beats."""
-    # Margins are about half the effect measured locally: floating-point results differ
-    # slightly across platforms, so a match on CI is not bit-identical to one on macOS.
-    n = 30
+def _comeback(n: int) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(home, away) goals over seeds 1..n, with and without the beats."""
     jobs = [("comeback_red_card", s, beats) for beats in (True, False) for s in range(1, n + 1)]
     with ProcessPoolExecutor(4) as pool:
-        results = list(pool.map(_run, jobs))
-    scripted = [h > a for _, _, h, a in results[:n]]
-    control = [h > a for _, _, h, a in results[n:]]
-    assert sum(scripted) > sum(control)
-    # The goal beats' direct effect: the ten-man side scores at least 0.4 more per match.
-    scored = sum(h for _, _, h, _ in results[:n]), sum(h for _, _, h, _ in results[n:])
-    assert scored[0] - scored[1] >= 0.4 * n
+        results = [(h, a) for _, _, h, a in pool.map(_run, jobs)]
+    return results[:n], results[n:]
+
+
+def test_beats_shift_outcome() -> None:
+    """The goal beats lift the ten-man side's scoring (about +0.8 per match locally).
+
+    The margin is half that: floating-point results differ slightly across platforms, so
+    a match on CI is not bit-identical to the same seed on macOS.
+    """
+    n = 30
+    scripted, control = _comeback(n)
+    assert sum(h for h, _ in scripted) - sum(h for h, _ in control) >= 0.4 * n
+
+
+@pytest.mark.slow
+def test_beats_raise_win_rate() -> None:
+    """The ten-man team in `comeback_red_card` wins more often than without the beats
+    (80 seeds: win counts over fewer seeds are too noisy to compare across platforms)."""
+    scripted, control = _comeback(80)
+    assert sum(h > a for h, a in scripted) > sum(h > a for h, a in control)
 
 
 def test_scenario_round_trip(tmp_path: Path) -> None:

@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-24 · TASK-10.5 · storyline win-rate check moved to a slow 80-seed test; the fast test checks the goal effect · engine-level4
 - 2026-10-23 · TASK-10.5 · CI-robust statistical tests (results differ slightly across platforms), comeback storyline reworked (red at 55'), red-card beats open no storyline window, events-only engine tests use profiles · engine-level4, decisions
 - 2026-10-23 · TASK-10.5 · type annotation fix for urgency_factor (CI mypy) · changelog
 - 2026-10-23 · TASK-10.5 · slow attribute-effect tests (9 effects), chemistry wired into pass completion, work-rate and fatigue-scaled off-ball urgency · README, engine-level4

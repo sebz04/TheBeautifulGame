@@ -67,7 +67,7 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 | `underdog_low_block` | siloe v el-poblado | home line 0.1, press 0.2, directness 0.85, goal 71' |
 | `counter_attack_masterclass` | barrio-abajo v usaquen | home directness 0.95, tempo 0.9; away line 0.9; home goals 28', 63' |
 
-Over seeds 1–30, `comeback_red_card` gives the ten-man home side 18 wins against 13 without beats, and +0.77 goals per match (`test_beats_shift_outcome`; the test's margins are half that, because floating-point results differ slightly across platforms). A `red_card` beat opens no storyline window: amplifying the punished team's flaws made ten men collapse.
+Over seeds 1–30 on macOS, `comeback_red_card` gives the ten-man home side 18 wins against 13 without beats, and +0.77 goals per match. `test_beats_shift_outcome` checks at least +0.4 goals per match. The win rate is checked over 80 seeds in the `slow` test `test_beats_raise_win_rate`: over 30 seeds, CI on Linux drew 14 wins against 14, because floating-point results differ slightly across platforms. A `red_card` beat opens no storyline window: amplifying the punished team's flaws made ten men collapse.
 
 ## Effect tests (`tests/engine/test_effects.py`, TASK-10.5, `slow`)
 The same fixture is played over 24 seeds with two versions of the home club's profiles, which differ only in the attribute under test. Each of these holds:
