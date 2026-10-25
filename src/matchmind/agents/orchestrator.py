@@ -215,15 +215,21 @@ def _complete(win: _Window, deps: Deps, insight: Insight) -> bool:
 async def analyst_step(job: WindowJob, deps: Deps, log: RunLog) -> Surfaced:
     win, moments = _open_window(job, deps, log)
     carried = [win.existing[m.moment_id] for m in moments if m.moment_id in win.existing]
-    win.report.skipped = sum(_complete(win, deps, i) for i in carried)
     carried = [i for i in carried if not _complete(win, deps, i)]
-    fresh = [m for m in moments if m.moment_id not in win.existing]
+    passed = deps.repo.list_passed_moments(job.match_id)
+    fresh = [m for m in moments if m.moment_id not in win.existing and m.moment_id not in passed]
+    win.report.skipped = len(moments) - len(carried) - len(fresh)  # done, or passed on
     decisions: list[AnalystDecision] = []
     if fresh:
         try:
             decisions = await analyze(fresh, deps.client, deps.tools, names=win.names)
         except Exception as exc:  # the model is down: nothing surfaces this window
             _fallback(log, "analyst", fresh[0].moment_id, f"analyst failed: {exc}")
+        else:
+            surfaced = {d.moment_id for d in decisions}
+            deps.repo.save_passed_moments(
+                job.match_id, [m.moment_id for m in fresh if m.moment_id not in surfaced]
+            )
     by_id = {m.moment_id: m for m in fresh}
     todo = [(d, by_id[d.moment_id]) for d in decisions]
     win.report.surfaced = len(todo)

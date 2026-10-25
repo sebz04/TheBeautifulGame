@@ -27,7 +27,10 @@ Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty
 - `uv run python -m matchmind.agents.runtime --ping`: one call to the Foundry deployment (about 3–4 s including sign-in).
 - `uv run matchmind build --all`: build the 8 showcase matches.
 - `uv run python scripts/record_llm_fixtures.py`: run Analyst → Explainer → Verifier live on 3 moments and save the replies (`tests/fixtures/llm/`). About 1 minute.
+- `uv run python scripts/precompute.py --all`: precompute every match live (resumable; `--limit 1 --match <id>` for a smoke test). About 2 h and $9.50 for all 8; a re-run of finished matches takes seconds. See [orchestrator.md](orchestrator.md).
+- `uv run python scripts/devui.py`: open the workflow in Agent Framework DevUI (needs the MCP server running).
 - `uv run python scripts/build_verifier_golden.py`, then `uv run python scripts/run_foundry_eval.py --runs 3`: rebuild the Verifier golden set and evaluate it live (`docs/evals.md`). About 5 minutes, 84 model calls.
 
 ## Costs
-_Record the measured cost per precomputed match and the monthly run rate (from `docs/costs.md`)._
+- **Precompute (TASK-20.2):** $9.53 for all 8 matches, $0.79–1.45 per match (`docs/costs.md`), on `gpt-4.1-mini` list prices. Runs once; serving replays costs no tokens.
+- _Monthly hosting run rate: to be measured at TASK-24._

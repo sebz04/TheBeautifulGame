@@ -571,6 +571,18 @@ class Repo:
         with self.engine.connect() as c:
             return {k.removeprefix("line:"): json.loads(b) for k, b in c.execute(q)}
 
+    def save_passed_moments(self, match_id: str, moment_ids: Iterable[str]) -> None:
+        """Moments the Analyst looked at and chose not to surface, so a re-run skips them."""
+        for moment_id in moment_ids:
+            self._put_narrative(f"passed:{moment_id}", match_id, "passed", "true")
+
+    def list_passed_moments(self, match_id: str) -> set[str]:
+        q = select(narratives.c.key).where(
+            and_(narratives.c.match_id == match_id, narratives.c.kind == "passed")
+        )
+        with self.engine.connect() as c:
+            return {k.removeprefix("passed:") for (k,) in c.execute(q)}
+
     def save_recap(self, recap: Recap) -> None:
         self._put_narrative(f"recap:{recap.match_id}", recap.match_id, "recap",
                             recap.model_dump_json())  # fmt: skip

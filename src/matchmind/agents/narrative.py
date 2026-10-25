@@ -10,6 +10,7 @@ problems, then a deterministic fallback: the insight's headline, or a template r
 from __future__ import annotations
 
 import json
+import logging
 import re
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
@@ -23,6 +24,8 @@ from matchmind.agents.runtime import bad_reply, make_agent, run_agent
 from matchmind.agents.templates import LABELS, format_value
 from matchmind.clock import match_minute, minute_label
 from matchmind.schemas import Claim, Insight, Recap
+
+log = logging.getLogger(__name__)
 
 PROMPT = "narrative.v1.md"
 MAX_LINE = 140
@@ -212,6 +215,7 @@ async def recap(ctx: RecapContext, insights: Sequence[Insight], client: Any) -> 
                 match_id=ctx.match_id, title=reply.title, paragraphs=reply.paragraphs,
                 key_numbers=cited, verified=True, source="agent",
             )  # fmt: skip
+    log.warning("template recap for %s: %s", ctx.match_id, "; ".join(problems))
     return template_recap(ctx, insights)
 
 

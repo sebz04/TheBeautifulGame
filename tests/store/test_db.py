@@ -282,3 +282,13 @@ def test_clear_agent_outputs(tmp_path) -> None:
     assert repo.list_live_lines("x1") == {} and repo.get_recap("x1") is None
     assert repo.list_match_runs("x1") == [] and repo.list_insights("x1") == []
     assert repo.list_live_lines("x2") == {"x2-m001-ins": "other match"}
+
+
+def test_passed_moments(tmp_path) -> None:
+    repo = Repo(f"sqlite:///{tmp_path}/p.db")
+    repo.save_passed_moments("x1", ["x1-m001", "x1-m003"])
+    repo.save_passed_moments("x2", ["x2-m001"])
+    assert repo.list_passed_moments("x1") == {"x1-m001", "x1-m003"}
+    repo.clear_agent_outputs("x1")
+    assert repo.list_passed_moments("x1") == set()
+    assert repo.list_passed_moments("x2") == {"x2-m001"}

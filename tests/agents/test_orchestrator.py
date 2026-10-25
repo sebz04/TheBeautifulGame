@@ -270,3 +270,24 @@ async def test_facts_that_cannot_be_copied() -> None:
     deps.facts_for = lambda _: Uncopyable(_facts(w))
     report = await run_window(w.match_id, 1, 0.0, 300.0, deps)
     assert report.verified == 2
+
+
+async def test_rerun_does_not_reask_the_analyst_about_passed_moments() -> None:
+    w = _world()
+    model = _model(w)
+
+    def reply(call: FakeCall) -> FakeReply:
+        out = model._reply(call)
+        if "Tactical Analyst" in _agent(call) and isinstance(out, str):  # pass on m002
+            return out.replace(
+                '"moment_id": "' + w.match_id + '-m002", "surface": true',
+                '"moment_id": "' + w.match_id + '-m002", "surface": false',
+            )
+        return out
+
+    client = FakeChatClient(reply)
+    first = await _run(w, client)
+    assert first.insights == 1
+    calls = len(client.calls)
+    again = await _run(w, client)
+    assert len(client.calls) == calls and again.skipped == 2  # one done, one passed on
