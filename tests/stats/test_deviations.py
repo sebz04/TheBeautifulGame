@@ -19,6 +19,7 @@ from matchmind.stats.deviations import (
     assess,
     detect_deviations,
     deviation_moments,
+    expected_so_far,
     tail_p,
 )
 from matchmind.stats.player_lines import PlayerMatchLine
@@ -141,6 +142,16 @@ def test_detect_deviations_and_moments() -> None:
     per_window = Counter((m.period, m.t_start) for m, _ in pairs)
     assert max(per_window.values()) <= 3
     assert all(math.isfinite(d.p_value) and d.p_value < 0.01 for _, d in pairs)
+
+
+def test_expected_so_far_scales_with_minutes() -> None:
+    data, base = _starved_match()
+    pid = data.meta.home_squad[6].player_id
+    half = expected_so_far(data, base[pid], (1, 45 * 60.0))
+    assert set(half) == set(TRACKED_STATS)
+    assert 15.0 < half["passes"] < 40.0  # 50 per 90, about half a match, possession-adjusted
+    later = expected_so_far(data, base[pid], (2, 45 * 60.0))
+    assert later["passes"] > half["passes"]
 
 
 # ---- season-based (slow) ----------------------------------------------------------------

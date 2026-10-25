@@ -120,6 +120,7 @@ def test_moments_insights_cues_runs() -> None:
     repo.save_insight(insight)
     repo.save_insight(insight)  # upsert
     assert repo.list_insights(mid) == [insight]
+    assert repo.get_insight("i1") == insight and repo.get_insight("nope") is None
     texts = [
         PersonalizedText(
             insight_id="i1", persona="casual", lang=lang, headline="h", body="b", verified=True

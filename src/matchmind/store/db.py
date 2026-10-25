@@ -451,6 +451,12 @@ class Repo:
                 for r in c.execute(q.order_by(insights.c.insight_id))
             ]
 
+    def get_insight(self, insight_id: str) -> Insight | None:
+        q = select(insights.c.body_json).where(insights.c.insight_id == insight_id)
+        with self.engine.connect() as c:
+            row = c.execute(q).first()
+        return None if row is None else Insight.model_validate_json(row[0])
+
     def save_personalized(self, texts: Sequence[PersonalizedText]) -> None:
         with self.engine.begin() as c:
             for p in texts:

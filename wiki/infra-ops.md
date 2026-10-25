@@ -27,6 +27,7 @@ Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty
 - `uv run python -m matchmind.agents.runtime --ping`: one call to the Foundry deployment (about 3–4 s including sign-in).
 - `uv run matchmind build --all`: build the 8 showcase matches.
 - `uv run python scripts/record_llm_fixtures.py`: run Analyst → Explainer → Verifier live on 3 moments and save the replies (`tests/fixtures/llm/`). About 1 minute.
+- `uv run uvicorn matchmind.api.app:app`: the API on port 8000 (see [api-frontend.md](api-frontend.md)).
 - `uv run python scripts/precompute.py --all`: precompute every match live (resumable; `--limit 1 --match <id>` for a smoke test). About 2 h and $9.50 for all 8; a re-run of finished matches takes seconds. See [orchestrator.md](orchestrator.md).
 - `uv run python scripts/devui.py`: open the workflow in Agent Framework DevUI (needs the MCP server running).
 - `uv run python scripts/build_verifier_golden.py`, then `uv run python scripts/run_foundry_eval.py --runs 3`: rebuild the Verifier golden set and evaluate it live (`docs/evals.md`). About 5 minutes, 84 model calls.

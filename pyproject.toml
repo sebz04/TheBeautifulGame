@@ -17,6 +17,9 @@ dependencies = [
     "azure-identity>=1.17",
     "azure-monitor-opentelemetry-exporter>=1.0.0b58",
     "opentelemetry-sdk>=1.39",
+    "fastapi>=0.115",
+    "sse-starlette>=2.1",
+    "uvicorn>=0.30",
 ]
 
 [project.scripts]
