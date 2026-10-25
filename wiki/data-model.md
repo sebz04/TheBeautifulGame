@@ -49,7 +49,7 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - `metrics` (`match_id, period, t, scope, scope_id, name, value, kind`), indexed for latest-before-t lookups.
 - `moments` (+ `event_ids_json`, `details_json` for a deviation's expected, baseline per 90, and p-value).
 - `insights`, `personalized` (persona, lang, club_id, player_id), `overlay_cues`, `agent_runs` (with `tokens_in`, `tokens_out`).
-- `narratives` (`key`, `match_id`, `kind`, `body_json`): live lines (`line:<insight>`), the recap (`recap:<match>`), and moments the Analyst passed on (`passed:<moment>`).
+- `narratives` (`key`, `match_id`, `kind`, `body_json`): live lines (`line:<insight>`), the recap (`recap:<match>`), moments the Analyst passed on (`passed:<moment>`), and the realism report (`realism:<match>`, written by `matchmind build`, kept by `clear_agent_outputs`).
 - `season_results`, `season_standings`, `season_player_lines`, `season_meta` (rounds, milestones, discipline, sat-out lists).
 
 `Repo(url)`:
@@ -58,7 +58,7 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - **Moments:** `save_moments(match_id, moments, details)`, `list_moments` (time order), `moment_details`.
 - **Insights:** `save_insight` (upsert), `list_insights(match_id)`, `save_personalized`, `list_personalized(match_id, persona, lang)`.
 - **Cues and agent runs:** `save_cues`, `list_cues`, `log_agent_run`, `list_agent_runs(moment_id)`, `list_match_runs(match_id)`.
-- **Narratives:** `save_live_line`, `list_live_lines`, `save_recap`, `get_recap`, `save_passed_moments`, `list_passed_moments`; `clear_agent_outputs(match_id)` deletes every agent output of a match (precompute `--reset`).
+- **Narratives:** `save_live_line`, `list_live_lines`, `save_recap`, `get_recap`, `save_passed_moments`, `list_passed_moments`, `save_realism`, `get_realism`; `clear_agent_outputs(match_id)` deletes every agent output of a match (precompute `--reset`).
 - **Season:** `save_season`, `load_season`.
 - **Rebuilds:** `delete_match`.
 

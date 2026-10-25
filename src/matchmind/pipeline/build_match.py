@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from matchmind.engine.scenario import load_scenario, scenario_meta
 from matchmind.engine.simulate import simulate_match
+from matchmind.engine.validate import validate_match
 from matchmind.league.league import League, build_league
 from matchmind.league.profiles import build_profiles
 from matchmind.schemas_profile import Profiles
@@ -71,6 +72,7 @@ def build_scenario(path: Path, repo: Repo, store: TrackingStore, league: League 
     repo.save_moments(mid, moments, details=details)
     repo.save_cues(mid, cues)
     repo.save_metrics(mid, rows)
+    repo.save_realism(mid, validate_match(data).model_dump())  # the API serves it
     return BuildResult(match_id=mid, scenario_id=scenario.scenario_id, events=len(data.events),
                        moments=len(moments), deviations=deviations, cues=len(cues),
                        metric_rows=len(rows),

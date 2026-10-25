@@ -11,7 +11,7 @@ from typing import Any
 
 from fastapi import FastAPI
 
-from matchmind.api import routes_insights, routes_matches
+from matchmind.api import routes_insights, routes_live, routes_matches
 from matchmind.api.services import Services, app_version
 from matchmind.config import get_settings
 from matchmind.store.blob import TrackingStore, tracking_store
@@ -19,11 +19,13 @@ from matchmind.store.db import Repo
 
 
 def _warm(svc: Services) -> None:
-    """Fill the per-match caches (realism reads every frame: seconds per match)."""
+    """Fill the cheap per-match caches (momentum and replay index: under 1 s a match).
+    Realism is not warmed: it is stored at build time, and computing it here would hold
+    the GIL for seconds per match and stall live streams."""
     for match_id in svc.repo.list_matches():
         meta = svc.meta(match_id)
-        svc.realism(meta)
         svc.momentum(meta)
+        svc.replay_index(meta, routes_live.build_index)
 
 
 def create_app(
@@ -45,6 +47,7 @@ def create_app(
     app.state.services = Services(repo or Repo(settings.db_url), store or tracking_store(settings))
     app.include_router(routes_matches.router)
     app.include_router(routes_insights.router)
+    app.include_router(routes_live.router)
     return app
 
 

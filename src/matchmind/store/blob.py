@@ -12,6 +12,7 @@ import io
 from pathlib import Path
 from typing import Any, Protocol
 
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -113,6 +114,16 @@ class TrackingStore:
 
     def read_all(self, match_id: str) -> list[TrackingFrame]:
         return self._read(match_id, None)
+
+    def frame_times(self, match_id: str) -> list[tuple[int, int, float]]:
+        """``(frame, period, t)`` of every frame, in order, from 3 columns only (the
+        live replay's index: cheap next to reading every player row)."""
+        data = self.backend.get(self._name(match_id))
+        table = pq.read_table(io.BytesIO(data), columns=["frame", "period", "t"])
+        frame = table["frame"].to_numpy()
+        first = np.r_[True, frame[1:] != frame[:-1]]  # long format: one row per player
+        cols = (frame[first], table["period"].to_numpy()[first], table["t"].to_numpy()[first])
+        return [(int(f), int(p), float(t)) for f, p, t in zip(*cols, strict=True)]
 
 
 def tracking_store(settings: Settings) -> TrackingStore:

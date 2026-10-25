@@ -134,10 +134,24 @@ def test_league(client: TestClient) -> None:
     assert len(body["players"]) >= 20 * 18 and {"player_id", "club_id"} <= set(body["players"][0])
 
 
-def test_warm_start_caches_realism(built: Built) -> None:
+def test_warm_start_caches_the_replay(built: Built) -> None:
     from matchmind.api.app import create_app
 
     app = create_app(repo=built.repo, store=built.store, warm=True)
     with TestClient(app):
         app.state.warmer.join(timeout=60)
-        assert built.meta.match_id in app.state.services._realism
+        assert built.meta.match_id in app.state.services._replay
+
+
+def test_realism_is_read_from_the_store(built: Built) -> None:
+    from matchmind.api.app import create_app
+
+    stored = built.repo.get_realism(built.meta.match_id)
+    assert stored is not None  # saved by build_scenario
+    fake = {"checks": [], "ok": True}
+    built.repo.save_realism(built.meta.match_id, fake)
+    try:
+        with TestClient(create_app(repo=built.repo, store=built.store)) as c:
+            assert c.get(f"/api/matches/{built.meta.match_id}").json()["realism"] == fake
+    finally:
+        built.repo.save_realism(built.meta.match_id, stored)

@@ -559,11 +559,14 @@ class Repo:
 
     def clear_agent_outputs(self, match_id: str) -> None:
         """Delete everything the agents wrote for a match (insights, fan texts, live lines,
-        recap, agent runs), keeping the match and its stats: a fresh precompute."""
+        recap, passed moments, agent runs), keeping the match, its stats, and its realism
+        report: a fresh precompute."""
         with self.engine.begin() as c:
             c.execute(delete(insights).where(insights.c.match_id == match_id))
             c.execute(delete(personalized).where(personalized.c.insight_id.like(f"{match_id}-%")))
-            c.execute(delete(narratives).where(narratives.c.match_id == match_id))
+            c.execute(delete(narratives).where(
+                and_(narratives.c.match_id == match_id, narratives.c.kind != "realism")
+            ))  # fmt: skip
             c.execute(delete(agent_runs).where(agent_runs.c.moment_id.like(f"{match_id}-%")))
 
     def save_live_line(self, match_id: str, insight_id: str, line: str) -> None:
@@ -588,6 +591,16 @@ class Repo:
         )
         with self.engine.connect() as c:
             return {k.removeprefix("passed:") for (k,) in c.execute(q)}
+
+    def save_realism(self, match_id: str, report: dict[str, Any]) -> None:
+        """The match's realism report (``engine.validate.RealismReport`` as a dict)."""
+        self._put_narrative(f"realism:{match_id}", match_id, "realism", json.dumps(report))
+
+    def get_realism(self, match_id: str) -> dict[str, Any] | None:
+        q = select(narratives.c.body_json).where(narratives.c.key == f"realism:{match_id}")
+        with self.engine.connect() as c:
+            row = c.execute(q).first()
+        return None if row is None else dict(json.loads(row[0]))
 
     def save_recap(self, recap: Recap) -> None:
         self._put_narrative(f"recap:{recap.match_id}", recap.match_id, "recap",

@@ -293,3 +293,11 @@ def test_passed_moments(tmp_path) -> None:
     repo.clear_agent_outputs("x1")
     assert repo.list_passed_moments("x1") == set()
     assert repo.list_passed_moments("x2") == {"x2-m001"}
+
+
+def test_realism_survives_clearing_agent_outputs(tmp_path) -> None:
+    repo = Repo(f"sqlite:///{tmp_path}/r.db")
+    assert repo.get_realism("x1") is None
+    repo.save_realism("x1", {"checks": [], "ok": True})
+    repo.clear_agent_outputs("x1")
+    assert repo.get_realism("x1") == {"checks": [], "ok": True}

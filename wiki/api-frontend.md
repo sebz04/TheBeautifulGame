@@ -1,9 +1,10 @@
 # API and Frontend
 
-**Status:** API read endpoints built (TASK-21.1); live SSE (21.2) and regenerate, `/mcp`, CORS (21.3) next. Frontend planned (TASK-22 to TASK-23). The full contract is in plan Task 21.
+**Status:** API read endpoints (TASK-21.1) and SSE live replay (21.2) built; regenerate, `/mcp`, CORS (21.3) next. Frontend planned (TASK-22 to TASK-23). The full contract is in plan Task 21.
 
 ## API (`src/matchmind/api/`)
-- **Run:** `uv run uvicorn matchmind.api.app:app` (port 8000). The served app warms its caches (realism, momentum) in a background thread at startup; the first match detail is otherwise about 10 s.
+- **Run:** `uv run uvicorn matchmind.api.app:app` (port 8000). The served app warms the cheap caches (momentum, replay index) in a background thread at startup.
+- **Realism** is stored by `matchmind build` (`Repo.save_realism`); a match built before that is checked once on first request (about 10 s) and saved. It is not warmed: computing it holds the GIL for seconds and stalled live streams.
 - **`create_app(repo=None, store=None, *, warm=False)`** builds the app; tests pass an in-memory `Repo` and a temp `TrackingStore`.
 - **`Services`** (`services.py`, on `app.state.services`, injected as `Svc`): the repo, the tracking store, the MCP `StatsService` (metrics, profiles, baselines, counterfactuals), and per-match caches of events, realism, and momentum.
 - **Errors:** unknown match, insight, team, or player → 404; invalid query values (persona, lang, scope, period not 1–2, a tracking window over 60 s) → 422.
@@ -29,8 +30,13 @@
 - **Pitch control:** the last frame at or before t (within 0.5 s); the attacking team is the team of the last event.
 - **Recap:** English only for now; `lang` and `persona` are validated, then ignored (translation is in TASK-25.2).
 
-## SSE contract
-Event types `frame | event | cue | insight | end`. `id = "{period}:{t:.1f}:{seq}"`. Resuming with `Last-Event-ID` or `from_t` must give no duplicates.
+## Live replay (`routes_live.py`)
+`GET /api/matches/{id}/live?period=1&from_t=0&speed=1` → SSE (`sse-starlette`, ping every 15 s).
+- **Messages:** `frame` (5 Hz of the 10 Hz tracking: `{frame, period, t, ball, players: [{player_id, team_id, x, y}]}`), `event` (without decision scoring), `cue` (`OverlayCue`, at `t_in`), `insight` (at its moment's end: `{insight_id, moment_id, level, headline, source, live_line}`; localized texts come from the insights endpoint), then `end`.
+- **Ids:** `"{period}:{t:.1f}:{seq}"`. `seq` is the message's place in one fixed ordering of the whole match (by period, t, then frame, event, cue, insight), so it is the same on every connection.
+- **Resume and seek:** `Last-Event-ID` continues at `seq + 1`; `from_t` starts at the first message at or after `(period, from_t)`. Seeking backwards is a new request.
+- **Pacing:** on the match clock at `speed` (0 to 32; 0 = no pacing). Cues are the fast lane: precomputed, sent at `t_in`, independent of the agents (tested: within 1 s at speed 1).
+- **Index:** `build_index` lists every message's time once per match (cached; frame times from 3 Parquet columns via `TrackingStore.frame_times`). Frame bodies are read from the store 20 s at a time while streaming.
 
 ## Frontend
 _Design direction: not chosen yet (TASK-22)._ Components are listed here as they land, with their path and what they consume.

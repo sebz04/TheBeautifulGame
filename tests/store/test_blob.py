@@ -34,6 +34,12 @@ def test_read_window_returns_exactly_the_requested_frames(tmp_path: Path) -> Non
     assert store.read_all("m1") == frames
 
 
+def test_frame_times_reads_only_the_clock(tmp_path: Path) -> None:
+    store, frames = TrackingStore(LocalBackend(tmp_path)), _frames()
+    store.write("m1", frames)
+    assert store.frame_times("m1") == [(f.frame, f.period, f.t) for f in frames]
+
+
 def test_rewrite_replaces(tmp_path: Path) -> None:
     store = TrackingStore(LocalBackend(tmp_path))
     store.write("m1", _frames())
