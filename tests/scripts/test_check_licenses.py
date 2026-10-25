@@ -15,6 +15,7 @@ from check_licenses import find_violations, is_allowed
         "PSF-2.0",
         "ISC License (ISCL)",
         "Mozilla Public License 2.0 (MPL 2.0)",
+        "Apache-2.0 AND CNRI-Python",
     ],
 )
 def test_permissive_licenses_allowed(license_text):

@@ -20,7 +20,7 @@ Test applied to every candidate: (1) a permissive license, (2) it contains no re
 |---|---|---|---|---|
 | [microsoft/agent-framework](https://github.com/microsoft/agent-framework) | MIT | active | Core agent runtime: `agent-framework-core`, `-foundry` (`FoundryChatClient`), `-orchestrations` (sequential / concurrent / handoff builders), `-devui` (dev-only workflow visualizer), `-hosting-mcp` (`WorkflowMCPTool`) | 16, 20, 33 |
 | [sqlalchemy/sqlalchemy](https://github.com/sqlalchemy/sqlalchemy) | MIT | active | Stats store: one schema for SQLite (local) and Azure SQL (plan tech stack) | 14 |
-| [Azure/azure-sdk-for-python](https://github.com/Azure/azure-sdk-for-python) (`azure-storage-blob`, `azure-identity`) | MIT | active | Tracking frames in Azure Blob with managed identity; optional `azure` extra, imported only when a blob account is set | 14, 24 |
+| [Azure/azure-sdk-for-python](https://github.com/Azure/azure-sdk-for-python) (`azure-storage-blob`, `azure-identity`, `azure-monitor-opentelemetry-exporter`) | MIT | active | Tracking frames in Azure Blob with managed identity (optional `azure` extra); keyless sign-in to Foundry; traces to Application Insights (the exporter only, not the `azure-monitor-opentelemetry` distro, which pulls in Django and Flask instrumentation) | 14, 16, 24 |
 | [mkleehammer/pyodbc](https://github.com/mkleehammer/pyodbc) | MIT | active | Azure SQL driver for SQLAlchemy; optional `azure` extra | 14, 24 |
 | [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) | MIT | active | FastMCP stats server | 15 |
 | [PySport/kloppy](https://github.com/PySport/kloppy) | BSD-3 | active | Export our synthetic data to the standard PySport data model | 32 |

@@ -12,6 +12,11 @@ dependencies = [
     "pyarrow>=26.0.0",
     "sqlalchemy>=2.0",
     "mcp>=1.9",
+    "agent-framework-core>=1.23,<2",
+    "agent-framework-foundry>=1.15,<2",
+    "azure-identity>=1.17",
+    "azure-monitor-opentelemetry-exporter>=1.0.0b58",
+    "opentelemetry-sdk>=1.39",
 ]
 
 [project.scripts]

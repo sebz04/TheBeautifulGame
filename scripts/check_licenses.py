@@ -21,6 +21,7 @@ ALLOWED_PATTERNS = [
     r"mpl[ -]?2\.0|mozilla public license 2\.0",
     r"\bzlib\b",
     r"\bcc0\b",  # public domain dedication
+    r"\bcnri-python\b",  # permissive, OSI-approved (Python 1.6 license; `regex` uses it)
 ]
 
 

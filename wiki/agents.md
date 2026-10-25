@@ -1,6 +1,6 @@
 # Agents
 
-**Status:** the MCP stats server is built (TASK-15); the agents are planned (TASK-16 to TASK-20; phase two: 26, 27, 28, 33).
+**Status:** the MCP stats server (TASK-15), number checking, and the runtime (TASK-16) are built; the agents are planned (TASK-17 to TASK-20; phase two: 26, 27, 28, 33).
 
 | Agent | Module | Prompt | Output | Status |
 |---|---|---|---|---|
@@ -13,10 +13,23 @@
 | Ingest | `agents/ingest.py` | | recovery action | phase 2 |
 | Overlay Director | `agents/overlay_director.py` | | `list[OverlayCue]` | phase 2 |
 
-## Runtime
-- Client: Agent Framework `FoundryChatClient` + `DefaultAzureCredential`. Tests use `FakeChatClient`.
-- MCP: stats tools at `/mcp` (see below).
-- Retries: 1 s / 2 s / 4 s backoff; at most 2 Verifier-driven regenerations; then a template fallback.
+## Runtime (`agents/runtime.py`, TASK-16.3)
+Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
+- `make_chat_client(settings, credential=None)`: a `FoundryChatClient` for `FOUNDRY_PROJECT_ENDPOINT` and `FOUNDRY_MODEL_DEPLOYMENT`, signed in keylessly with `DefaultAzureCredential`. It raises if the endpoint isn't set.
+- `make_agent(name, prompt_file, output_model, tools, *, client) -> Agent`:
+  - instructions are read from `agents/prompts/<prompt_file>`, or from the path if it is absolute;
+  - `response.value` is the reply parsed into `output_model` (`response_format`).
+- `run_agent(agent, message, *, moment_id, attempt, tracer=None)`:
+  - runs the agent once inside a span `agent_run <name>` with `matchmind.agent`, `matchmind.moment_id` and `matchmind.attempt`;
+  - errors mark the span and are re-raised for the retry policy.
+- `FakeChatClient(responses)`: for tests.
+  - `responses` is a mapping from a substring (looked for in the instructions and messages; `"*"` is the fallback) to a reply, or a callable `(FakeCall) -> str`.
+  - Every request is kept in `.calls`.
+  - A missing reply raises `KeyError`.
+- `stats_tools(settings, *, session=None)`: an `MCPStreamableHTTPTool` for the 12 stats tools at `MATCHMIND_MCP_URL`, or an open in-process MCP session.
+- `configure_tracing(settings) -> bool`: Application Insights through `AzureMonitorTraceExporter` and Agent Framework's `configure_otel_providers`. With no connection string, or an invalid one, tracing is off and a warning is logged.
+- `python -m matchmind.agents.runtime --ping`: a live smoke test.
+- Retries (TASK-20): 1 s / 2 s / 4 s backoff; at most 2 Verifier-driven regenerations; then a template fallback.
 
 ## MCP stats server (`mcp_server/server.py`, TASK-15)
 `build_mcp(repo, store) -> MCPServer` named `matchmind-stats`. The MCP Python SDK 2.x renamed FastMCP to `MCPServer`. `mcp_app()` is the streamable-HTTP ASGI app (Starlette) for `/mcp` (Task 21). The tools wrap `StatsService`, which can also be used directly.
@@ -59,4 +72,8 @@ The Verifier's deterministic rule: every number an agent writes must match a ver
 
 ## Gotchas
 - **MCP SDK 2.x:** `mcp.server.fastmcp` no longer exists (`MCPServer` is in `mcp.server.mcpserver`). A raised exception comes back as a generic "Error executing tool", so tools return an `error` dict instead. Tests connect in-process with `mcp.Client(server)`.
+- **Instructions travel in options, not messages:** a chat client sees `options["instructions"]`, and the messages are only the user turns. `FakeChatClient` searches both.
+- **In-process MCP for tests:** pass `session=mcp.Client(server).session` (inside `async with`). Passing `mcp_client=` needs `tenacity` (not installed), and `url` and `mcp_client` can't be combined.
+- **Close the async credential** (`async with DefaultAzureCredential()`), or aiohttp warns "Unclosed client session".
+- **Application Insights wants the connection string**, not the instrumentation key. A bare key raises `ValueError: Invalid connection string`, which `configure_tracing` turns into a warning.
 _Add any surprises from the Agent Framework or Foundry APIs here._

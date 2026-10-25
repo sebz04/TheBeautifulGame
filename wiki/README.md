@@ -2,13 +2,13 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-15 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-22 · **Latest task:** TASK-16 · **Code status:** league, profiles, level-3 engine passing all realism checks
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
-- Next: TASK-16 (agent runtime; needs the Foundry deployment from TASK-16.1). The user is setting up Azure for Students and Foundry (TASK-16.1).
-- Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the MCP stats server (`mcp_server/`), agent runtime and number checking (`agents/runtime.py`, `numbers.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
+- Next: TASK-17 (Tactical Analyst and Explainer agents, with prompts and recorded live fixtures).
+- Blockers: none. Foundry `gpt-4.1-mini` is live (North Central US); Application Insights needs its full connection string in `.env`.
 
 ## Pages
 | Page | Covers | Read when |
@@ -66,7 +66,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/pipeline/build_match.py`, `src/matchmind/cli.py` | `matchmind build` (scenario → stats → store) | done | 14.3 |
 | `src/matchmind/mcp_server/server.py` | MCP stats server (12 read-only tools, event-exact) | done | 15 |
 | `src/matchmind/agents/numbers.py` | Locale-aware number extraction and checking (Verifier rule) | done | 16.2 |
-| `src/matchmind/agents/` | Foundry agents + orchestrator | planned | 16–20 |
+| `src/matchmind/agents/runtime.py` | Foundry chat client, FakeChatClient, agents from prompt files, run spans, MCP stats tool, tracing | done | 16.3 |
+| `src/matchmind/agents/` (analyst, explainer, verifier, …) | Agents + orchestrator | planned | 17–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |

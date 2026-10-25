@@ -1,10 +1,12 @@
 # Infrastructure and Operations
 
-**Status:** planned (TASK-16.1 Azure setup by the user; TASK-24 deployment).
+**Status:** Azure for Students and Foundry set up (TASK-16.1); deployment is TASK-24.
 
 ## Accounts
 - Azure for Students ($100 credit). Budget alerts at $25 and $50.
-- Foundry project with a `gpt-4.1-mini` deployment. Record the TPM quota here once it is known.
+- Foundry: the subscription's default project and resource (not renamed), with a `gpt-4.1-mini` deployment (Global Standard). TPM quota: _to record_.
+- **Region: North Central US.** Azure for Students only allows a few regions (policy "Allowed resource deployment regions"). Create every resource there, including Application Insights and its Log Analytics workspace. Central US is blocked: `RequestDisallowedByAzure`.
+- Sign-in is keyless (`DefaultAzureCredential`): `az login` locally, managed identity in Azure. Your account needs the **Azure AI User** role on the Foundry resource. There are no API keys.
 
 ## Environment variables
 Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are unprefixed.
@@ -15,11 +17,15 @@ Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are 
 | `MATCHMIND_DATA_DIR` | Generated data root (default `data`) |
 | `FOUNDRY_PROJECT_ENDPOINT` | Foundry project endpoint |
 | `FOUNDRY_MODEL_DEPLOYMENT` | Model deployment name (default `gpt-4.1-mini`) |
-| `MATCHMIND_APPINSIGHTS_CONNECTION_STRING` | Telemetry |
+| `MATCHMIND_APPINSIGHTS_CONNECTION_STRING` | Traces. The full connection string (`InstrumentationKey=…;IngestionEndpoint=…`), not the bare key. Invalid or blank: tracing is off with a warning |
 | `MATCHMIND_BLOB_ACCOUNT_URL` | Tracking store in the cloud |
+| `MATCHMIND_MCP_URL` | Where agents reach the MCP stats server (default `http://localhost:8000/mcp`) |
+
+Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty`).
 
 ## Commands
-_Add them as they become real (`uv run …`, `azd up`, `docker compose up`)._
+- `uv run python -m matchmind.agents.runtime --ping`: one call to the Foundry deployment (about 3–4 s including sign-in).
+- `uv run matchmind build --all`: build the 8 showcase matches.
 
 ## Costs
 _Record the measured cost per precomputed match and the monthly run rate (from `docs/costs.md`)._
