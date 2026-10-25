@@ -225,6 +225,7 @@ class PersonalizedText(BaseModel):
     club_id: str | None = None
     player_id: str | None = None
     dir: Literal["ltr", "rtl"] = "ltr"  # Arabic is right to left
+    source: Literal["agent", "template"] = "agent"
 
 
 class Variant(BaseModel):
@@ -277,3 +278,5 @@ class AgentRun(BaseModel):
     latency_ms: int
     trace_id: str | None
     error: str | None
+    tokens_in: int = 0
+    tokens_out: int = 0

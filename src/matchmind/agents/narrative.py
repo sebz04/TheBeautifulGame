@@ -188,7 +188,7 @@ async def recap(ctx: RecapContext, insights: Sequence[Insight], client: Any) -> 
         text = message if attempt == 1 else (
             f"{message}\n\nYour last recap was rejected:\n- " + "\n- ".join(problems)
         )  # fmt: skip
-        reply, problem = await _ask(agent, text, None, attempt)
+        reply, problem = await _ask(agent, text, f"{ctx.match_id}-recap", attempt)
         if not isinstance(reply, RecapReply):
             problems = [problem or "the answer was not JSON in the requested shape"]
             continue

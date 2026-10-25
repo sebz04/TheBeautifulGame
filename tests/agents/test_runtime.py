@@ -155,3 +155,98 @@ async def test_fake_client_rejects_a_reply_that_breaks_the_output_model(prompt: 
     agent = make_agent("tester", prompt, Answer, tools=None, client=FakeChatClient({"*": "{}"}))
     with pytest.raises(ChatClientException, match="headline"):
         await agent.run("go")
+
+
+# --- retries, run logging, throttling (TASK-20) ----------------------------------------
+
+
+def _flaky(failures: int, error: str = "Error code: 429 - Too Many Requests") -> FakeChatClient:
+    """Raises ``error`` ``failures`` times, then answers."""
+    from agent_framework.exceptions import ChatClientException
+
+    state = {"n": 0}
+
+    def reply(call: FakeCall) -> FakeReply:
+        state["n"] += 1
+        if state["n"] <= failures:
+            raise ChatClientException(error)
+        return Answer(headline="ok", count=state["n"]).model_dump_json()
+
+    return FakeChatClient(reply)
+
+
+async def test_transient_errors_retry_with_backoff(prompt: str) -> None:
+    from matchmind.agents.runtime import RunLog, pipeline_scope
+
+    sleeps: list[float] = []
+
+    async def sleep(s: float) -> None:
+        sleeps.append(s)
+
+    log = RunLog()
+    agent = make_agent("tester", prompt, Answer, tools=None, client=_flaky(2))
+    with pipeline_scope(log=log, sleep=sleep):
+        response = await run_agent(agent, "go", moment_id="m1", attempt=1)
+    assert response.value == Answer(headline="ok", count=3)
+    assert sleeps == [1.0, 2.0]
+    (run,) = log.runs
+    assert (run.agent, run.moment_id, run.status, run.attempts) == ("tester", "m1", "retry", 3)
+
+
+async def test_transient_errors_give_up_after_three_retries(prompt: str) -> None:
+    from agent_framework.exceptions import ChatClientException
+
+    from matchmind.agents.runtime import RunLog, pipeline_scope
+
+    sleeps: list[float] = []
+
+    async def sleep(s: float) -> None:
+        sleeps.append(s)
+
+    log = RunLog()
+    agent = make_agent("tester", prompt, Answer, tools=None, client=_flaky(9, "Request timed out."))
+    with pipeline_scope(log=log, sleep=sleep), pytest.raises(ChatClientException):
+        await run_agent(agent, "go", moment_id="m1", attempt=1)
+    assert sleeps == [1.0, 2.0, 4.0]
+    assert log.runs[0].status == "failed" and "timed out" in (log.runs[0].error or "")
+
+
+async def test_other_errors_are_not_retried(prompt: str) -> None:
+    from agent_framework.exceptions import ChatClientException
+
+    from matchmind.agents.runtime import RunLog, pipeline_scope
+
+    log = RunLog()
+    agent = make_agent("tester", prompt, Answer, tools=None, client=FakeChatClient({"*": "{}"}))
+    with pipeline_scope(log=log), pytest.raises(ChatClientException):
+        await run_agent(agent, "go", moment_id="m1", attempt=1)  # malformed: no retry here
+    assert log.runs[0].attempts == 1 and log.runs[0].status == "failed"
+
+
+async def test_run_log_counts_tokens(prompt: str) -> None:
+    from matchmind.agents.runtime import RunLog, pipeline_scope
+
+    log = RunLog()
+    agent = make_agent("tester", prompt, Answer, tools=None, client=_flaky(0))
+    with pipeline_scope(log=log):
+        await run_agent(agent, "x" * 400, moment_id=None, attempt=1)
+    (run,) = log.runs
+    assert run.tokens_in >= 100 and run.tokens_out > 0 and run.status == "ok"
+    assert log.tokens() == (run.tokens_in, run.tokens_out)
+
+
+async def test_token_bucket_waits_for_capacity() -> None:
+    from matchmind.agents.runtime import TokenBucket
+
+    now = [0.0]
+    sleeps: list[float] = []
+
+    async def sleep(s: float) -> None:
+        sleeps.append(s)
+        now[0] += s
+
+    bucket = TokenBucket(tpm=600, clock=lambda: now[0], sleep=sleep)  # 10 tokens a second
+    await bucket.acquire(600)
+    assert sleeps == []
+    await bucket.acquire(100)
+    assert sum(sleeps) == pytest.approx(10.0)

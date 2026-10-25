@@ -21,6 +21,7 @@ A short, current map of the codebase. **Read this page first, then only the page
 | [stats.md](stats.md) | xT, pitch control, pass/speed/team metrics, moments, counterfactuals | Work in `src/matchmind/stats` |
 | [agents.md](agents.md) | Agents, prompts, workflow, fallbacks | Work in `src/matchmind/agents` or `mcp_server` |
 | [personalization.md](personalization.md) | Personalizer (4 personas × 5 languages, batched), fallback templates | Work on `agents/personalizer.py` or `templates.py` |
+| [orchestrator.md](orchestrator.md) | Workflow graph, retries and backoff, agent-run logging, throttling, precompute | Work on `agents/orchestrator.py`, `runtime.py`, or `scripts/precompute.py` |
 | [verifier.md](verifier.md) | Verifier, regeneration loop, number checking, golden set and evals | Work on `agents/verifier.py`, `numbers.py`, or `evals/` |
 | [api-frontend.md](api-frontend.md) | Endpoints, SSE contract, frontend components | Work in `src/matchmind/api` or `web/` |
 | [infra-ops.md](infra-ops.md) | Azure resources, env vars, commands, costs | Deploying, configuring, or debugging cloud |
@@ -78,7 +79,7 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/agents/templates.py` | Fallback texts: 4 personas × 5 languages from claims | done | 19.1 |
 | `src/matchmind/agents/narrative.py`, `prompts/narrative.v1.md` | Narrative: live lines and full-time recap | done | 19.2 |
 | `src/matchmind/agents/personalizer.py`, `prompts/personalizer.v1.md` | Batched personalization: 4 personas, 5 languages | done | 19.3 |
-| `src/matchmind/agents/` (workflow) | Orchestrator | planned | 20 |
+| `src/matchmind/agents/orchestrator.py` | Workflow graph per window, fallbacks, resumable runs | done | 20.1 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |

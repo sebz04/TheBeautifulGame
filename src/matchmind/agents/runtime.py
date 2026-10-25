@@ -12,11 +12,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
+import contextvars
 import json
 import logging
 import time
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+import uuid
+from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +33,7 @@ from agent_framework import (
     MCPStreamableHTTPTool,
     Message,
     SupportsChatGetResponse,
+    UsageDetails,
 )
 from agent_framework.exceptions import ChatClientException
 from agent_framework.observability import configure_otel_providers
@@ -39,6 +43,7 @@ from pydantic import BaseModel, ValidationError
 
 from matchmind.config import Settings, get_settings
 from matchmind.mcp_server.server import TOOL_NAMES
+from matchmind.schemas import AgentRun
 
 PROMPT_DIR = Path(__file__).parent / "prompts"
 TRACER_NAME = "matchmind.agents"
@@ -148,9 +153,14 @@ class FakeChatClient(FunctionInvocationLayer[Any], BaseChatClient[Any]):
                     inner_exception=exc,
                 ) from exc
         contents = [reply] if isinstance(reply, str) else list(reply)
+        text_out = reply if isinstance(reply, str) else str(reply)
         return ChatResponse(
             messages=[Message("assistant", contents)],
             response_format=options.get("response_format"),
+            usage_details=UsageDetails(  # an estimate: about 4 characters a token
+                input_token_count=(len(call.instructions) + len(call.text)) // 4,
+                output_token_count=max(1, len(text_out) // 4),
+            ),
         )
 
     def _inner_get_response(
@@ -185,6 +195,108 @@ def make_agent(
     return Agent(client, instructions, name=name, tools=tools, default_options=merged or None)
 
 
+# ---- retries, run logging, throttling ----------------------------------------------------
+
+BACKOFF_S = (1.0, 2.0, 4.0)  # then give up: the pipeline shows a template
+_TRANSIENT_TEXT = ("429", "too many requests", "rate limit", "timed out", "timeout",
+                   "temporarily unavailable", "503", "502", "connection error")  # fmt: skip
+
+
+def is_transient(exc: BaseException) -> bool:
+    """A timeout, a 429, or a server or connection error: worth retrying after a pause."""
+    seen: set[int] = set()
+    stack: list[BaseException] = [exc]
+    while stack:
+        e = stack.pop()
+        if id(e) in seen:
+            continue
+        seen.add(id(e))
+        name = type(e).__name__
+        if name in ("RateLimitError", "APITimeoutError", "APIConnectionError",
+                    "InternalServerError", "TimeoutError"):  # fmt: skip
+            return True
+        if getattr(e, "status_code", None) in (429, 500, 502, 503, 504):
+            return True
+        if any(t in str(e).lower() for t in _TRANSIENT_TEXT) and not isinstance(e, ValidationError):
+            return True
+        stack += [a for a in e.args if isinstance(a, BaseException)]
+        stack += [x for x in (e.__cause__, e.__context__) if x is not None]
+    return False
+
+
+@dataclass
+class RunLog:
+    """Every agent call in a pipeline run, as ``AgentRun`` rows (for the stats store)."""
+
+    runs: list[AgentRun] = field(default_factory=list)
+
+    def tokens(self) -> tuple[int, int]:
+        return sum(r.tokens_in for r in self.runs), sum(r.tokens_out for r in self.runs)
+
+
+class TokenBucket:
+    """Throttle to a tokens-per-minute quota: ``acquire`` waits until the estimate fits,
+    ``settle`` corrects it with what the call really used."""
+
+    def __init__(
+        self,
+        tpm: int,
+        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    ) -> None:
+        self.capacity, self.rate = float(tpm), tpm / 60.0
+        self.clock, self.sleep = clock, sleep
+        self.level, self.at = float(tpm), clock()
+        self._lock = asyncio.Lock()
+
+    def _refill(self) -> None:
+        now = self.clock()
+        self.level = min(self.capacity, self.level + (now - self.at) * self.rate)
+        self.at = now
+
+    async def acquire(self, tokens: int) -> None:
+        need = min(float(tokens), self.capacity)
+        async with self._lock:
+            self._refill()
+            while self.level < need:
+                await self.sleep((need - self.level) / self.rate)
+                self._refill()
+            self.level -= need
+
+    def settle(self, estimated: int, actual: int) -> None:
+        self.level += estimated - actual
+
+
+@dataclass
+class _Scope:
+    log: RunLog | None = None
+    sleep: Callable[[float], Awaitable[None]] = asyncio.sleep
+    limiter: TokenBucket | None = None
+    backoff: tuple[float, ...] = BACKOFF_S
+
+
+_SCOPE: contextvars.ContextVar[_Scope | None] = contextvars.ContextVar(
+    "matchmind_scope", default=None
+)
+
+
+@contextlib.contextmanager
+def pipeline_scope(
+    *,
+    log: RunLog | None = None,
+    sleep: Callable[[float], Awaitable[None]] | None = None,
+    limiter: TokenBucket | None = None,
+    backoff: tuple[float, ...] = BACKOFF_S,
+) -> Iterator[None]:
+    """Within this block every ``run_agent`` call is logged to ``log``, throttled by
+    ``limiter``, and retried on transient errors with ``backoff`` pauses (via ``sleep``)."""
+    token = _SCOPE.set(_Scope(log, sleep or asyncio.sleep, limiter, backoff))
+    try:
+        yield
+    finally:
+        _SCOPE.reset(token)
+
+
 async def run_agent(
     agent: Agent[Any],
     message: str,
@@ -195,21 +307,58 @@ async def run_agent(
 ) -> AgentResponse[Any]:
     """Run ``agent`` once inside a span carrying the agent, ``moment_id``, and ``attempt``.
 
-    A failure is recorded on the span (status ERROR) and re-raised for the caller's
-    retry policy.
+    Timeouts and 429s are retried after 1 s, 2 s, and 4 s pauses, then raised. Any other
+    failure is raised at once (status ERROR on the span) for the caller to handle. With a
+    ``pipeline_scope``, the call is throttled and logged as an ``AgentRun``.
     """
+    scope = _SCOPE.get() or _Scope()
     tracer = tracer or trace.get_tracer(TRACER_NAME)
+    name = agent.name or "agent"
     attributes: dict[str, str | int] = {
-        "matchmind.agent": agent.name or "agent",
+        "matchmind.agent": name,
         "matchmind.moment_id": moment_id or "",
         "matchmind.attempt": attempt,
     }
-    with tracer.start_as_current_span(f"agent_run {agent.name}", attributes=attributes) as span:
-        response = await agent.run(message)
+    estimate = (len(message) + len(str(getattr(agent, "instructions", "") or ""))) // 4 + 500
+    start, tries = time.perf_counter(), 0
+    with tracer.start_as_current_span(f"agent_run {name}", attributes=attributes) as span:
         context = span.get_span_context()
-        if context.is_valid:
-            response.additional_properties["trace_id"] = format(context.trace_id, "032x")
-        return response
+        trace_hex = format(context.trace_id, "032x") if context.is_valid else None
+        while True:
+            tries += 1
+            if scope.limiter is not None:
+                await scope.limiter.acquire(estimate)
+            try:
+                response = await agent.run(message)
+            except Exception as exc:
+                if scope.limiter is not None:
+                    scope.limiter.settle(estimate, estimate // 4)
+                if is_transient(exc) and tries <= len(scope.backoff):
+                    await scope.sleep(scope.backoff[tries - 1])
+                    continue
+                _log(scope, name, moment_id, "failed", tries, start, trace_hex, str(exc)[:500])
+                raise
+            usage = response.usage_details or {}
+            t_in = int(usage.get("input_token_count") or 0)
+            t_out = int(usage.get("output_token_count") or 0)
+            if scope.limiter is not None:
+                scope.limiter.settle(estimate, t_in + t_out)
+            status = "retry" if tries > 1 else "ok"
+            _log(scope, name, moment_id, status, tries, start, trace_hex, None, t_in, t_out)
+            if trace_hex:
+                response.additional_properties["trace_id"] = trace_hex
+            return response
+
+
+def _log(scope: _Scope, agent: str, moment_id: str | None, status: str, attempts: int,
+         start: float, trace_hex: str | None, error: str | None, t_in: int = 0,
+         t_out: int = 0) -> None:  # fmt: skip
+    if scope.log is not None:
+        scope.log.runs.append(AgentRun(
+            run_id=uuid.uuid4().hex, agent=agent, moment_id=moment_id, status=status,
+            attempts=attempts, latency_ms=round((time.perf_counter() - start) * 1000),
+            trace_id=trace_hex, error=error, tokens_in=t_in, tokens_out=t_out,
+        ))  # fmt: skip
 
 
 def trace_id(response: AgentResponse[Any]) -> str | None:
