@@ -146,3 +146,12 @@ async def test_fake_client_can_call_tools(prompt: str) -> None:
     response = await agent.run("go")
     assert seen == ["m1"]
     assert response.value == Answer(headline='{"kind": "goal"}', count=1)
+
+
+async def test_fake_client_rejects_a_reply_that_breaks_the_output_model(prompt: str) -> None:
+    """Like the real client: the reply is parsed into response_format inside the client."""
+    from agent_framework.exceptions import ChatClientException
+
+    agent = make_agent("tester", prompt, Answer, tools=None, client=FakeChatClient({"*": "{}"}))
+    with pytest.raises(ChatClientException, match="headline"):
+        await agent.run("go")

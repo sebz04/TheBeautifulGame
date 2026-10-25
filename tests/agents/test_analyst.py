@@ -101,3 +101,31 @@ def test_prompt_states_the_constitution() -> None:
     assert "### I. Code computes, agents interpret (NON-NEGOTIABLE)" in text
     assert "### II. Verified before visible (NON-NEGOTIABLE)" in text
     assert text.count("## Example") == 2
+
+
+async def test_malformed_reply_is_retried_once(stats: StatsStub) -> None:
+    replies = iter(
+        ['{"decisions": [{"moment_id": "m1"}]}', json.dumps({"decisions": [_decision(1, True)]})]
+    )
+
+    def reply(call: FakeCall) -> FakeReply:
+        if not call.tool_results:
+            return [tool_call("get_moment", moment_id="m1")]
+        return next(replies)
+
+    client = FakeChatClient(reply)
+    assert [d.moment_id for d in await analyze([moment(1)], client, stats.tools())] == ["m1"]
+    assert "rejected" in client.calls[-1].text
+
+
+async def test_two_malformed_replies_surface_nothing(stats: StatsStub) -> None:
+    client = FakeChatClient({"*": '{"decisions": [{"moment_id": "m1", "priority": 9}]}'})
+    assert await analyze([moment(1)], client, stats.tools()) == []
+
+
+async def test_analyst_gets_names_and_minute_labels(stats: StatsStub) -> None:
+    client = _analyst([_decision(1, False)], [])
+    await analyze([moment(1)], client, stats.tools(), names={"home": "Atlético Chapinero"})
+    sent = json.loads(client.calls[0].text.split("\n", 1)[1])
+    assert sent["names"] == {"home": "Atlético Chapinero"}
+    assert sent["moments"][0]["minute_end"] == "2'"

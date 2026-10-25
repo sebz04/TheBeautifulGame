@@ -1,5 +1,7 @@
 # Glossary
 
+- **xG (expected goals):** how likely a shot is to be scored, from 0 to 1. Not the same as xT.
+- **Minute label:** the minute fans read. 55:38 elapsed is `56'`, and stoppage time is `45+2'` or `90+3'` (`clock.minute_label`).
 - **xT (expected threat):** how much moving the ball from one zone to another raises the chance of scoring soon. A 16×12 grid of probabilities.
 - **Pitch control:** the probability that a team would win the ball if it were played to a given point, based on where every player is and how fast they can get there.
 - **PPDA (passes per defensive action):** opponent passes allowed per tackle, interception, or foul in the opponent's part of the pitch. Lower = more intense pressing.

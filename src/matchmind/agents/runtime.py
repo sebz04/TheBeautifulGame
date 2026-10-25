@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import logging
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -30,10 +31,11 @@ from agent_framework import (
     Message,
     SupportsChatGetResponse,
 )
+from agent_framework.exceptions import ChatClientException
 from agent_framework.observability import configure_otel_providers
 from mcp import ClientSession
 from opentelemetry import trace
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from matchmind.config import Settings, get_settings
 from matchmind.mcp_server.server import TOOL_NAMES
@@ -45,11 +47,14 @@ _tracing_on = False
 log = logging.getLogger(__name__)
 
 
-def make_chat_client(settings: Settings, credential: Any = None) -> SupportsChatGetResponse[Any]:
+def make_chat_client(
+    settings: Settings, credential: Any = None, middleware: Sequence[Any] | None = None
+) -> SupportsChatGetResponse[Any]:
     """The Foundry chat client for ``settings``' project and model deployment.
 
     Keyless: ``credential`` defaults to ``DefaultAzureCredential`` (``az login`` locally,
-    managed identity in Azure). Pass your own to close it when done.
+    managed identity in Azure). Pass your own to close it when done. ``middleware`` is
+    chat middleware for every call (the fixture recorder uses it).
     """
     if not settings.foundry_project_endpoint:
         raise RuntimeError("FOUNDRY_PROJECT_ENDPOINT is not set (copy .env.example to .env)")
@@ -60,6 +65,7 @@ def make_chat_client(settings: Settings, credential: Any = None) -> SupportsChat
         project_endpoint=settings.foundry_project_endpoint,
         model=settings.foundry_model_deployment,
         credential=credential or DefaultAzureCredential(),
+        middleware=middleware,
     )
 
 
@@ -84,11 +90,12 @@ FakeReply = str | Sequence[Content]
 FakeReplies = Mapping[str, FakeReply] | Callable[[FakeCall], FakeReply]
 
 
-def tool_call(name: str, **arguments: Any) -> Content:
-    """A tool call for a ``FakeChatClient`` reply; the agent runs the tool and asks again."""
+def tool_call(tool_name: str, /, **arguments: Any) -> Content:
+    """A tool call for a ``FakeChatClient`` reply; the agent runs the tool and asks again.
+    (Positional-only, since ``get_metric`` has an argument called ``name``.)"""
     return Content.from_function_call(
-        call_id=f"call_{name}_{len(arguments)}_{abs(hash(str(arguments)))}",
-        name=name,
+        call_id=f"call_{tool_name}_{len(arguments)}_{abs(hash(str(arguments)))}",
+        name=tool_name,
         arguments=arguments,
     )
 
@@ -131,6 +138,15 @@ class FakeChatClient(FunctionInvocationLayer[Any], BaseChatClient[Any]):
         )
         self.calls.append(call)
         reply = self._reply(call)
+        model = options.get("response_format")
+        if isinstance(reply, str) and isinstance(model, type) and issubclass(model, BaseModel):
+            try:  # the real client parses inside the request, so a bad reply fails the call
+                model.model_validate_json(reply)
+            except ValidationError as exc:
+                raise ChatClientException(
+                    f"{type(self)} service failed to complete the prompt: {exc}",
+                    inner_exception=exc,
+                ) from exc
         contents = [reply] if isinstance(reply, str) else list(reply)
         return ChatResponse(
             messages=[Message("assistant", contents)],
@@ -184,8 +200,53 @@ async def run_agent(
         "matchmind.moment_id": moment_id or "",
         "matchmind.attempt": attempt,
     }
-    with tracer.start_as_current_span(f"agent_run {agent.name}", attributes=attributes):
-        return await agent.run(message)
+    with tracer.start_as_current_span(f"agent_run {agent.name}", attributes=attributes) as span:
+        response = await agent.run(message)
+        context = span.get_span_context()
+        if context.is_valid:
+            response.additional_properties["trace_id"] = format(context.trace_id, "032x")
+        return response
+
+
+def trace_id(response: AgentResponse[Any]) -> str | None:
+    """The trace id ``run_agent`` recorded (None when tracing is off)."""
+    value = response.additional_properties.get("trace_id")
+    return str(value) if value else None
+
+
+def problem_text(exc: ValidationError) -> str:
+    """A pydantic error as one line the model can act on."""
+    return "; ".join(
+        f"{'.'.join(str(p) for p in e['loc']) or 'answer'}: {e['msg']}" for e in exc.errors()
+    )
+
+
+def bad_reply(exc: Exception) -> str | None:
+    """Why the model's reply didn't fit the output model, or None for any other failure.
+
+    The Foundry client parses a structured reply inside the request, so a malformed reply
+    arrives as ``ChatClientException`` wrapping a ``ValidationError``. Timeouts, 429s, and
+    other service errors return None: they are the caller's retry policy (TASK-20).
+    """
+    if not isinstance(exc, ChatClientException):
+        return None
+    for inner in (*exc.args, exc.__cause__):
+        if isinstance(inner, ValidationError):
+            return problem_text(inner)
+    return None
+
+
+def tool_calls(response: AgentResponse[Any]) -> list[tuple[str, dict[str, Any]]]:
+    """Every tool call the model made during a run, as (name, arguments), in order."""
+    calls = []
+    for message in response.messages:
+        for c in message.contents:
+            if c.type == "function_call":
+                args = c.arguments
+                if isinstance(args, str):
+                    args = json.loads(args or "{}")
+                calls.append((str(c.name), dict(args or {})))
+    return calls
 
 
 def stats_tools(

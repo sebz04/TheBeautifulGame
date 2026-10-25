@@ -1,11 +1,11 @@
 # Agents
 
-**Status:** the MCP stats server (TASK-15), number checking, and the runtime (TASK-16) are built; the agents are planned (TASK-17 to TASK-20; phase two: 26, 27, 28, 33).
+**Status:** the MCP stats server (TASK-15), number checking and the runtime (TASK-16), and the Tactical Analyst and Explainer (TASK-17) are built. The Verifier, Narrative, Personalizer, and workflow are planned (TASK-18 to TASK-20; phase two: 26, 27, 28, 33).
 
 | Agent | Module | Prompt | Output | Status |
 |---|---|---|---|---|
 | Tactical Analyst | `agents/analyst.py` | `prompts/analyst.v1.md` | `AnalystDecision` | done (17.1) |
-| Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | planned |
+| Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | done (17.2) |
 | Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | planned |
 | Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | planned |
 | Personalization | `agents/personalizer.py` | `prompts/personalizer.v1.md` | `list[PersonalizedText]` | planned |
@@ -62,6 +62,33 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - The prompt states Constitution I and II verbatim, with 2 worked examples. Metric names in it are the real `TEAM_METRICS`, `PLAYER_METRICS`, and `TRACKED_STATS` names.
 - Tests: `tests/agents/conftest.py` has `StatsStub`, Agent Framework `@tool` stand-ins with the MCP tool names that record their calls. `FakeChatClient` replies can be `[tool_call(name, **args)]`, and a callable reply sees earlier results in `call.tool_results`.
 
+## Explainer (`agents/explainer.py`, TASK-17.2)
+- `explain(decision, moment, client, tools, *, names=None, tracer=None) -> Insight` returns an `Insight` with:
+  - `insight_id` `<moment_id>-ins`, `source="agent"`, `verified=False`, `prompt_version="explainer.v1"`;
+  - `trace_id` from the run's span (None when tracing is off).
+- **Two models.** `ExplainerReply` is the plain `response_format`. `ExplainerDraft` adds the checks:
+  - event ids and claims are present, and every claim has a ref;
+  - headline, why, and recommendation aren't empty.
+  - A failed check would fail the call inside the Foundry client (see Gotchas), which is why the reply model stays plain.
+- **Counterfactual claims** (metric `counterfactual_*`) must cite an event id that `get_counterfactual` was called with in the same run.
+- **One regeneration.** A bad reply (malformed JSON, a failed check, an unread counterfactual) is sent back once with the problem. A second bad reply raises `ExplainerError`, and TASK-20 falls back to a template. Service errors (timeouts, 429s) are raised as they are.
+- The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).
+
+## Agent context (`agents/context.py`, `clock.py`)
+- Agents are given `names` (club and player id → name, from `match_names(meta)`) and minute labels for each moment (`moment_context`: `minute_start` and `minute_end`, such as `56'`). Code computes both (Constitution I).
+- `clock.minute_label(period, t)` follows football convention: 55:38 elapsed is `56'`, and stoppage time is `45+2'` or `90+3'`. `match_minute` gives the same as one number (45+2' → 47), the way the number checker reads it.
+
+## Recorded fixtures (`tests/fixtures/llm/`)
+- `scripts/record_llm_fixtures.py [--scenario comeback_red_card]` runs the real Analyst and Explainer on 3 moments (red card, goal, pressing collapse) against the built database. It uses the in-process stats server, and chat middleware records every reply.
+- `tests/agents/test_recorded.py` replays the recordings through `FakeChatClient`. Live run on 2026-10-25: 8–15 s per moment.
+- **What the first live run showed (fixed in prompt v1):**
+  - ids used as names ("Ala-17");
+  - clock times ("10:38") instead of minutes;
+  - derived numbers (46.2% from 53.8%);
+  - numbers without claims;
+  - xG called "expected threat".
+- **Still flagged after the fix:** "ten men". The number checker catches it, and the Verifier's regeneration (TASK-18) handles it.
+
 ## Number checking (`agents/numbers.py`, TASK-16.2)
 The Verifier's deterministic rule: every number an agent writes must match a verified stat, a real event minute, the real score, or a formation actually used. Nothing is skipped.
 
@@ -85,5 +112,11 @@ The Verifier's deterministic rule: every number an agent writes must match a ver
 - **Instructions travel in options, not messages:** a chat client sees `options["instructions"]`, and the messages are only the user turns. `FakeChatClient` searches both.
 - **In-process MCP for tests:** pass `session=mcp.Client(server).session` (inside `async with`). Passing `mcp_client=` needs `tenacity` (not installed), and `url` and `mcp_client` can't be combined.
 - **Close the async credential** (`async with DefaultAzureCredential()`), or aiohttp warns "Unclosed client session".
+- **Structured replies are parsed inside the client.** `FoundryChatClient` (OpenAI `responses.parse`) validates the reply against `response_format` during the request, so a pydantic validator that fails turns into `ChatClientException` from `agent.run`, not an error on `.value`.
+  - Keep `response_format` models plain and check afterwards.
+  - `runtime.bad_reply(exc)` tells a malformed reply (a `ValidationError` inside) from a service error.
+  - `FakeChatClient` parses the same way, so tests see what production sees.
+- **Tool arguments arrive as a JSON string** from the real model (`runtime.tool_calls` decodes them). The fake sends a dict.
+- **`get_metric` has an argument called `name`**, so `tool_call(tool_name, /, **args)` takes the tool name positionally.
 - **Application Insights wants the connection string**, not the instrumentation key. A bare key raises `ValueError: Invalid connection string`, which `configure_tracing` turns into a warning.
 _Add any surprises from the Agent Framework or Foundry APIs here._

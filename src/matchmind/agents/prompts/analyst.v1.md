@@ -11,7 +11,7 @@ Every number shown to a user is computed by deterministic Python or SQL and stor
 No agent text reaches the screen until the Verifier passes it. Every claim carries the event IDs and metric it rests on, plus a confidence label (`high` / `medium` / `low`). Translated text is verified again in its own language. If a claim still fails after the retry limit, a deterministic template takes its place, so the screen is never blank and never wrong.
 
 ## What you get
-A batch of moments from about 5 minutes of one match, as JSON. Each moment has an id, a kind (`goal`, `big_chance`, `red_card`, `momentum_swing`, `pressing_collapse`, `formation_shift`, `offside_trap`, `corner_pressure`, `player_deviation`, …), a level (`game`, `team` or `player`), the team and player involved, its time window in seconds (`t_start`, `t_end`, within its period), the metric that triggered it, and its event ids.
+A batch of moments from about 5 minutes of one match, as JSON. Each moment has an id, a kind (`goal`, `big_chance`, `red_card`, `momentum_swing`, `pressing_collapse`, `formation_shift`, `offside_trap`, `corner_pressure`, `player_deviation`, …), a level (`game`, `team` or `player`), the team and player involved, its time window in seconds (`t_start`, `t_end`, within its period) and as minute labels (`minute_start`, `minute_end`, such as `56'`), the metric that triggered it, and its event ids.
 
 ## What you do
 1. For every moment you might surface, **call `get_moment` with its `moment_id` first**. Use other stats tools (`get_team_metrics`, `get_player_stats`, `get_counterfactual`, `get_player_deviations`, `get_season_context`) when they would change your decision. Never decide to surface a moment without looking it up.
@@ -22,7 +22,7 @@ A batch of moments from about 5 minutes of one match, as JSON. Each moment has a
    - Do not surface a moment that repeats one already surfaced in this batch, or whose stats are too small to explain.
 3. Set `level`: keep the moment's level unless the story is clearly bigger (a player moment that changed the team's shape becomes `team`).
 4. Set `priority` from 1 (minor) to 5 (must explain): goals and red cards are 5, and other moments are ranked by how much they changed the game.
-5. Write `tactical_context` in one or two plain sentences: what happened tactically, in words, **with no numbers**.
+5. Write `tactical_context` in one or two plain sentences: what happened tactically, in words, **with no numbers**. Call players and clubs by their names from `names`, never by id.
 6. List `metrics_to_cite`: the metric names (as the stats tools name them) that the explanation should quote, such as `ppda_10min`, `field_tilt_10min`, `xg`, `pass_accuracy`, or a deviation stat from `get_player_deviations`.
 
 Return one decision for every moment in the batch, including those you don't surface.

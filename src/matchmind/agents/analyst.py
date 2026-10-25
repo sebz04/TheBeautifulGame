@@ -8,14 +8,16 @@ looking up any of its stats is sent back once; if it still isn't looked up, it's
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from itertools import groupby
 from typing import Any
 
-from agent_framework import AgentResponse
+from agent_framework.exceptions import ChatClientException
 from pydantic import BaseModel
 
-from matchmind.agents.runtime import make_agent, run_agent
+from matchmind.agents.context import moment_context
+from matchmind.agents.runtime import bad_reply, make_agent, run_agent, tool_calls
+from matchmind.clock import minute_label
 from matchmind.schemas import AnalystDecision, Moment
 
 PROMPT = "analyst.v1.md"
@@ -36,19 +38,7 @@ def batches(moments: Sequence[Moment], minutes: int = 5) -> list[list[Moment]]:
     ]
 
 
-def _tool_calls(response: AgentResponse[Any]) -> list[tuple[str, dict[str, Any]]]:
-    calls = []
-    for message in response.messages:
-        for c in message.contents:
-            if c.type == "function_call":
-                args = c.arguments
-                if isinstance(args, str):
-                    args = json.loads(args or "{}")
-                calls.append((str(c.name), dict(args or {})))
-    return calls
-
-
-def _looked_up(m: Moment, calls: list[tuple[str, dict[str, Any]]]) -> bool:
+def _looked_up(m: Moment, calls: Calls) -> bool:
     """True if some tool call was about this moment: its id, one of its events, or its time."""
     lo, hi = m.t_start - WINDOW_SLACK_S, m.t_end + WINDOW_SLACK_S
     for _, args in calls:
@@ -63,51 +53,81 @@ def _looked_up(m: Moment, calls: list[tuple[str, dict[str, Any]]]) -> bool:
     return False
 
 
-def _message(moments: Sequence[Moment]) -> str:
+def _message(moments: Sequence[Moment], names: Mapping[str, str]) -> str:
     first, last = moments[0], moments[-1]
     header = (
-        f"Match {first.match_id}, period {first.period}, "
-        f"{first.t_start / 60:.0f}' to {last.t_end / 60:.0f}': decide which moments to explain."
+        f"Match {first.match_id}, {minute_label(first.period, first.t_start)} to "
+        f"{minute_label(last.period, last.t_end)}: decide which moments to explain."
     )
     payload = {
         "match_id": first.match_id,
-        "moments": [m.model_dump(exclude={"match_id"}) for m in moments],
+        "names": dict(names),
+        "moments": [
+            {k: v for k, v in moment_context(m).items() if k != "match_id"} for m in moments
+        ],
     }
     return f"{header}\n{json.dumps(payload)}"
 
 
-async def analyze(moments: Sequence[Moment], client: Any, tools: Any) -> list[AnalystDecision]:
+async def analyze(
+    moments: Sequence[Moment],
+    client: Any,
+    tools: Any,
+    *,
+    names: Mapping[str, str] | None = None,
+) -> list[AnalystDecision]:
     """Decide which of ``moments`` (one batch) to explain. Returns only surfaced moments,
-    highest priority first, each one looked up through at least one stats tool."""
+    highest priority first, each one looked up through at least one stats tool.
+    ``names`` maps club and player ids to display names (``context.match_names``)."""
     if not moments:
         return []
     agent = make_agent("analyst", PROMPT, AnalystBatch, tools, client=client)
     by_id = {m.moment_id: m for m in moments}
     span_id = ",".join(by_id)
-    message = _message(moments)
+    message = _message(moments, names or {})
 
-    response = await run_agent(agent, message, moment_id=span_id, attempt=1)
-    calls = _tool_calls(response)
-    decisions = _known(_decisions(response), by_id)
+    decisions, calls, problem = await _attempt(agent, message, by_id, span_id, 1)
     skipped = [
         d.moment_id for d in decisions if d.surface and not _looked_up(by_id[d.moment_id], calls)
     ]
-    if skipped:
-        retry = (
-            f"{message}\n\nYou surfaced {', '.join(skipped)} without looking up its stats. "
+    if problem or skipped:
+        feedback = (
+            f"Your last answer was rejected: {problem}. Answer again in the requested shape."
+            if problem
+            else f"You surfaced {', '.join(skipped)} without looking up its stats. "
             "Call get_moment (or another stats tool) for every moment you surface."
         )
-        response = await run_agent(agent, retry, moment_id=span_id, attempt=2)
-        calls += _tool_calls(response)
-        decisions = _known(_decisions(response), by_id)
+        decisions, more_calls, problem = await _attempt(
+            agent, f"{message}\n\n{feedback}", by_id, span_id, 2
+        )
+        calls += more_calls
 
     surfaced = [d for d in decisions if d.surface and _looked_up(by_id[d.moment_id], calls)]
     return sorted(surfaced, key=lambda d: -d.priority)
 
 
-def _decisions(response: AgentResponse[Any]) -> list[AnalystDecision]:
+Calls = list[tuple[str, dict[str, Any]]]
+
+
+async def _attempt(
+    agent: Any, text: str, by_id: dict[str, Moment], span_id: str, attempt: int
+) -> tuple[list[AnalystDecision], Calls, str]:
+    """One run: the known decisions, the tool calls made, and why the reply was bad (or "").
+
+    A reply that doesn't fit ``AnalystBatch`` yields no decisions; service errors
+    (timeouts, 429s) are raised for the pipeline's retry policy.
+    """
+    try:
+        response = await run_agent(agent, text, moment_id=span_id, attempt=attempt)
+    except ChatClientException as exc:
+        problem = bad_reply(exc)
+        if problem is None:
+            raise
+        return [], [], problem
     batch = response.value
-    return batch.decisions if isinstance(batch, AnalystBatch) else []
+    if not isinstance(batch, AnalystBatch):
+        return [], tool_calls(response), "the answer was not JSON in the requested shape"
+    return _known(batch.decisions, by_id), tool_calls(response), ""
 
 
 def _known(decisions: list[AnalystDecision], by_id: dict[str, Moment]) -> list[AnalystDecision]:
