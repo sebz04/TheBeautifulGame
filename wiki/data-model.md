@@ -20,6 +20,7 @@
 | `Moment` | `kind` (10 literals: momentum_swing, pressing_collapse, formation_shift, big_chance, goal, red_card, sprint_alert, offside_trap, corner_pressure, player_deviation), `level` game/team/player, `event_ids` |
 | `Claim` | `ref` = event_id, `"metric:<name>@<period>:<t>/<team|player>:<id>"`, or `"deviation:<stat>@<period>:<t>/player:<id>"`; counterfactual claims use metric `counterfactual_*` and an event id ref |
 | `Verdict` | `ok`, `failures` (actionable sentences; `qualitative: …` from the agent), `fixed_claims` (claims with the stored value) |
+| `Recap` | `title`, `paragraphs`, `key_numbers` (the verified claims it cites), `verified`, `source` agent/template |
 | `AnalystDecision` | `moment_id`, `surface`, `level`, `priority` 1–5, `tactical_context` (no numbers), `metrics_to_cite` |
 | `Insight` | `confidence` high/medium/low; `source` agent/template; `prompt_version` |
 | `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus; `dir` ("rtl" for Arabic) |

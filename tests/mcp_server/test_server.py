@@ -283,3 +283,20 @@ def test_players_on_pitch_counts_red_cards(env: tuple[Repo, TrackingStore, str])
     assert before["metrics"]["players"]["value"] == 11
     assert after["metrics"]["players"]["value"] == 10
     assert after["metrics"]["players"]["ref"].endswith(f"/team:{red.team_id}")
+
+
+def test_recap_context_from_the_store(env: tuple[Repo, TrackingStore, str]) -> None:
+    from matchmind.agents.narrative import recap_context, template_recap
+    from matchmind.agents.numbers import check_text
+
+    repo, _, mid = env
+    ctx = recap_context(repo, mid)
+    goals = repo.get_events(mid, types=("goal",))
+    assert len(ctx.goals) == len(goals) and sum(ctx.score) == len(goals)
+    assert ctx.score in ctx.scores and (0, 0) in ctx.scores
+    assert ctx.cards  # the comeback has a red card
+    assert ctx.milestones == []  # round-1 match: no earlier rounds, and no undated milestones
+    fallback = template_recap(ctx, [])
+    text = "\n".join([fallback.title, *fallback.paragraphs])
+    assert check_text(text, "en", [], lambda c: c.value, minutes=ctx.minutes,
+                      scores=ctx.scores).ok  # fmt: skip

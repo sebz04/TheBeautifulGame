@@ -75,7 +75,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/agents/verifier.py`, `prompts/verifier.v1.md` | Verifier (numbers, then wording), `verify_loop`, `StatsFacts` | done | 18.1 |
 | `scripts/build_verifier_golden.py`, `scripts/run_foundry_eval.py`, `evals/`, `docs/evals.md` | Verifier golden set and live evaluation | done | 18.2 |
 | `src/matchmind/agents/templates.py` | Fallback texts: 4 personas × 5 languages from claims | done | 19.1 |
-| `src/matchmind/agents/` (narrative, personalizer, workflow) | Agents + orchestrator | planned | 19–20 |
+| `src/matchmind/agents/narrative.py`, `prompts/narrative.v1.md` | Narrative: live lines and full-time recap | done | 19.2 |
+| `src/matchmind/agents/` (personalizer, workflow) | Agents + orchestrator | planned | 19–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |

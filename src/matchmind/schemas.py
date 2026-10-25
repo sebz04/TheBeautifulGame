@@ -233,6 +233,17 @@ class Variant(BaseModel):
     player_id: str | None = None
 
 
+class Recap(BaseModel):
+    """The full-time recap. ``key_numbers`` are the verified claims it cites."""
+
+    match_id: str
+    title: str
+    paragraphs: list[str]
+    key_numbers: list[Claim]
+    verified: bool
+    source: Literal["agent", "template"]
+
+
 class OverlayCue(BaseModel):
     cue_id: str
     match_id: str

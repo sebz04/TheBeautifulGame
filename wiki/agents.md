@@ -7,7 +7,7 @@
 | Tactical Analyst | `agents/analyst.py` | `prompts/analyst.v1.md` | `AnalystDecision` | done (17.1) |
 | Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | done (17.2) |
 | Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | done (18.1) |
-| Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | planned |
+| Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | done (19.2) |
 | Personalization | `agents/personalizer.py` | `prompts/personalizer.v1.md` | `list[PersonalizedText]` | planned |
 | Scenario Designer | `agents/scenario_designer.py` | | `Scenario` | phase 2 |
 | Ingest | `agents/ingest.py` | | recovery action | phase 2 |
@@ -74,6 +74,22 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - **One regeneration.** A bad reply (malformed JSON, a failed check, an unread counterfactual) is sent back once with the problem. A second bad reply raises `ExplainerError`, and TASK-20 falls back to a template. Service errors (timeouts, 429s) are raised as they are.
 - The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).
 - The prompt gives every metric a one-line meaning (TASK-19.0). PPDA is the team's own pressing (lower means harder pressing), and every stat is its value at the moment's end.
+
+## Narrative (`agents/narrative.py`, TASK-19.2)
+- **`live_line(insight, milestones, client, *, minutes=()) -> str`**: one line of at most 140 characters, from a verified insight.
+  - Its numbers must be the insight's claims or numbers in the milestones given. Code writes the milestones, so `milestone_claims` turns their numbers into claims.
+  - A line that's too long or has an unbacked number gets one regeneration, with the problems listed. After that it falls back to the insight's headline, cut to 140 characters.
+- **`recap(ctx, insights, client) -> Recap(title, paragraphs, key_numbers, verified, source)`**:
+  - The model cites the numbers it quotes by **`key_refs`**, and code maps each ref back to a verified claim. An unknown ref fails, so the model never supplies a value.
+  - Every number in the recap must be a cited claim, a real minute, a real scoreline, or a milestone number.
+  - One regeneration, then `template_recap`: the result, goals and red cards with minutes, and up to 3 key numbers.
+- **`recap_context(repo, match_id) -> RecapContext`** gives the score, goals, red cards, names, minutes, scorelines, and milestones of both clubs and the scorers.
+  - **`milestones_before(…, round)`** keeps only rounds before this match's round (from `rNN-` in the match id). The season history runs all 38 rounds, and the first live recap boasted of a "25th goal" from round 6 in a round-1 match. Milestones with no round are dropped, since their timing is unknown.
+- The prompt has the same metric meanings as the Explainer's (copied), English, and temperature 0. Messages keep accented names as written (`ensure_ascii=False`).
+- **Live, comeback match:**
+  - live lines of 115–126 characters in 1–3 s;
+  - an agent recap in about 4.5 s that got the 3-2, the minutes, and Morejo's hat-trick right.
+  - It still mixes stats from different moments in one sentence; that fix is deferred to TASK-25.2.
 
 ## Fallback templates (`agents/templates.py`, TASK-19.1)
 - **`render(insight, variant, lang, names) -> PersonalizedText`** is deterministic. It's what a fan sees when an agent text can't be verified: 4 personas × 5 languages, built from the verified claims alone, with `verified=True`.
