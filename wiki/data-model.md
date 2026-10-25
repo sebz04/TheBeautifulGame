@@ -17,7 +17,7 @@
 | `Player` | `number` 1–99; `pace`, `skill`, `stamina` in [0, 1]; `position ∈ GK/DF/MF/FW` |
 | `Club` | colors as hex strings; `formation` like `"4-3-3"` |
 | `MatchMeta`, `MatchData` | `added_time_s = (period1, period2)` seconds |
-| `Moment` | `kind` (9 literals: momentum_swing, pressing_collapse, formation_shift, big_chance, goal, red_card, sprint_alert, offside_trap, corner_pressure), `level` game/team/player, `event_ids` |
+| `Moment` | `kind` (10 literals: momentum_swing, pressing_collapse, formation_shift, big_chance, goal, red_card, sprint_alert, offside_trap, corner_pressure, player_deviation), `level` game/team/player, `event_ids` |
 | `Claim` | `ref` = event_id or `"metric:<name>@<t>"` |
 | `Insight` | `confidence` high/medium/low; `source` agent/template; `prompt_version` |
 | `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus |

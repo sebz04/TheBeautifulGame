@@ -4,8 +4,9 @@ Beats never teleport the state. A `red_card` makes the team's next foul a sendin
 (and raises its tackle rate until then); `goal` lifts the team's chance quality for a
 window; `sub` brings on the best bench player for the most tired one of a position;
 `tactic_change` and `press_intensity` change team tactics; `fatigue_spike` drains the
-team's energy. While a beat's window is open, the targeted team's modifiers use the
-storyline cap (20%) instead of the subtle one (6%). Files are TOML (`load_scenario`).
+team's energy (or one player's, with `params.slot`). While a beat's window is open, the
+targeted team's modifiers use the storyline cap (20%) instead of the subtle one (6%).
+Files are TOML (`load_scenario`).
 """
 
 import tomllib
@@ -32,6 +33,9 @@ class Beat(BaseModel):
 
     @model_validator(mode="after")
     def _check_params(self) -> "Beat":
+        slot = self.params.get("slot")
+        if self.kind == "fatigue_spike" and slot is not None and not 1 <= int(slot) <= 10:
+            raise ValueError("fatigue_spike slot must be an outfield slot (1-10)")
         if self.kind in ("tactic_change", "press_intensity"):
             keys = set(self.params) if self.kind == "tactic_change" else {"press_intensity"}
             values = self.params if self.kind == "tactic_change" else {

@@ -51,7 +51,7 @@ Level 4 runs inside the level-3 loop (`engine/coupled.py`); see [engine.md](engi
 | `sub` | A substitution at the next dead ball (`params.slot` 1–10 to pick who goes off) |
 | `tactic_change` | Overrides `press_intensity`, `line_height`, `tempo`, `width`, `directness` (each 0–1) |
 | `press_intensity` | Overrides press intensity (`params.value`) |
-| `fatigue_spike` | Drains the team's energy (`params.amount`, default 0.2) |
+| `fatigue_spike` | Drains the team's energy (`params.amount`, default 0.2), or one outfield player's (`params.slot` 1–10) |
 
 `scenario_meta(league, scenario)` builds the `MatchMeta` for the scenario's fixture with its seed (`meta.scenario_id` set). Pass the scenario to `simulate_match(meta, scenario, ...)`.
 

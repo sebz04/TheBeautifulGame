@@ -40,6 +40,7 @@ MomentKind = Literal[
     "sprint_alert",
     "offside_trap",
     "corner_pressure",
+    "player_deviation",
 ]
 CueKind = Literal[
     "name_tag", "speed_alert", "distance_alert", "stat_card", "freeze_frame", "insight", "narrative"

@@ -54,3 +54,9 @@ def test_tactic_change_params_are_checked() -> None:
         Beat(minute=10, kind="tactic_change", team="home", params={"press_intensity": 2.0})
     with pytest.raises(ValidationError):
         Beat(minute=10, kind="tactic_change", team="home", params={"formation": "4-4-2"})
+
+
+def test_fatigue_spike_can_target_one_player() -> None:
+    Beat(minute=58, kind="fatigue_spike", team="away", params={"amount": 0.6, "slot": 6})
+    with pytest.raises(ValidationError):
+        Beat(minute=58, kind="fatigue_spike", team="away", params={"slot": 0})  # not the keeper

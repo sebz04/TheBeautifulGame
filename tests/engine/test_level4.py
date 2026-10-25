@@ -250,3 +250,18 @@ def test_tired_and_low_work_rate_players_jog_less() -> None:
     factor = eng.urgency_factor()
     work = np.array([m.offball_distance for m in eng.pmods])
     assert factor == pytest.approx(work * (C.TIRED_URGENCY + (1 - C.TIRED_URGENCY) * 0.3))
+
+
+def test_targeted_fatigue_spike() -> None:
+    meta = _meta(7)
+    scenario = Scenario(scenario_id="f", title="f", home_club_id=meta.home.club_id,
+                        away_club_id=meta.away.club_id, seed=7,
+                        beats=[Beat(minute=1, kind="fatigue_spike", team="away",
+                                    params={"amount": 0.5, "slot": 6})])  # fmt: skip
+    eng = Coupled(meta, tracking=False, profiles=_profiles(), scenario=scenario)
+    eng.setup_period(1, 0.0)
+    for _ in range(round(65 / 0.1)):
+        eng.tick()
+    target = 11 + 6
+    others = [j for j in range(12, 22) if j != target]
+    assert eng.energy[target] < min(eng.energy[j] for j in others) - 0.3

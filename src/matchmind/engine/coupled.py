@@ -1133,7 +1133,9 @@ class Coupled:
                 self.overrides[team]["press_intensity"] = float(beat.params.get("value", 1.0))
             else:  # fatigue_spike
                 amount = float(beat.params.get("amount", C.FATIGUE_SPIKE))
-                for j in self.on(team):
+                slot = beat.params.get("slot")
+                targets = self.on(team) if slot is None else [11 * team + int(slot)]
+                for j in targets:
                     self.energy[j] = max(self.energy[j] - amount, 0.0)
             self.update_mods()
 

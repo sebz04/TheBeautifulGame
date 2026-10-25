@@ -14,6 +14,7 @@
 | Speed and alerts | `stats/speed.py` | planned | Sprint > 7.0 m/s for ≥ 1 s |
 | PPDA, field tilt, momentum, control vs. chaos | `stats/team.py` | planned | |
 | Moments | `stats/moments.py` | done | Rule triggers, merging, formation classifier |
+| Baselines, deviations | `stats/baselines.py`, `stats/deviations.py` | done | Shrunk per-90 baselines; live player discrepancies |
 | Counterfactual | `stats/counterfactual.py` | planned | Reuses the engine's option scoring |
 | Materialization | `stats/metrics.py` | planned | `metrics_at(t)`: event-exact, on demand, no look-ahead (agents, MCP, Verifier). Stored rows: 30 s grid for charts plus a snapshot at each moment's `t_end` |
 
@@ -80,4 +81,20 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
 - `merge_moments(moments, gap_s=60)`: joins same-kind, same-team moments in a half less than 60 s apart (event ids unioned, the larger trigger value kept).
 - **Rates:** per unscripted match, about 11 momentum swings, 6 pressing collapses, 1–2 goals, 0.7 big chances, 0.7 corner-pressure spells, and 0.3 offside traps. These are candidates the insight agents rank; the thresholds come from the plan. About 1 s per tracked match.
 - **Scripted check:** `press_collapse` gives the away team a `pressing_collapse` within 5 min of its fatigue beat, and `comeback_red_card` gives a `red_card` moment.
+
+## Baselines and player deviations (`stats/baselines.py`, `stats/deviations.py`, TASK-12.3)
+- `player_baselines(season, profiles) -> {player_id: PlayerBaseline(minutes, per90, dispersion)}`, covering every player in the profiles.
+  - Per-90 rates are shrunk toward the role's rate: `w = minutes / (minutes + 450)`. A player who never played gets the role's rate.
+  - Dispersion is per role: variance ÷ mean of per-90 rates from match lines of 45+ minutes, clipped to 1–10.
+  - `club_possession` is the club's season share of passes in its own matches (`club_possession(season)`), so a dominant side's players aren't flagged for simply having the ball.
+- `TRACKED_STATS`: the count fields of `PlayerMatchLine` except cards.
+- `expected_at(baseline, stat, minutes_played, ExpectContext(possession_share, season_possession, team_men, opp_men))`:
+  - on-ball stats × possession ÷ season possession; defensive stats × (1 − possession) ÷ (1 − season possession);
+  - each missing teammate: × 0.85 attack and × 1.1 defence; each missing opponent: × 1.1 attack.
+- `tail_p(observed, mean, dispersion, direction)`: negative binomial with variance `dispersion × mean`, Poisson at dispersion ≤ 1.05 (`math.lgamma`, no scipy).
+- `assess(...) -> Deviation | None`: flags when p < 0.01 and the player has 30+ minutes. An "under" also needs 5+ expected, an "over" 3+ observed. Example: 18 forward passes per 90 with 3 by minute 60 → expected 12, p = 0.002, "under".
+- `detect_deviations(match, baselines, t=(period, t), stats)`: every flag at that moment, strongest first. Minutes come from the line-ups plus sub and red-card events; counts come from `player_match_lines` on the events so far. Sprints need frames.
+- `deviation_moments(match, baselines, stats) -> [(Moment(kind="player_deviation", level="player", trigger_metric=stat, trigger_value=observed), Deviation)]`: checks every 5 min, keeps at most 3 new flags per check, and flags each player once per stat group (`GROUP_OF`: passing stats, and shots/on target/goals, move together). Ids are `{match_id}-dNNN`. The Deviation carries `expected`, `baseline_per90`, and `p_value` for the store (TASK-14).
+- **Measured** (season rounds 1–9 as baselines, 20 later fixtures): 0.9 flags per team per match. The most common are interceptions over, forward passes under, and progressive passes over or under.
+- **Limit:** counts run from kickoff, so a change late in the match moves them slowly, and a tired player is soon substituted. The plan's "scripted midfielder flagged within 10 minutes" check couldn't hold, so it was dropped. A rolling-window detector (last 15 minutes) is the deferred fix if live narration needs faster flags.
 
