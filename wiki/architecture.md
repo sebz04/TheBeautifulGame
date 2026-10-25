@@ -1,10 +1,10 @@
 # Architecture
 
-**Status:** designed, not built. Update the Status column as components land.
+**Status:** the offline half is built (engine, stats, store, `matchmind build`); the online half (MCP, agents, API, web) is planned. Update the Status column as components land.
 
 ## Flow
 ```
-Scenario (YAML or Scenario Designer)
+Scenario (TOML or Scenario Designer)
   → Engine (seeded, event-coupled) ── events → Azure SQL / SQLite
                                    └─ 10 Hz tracking → Blob / local Parquet
   → Stats engine (xT, pitch control, metrics, moments, counterfactuals) → store
@@ -21,7 +21,7 @@ Scenario (YAML or Scenario Designer)
 ## Components
 | Component | Runs where | Status |
 |---|---|---|
-| Engine + stats + build CLI | Local / CI / build job | wip (engine level 3, pitch control, xT done) |
+| Engine + stats + build CLI | Local / CI / build job | done: engine, stats, SQL and tracking stores, `matchmind build` |
 | API + MCP (one container, `/mcp` mount) | Azure Container Apps | planned |
 | Web | Azure Static Web Apps | planned |
 | Models | Microsoft Foundry deployment (`gpt-4.1-mini`) | planned |

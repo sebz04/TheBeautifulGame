@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-14.2 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-22 · **Latest task:** TASK-14.3 · **Code status:** league, profiles, level-3 engine passing all realism checks
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
-- Next: TASK-14.3 (metric snapshots and the `matchmind build` CLI). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
+- Next: TASK-15 (MCP stats server). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -62,7 +62,8 @@ Status: `planned` · `wip` · `done`
 | `tests/reference/` | Vendored third-party code for parity tests (test-only) | done | 6 |
 | `src/matchmind/store/db.py` | SQL stats store (SQLite / Azure SQL), `Repo` | done | 14.1 |
 | `src/matchmind/store/blob.py` | Tracking-frame store (local or Azure Blob), windowed reads | done | 14.2 |
-| `src/matchmind/pipeline/` | `matchmind build` CLI | planned | 14 |
+| `src/matchmind/stats/metrics.py` | Event-exact `metrics_at`, 30 s and per-moment snapshots | done | 14.3 |
+| `src/matchmind/pipeline/build_match.py`, `src/matchmind/cli.py` | `matchmind build` (scenario → stats → store) | done | 14.3 |
 | `src/matchmind/mcp_server/` | MCP stats tools | planned | 15 |
 | `src/matchmind/agents/` | Foundry agents + orchestrator | planned | 16–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |

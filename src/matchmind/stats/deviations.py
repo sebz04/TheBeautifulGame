@@ -100,7 +100,7 @@ def _clock(match: MatchData, period: int, t: float) -> float:
     return t / 60.0 if period == 1 else first + t / 60.0
 
 
-def _minutes_played(match: MatchData, t_to: MatchTime) -> dict[str, float]:
+def minutes_played(match: MatchData, t_to: MatchTime) -> dict[str, float]:
     now = _clock(match, *t_to)
     on: dict[str, float] = {p.player_id: 0.0 for p in match.meta.home_squad[:11]
                             + match.meta.away_squad[:11]}  # fmt: skip
@@ -133,7 +133,7 @@ def _context(match: MatchData, team: str, t_to: MatchTime, season_share: float) 
 def detect_deviations(match: MatchData, baselines: dict[str, PlayerBaseline], t: MatchTime,
                       stats: Sequence[str] = TRACKED_STATS) -> list[Deviation]:  # fmt: skip
     """Every flagged deviation at (period, t), strongest first. Sprints need frames."""
-    played = _minutes_played(match, t)
+    played = minutes_played(match, t)
     stats = [s for s in stats if s != "sprints" or match.frames]
     motion = {pid: (player_motion(match.frames, pid, t) if match.frames else Motion(minutes=m))
               for pid, m in played.items() if m > 0}  # fmt: skip

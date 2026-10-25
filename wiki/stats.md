@@ -107,3 +107,14 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
 - `match_counterfactuals(match, xt_grid)`: one per decision event.
 - **Agreement with the engine** (level-3 match with profiles, 1,512 decisions): every best score within 1e-4 of `extras.best_score`, 93% within 1e-5. Not exact, because stored frames are rounded to 1 cm. Players chose the best-scoring option 19% of the time (median gap 0.0012).
 
+## Metric snapshots (`stats/metrics.py`, TASK-14.3)
+- `metrics_at(match, xt_grid, period, t, scope, scope_id) -> {name: value}`, event-exact: it reads only events and frames at or before (period, t), so deleting everything later changes nothing (tested).
+- **Team** (`TEAM_METRICS`):
+  - match so far: goals, shots, shots on target, xG, passes, pass completion, possession (pass share), PPDA, corners, fouls, offsides, yellow, red;
+  - last 10 min: PPDA, field tilt, control vs chaos (events only, for speed);
+  - momentum (xT added + shot xG, last 5 min of the half);
+  - territory: the home side's mean pitch control on a 16×10 grid at the latest event, with the away side getting 1 − that.
+- **Player** (`PLAYER_METRICS`): minutes plus the event counts of `player_match_lines` and pass accuracy.
+- `compute_metrics(match, xt_grid, step_s=30, extra_times)` stores the same snapshot every 30 s (`kind="grid"`) and at each extra time (`kind="moment"`, every moment's `t_end`). Stored rows equal `metrics_at` at their t (tested). About 90k rows per match.
+- Running (distance, speed, sprints) stays in tracking (`stats/speed.py`).
+
