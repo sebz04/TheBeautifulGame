@@ -67,3 +67,7 @@ plugins = ["pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = ["pyarrow", "pyarrow.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["azure.*"]  # optional `azure` extra: not installed in CI
+ignore_missing_imports = true

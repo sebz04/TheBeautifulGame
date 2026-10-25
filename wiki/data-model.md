@@ -57,3 +57,10 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - **Rebuilds:** `delete_match`.
 
 `MetricRow` and `AgentRun` are shared models in `schemas.py`.
+
+## Tracking store (`store/blob.py`, TASK-14.2)
+- `TrackingStore(backend)`: `write(match_id, frames)` replaces the match's frames; `read_window(match_id, period, t_from, t_to)` returns exactly the frames of that period with t_from ≤ t ≤ t_to (empty if t_from > t_to); `read_all`, `exists`. A missing match raises `LookupError`.
+- Format: the match-file Parquet layout (`match_io.frames_table` / `frames_from_table`), zstd, in one-minute row groups, so a window read decodes only what it touches.
+- `tracking_store(settings)`:
+  - local `<data_dir>/tracking/<match_id>/frames.parquet`, written atomically (`LocalBackend`);
+  - or, when `MATCHMIND_BLOB_ACCOUNT_URL` is set, the Azure Blob container `tracking` (`AzureBackend`, with `DefaultAzureCredential` and no keys; needs the `azure` extra).

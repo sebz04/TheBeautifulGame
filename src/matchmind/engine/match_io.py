@@ -71,8 +71,13 @@ def write_match(data: MatchData, out_dir: Path) -> None:
             rows[name].append(dumped[name])
     _write_table(pa.table(rows, schema=_EVENT_SCHEMA), out_dir / "events.parquet")
 
+    _write_table(frames_table(data.frames), out_dir / "frames.parquet")
+
+
+def frames_table(frames: list[TrackingFrame]) -> pa.Table:
+    """Long format: one row per player per frame (shared with the tracking store)."""
     cols: dict[str, list[Any]] = {name: [] for name in _FRAME_SCHEMA.names}
-    for fr in data.frames:
+    for fr in frames:
         for p in fr.players:
             cols["frame"].append(fr.frame)
             cols["period"].append(fr.period)
@@ -86,7 +91,7 @@ def write_match(data: MatchData, out_dir: Path) -> None:
             cols["y"].append(p.y)
             cols["vx"].append(p.vx)
             cols["vy"].append(p.vy)
-    _write_table(pa.table(cols, schema=_FRAME_SCHEMA), out_dir / "frames.parquet")
+    return pa.table(cols, schema=_FRAME_SCHEMA)
 
 
 def read_match(out_dir: Path) -> MatchData:
@@ -108,7 +113,11 @@ def read_match(out_dir: Path) -> MatchData:
 
 
 def _read_frames(out_dir: Path, match_id: str) -> list[TrackingFrame]:
-    table = pq.read_table(out_dir / "frames.parquet")
+    return frames_from_table(pq.read_table(out_dir / "frames.parquet"), match_id)
+
+
+def frames_from_table(table: pa.Table, match_id: str) -> list[TrackingFrame]:
+    """Inverse of `frames_table`; call with the GC paused for whole matches."""
     c: dict[str, list[Any]] = {}
     for name in _FRAME_SCHEMA.names:
         col = table.column(name)
