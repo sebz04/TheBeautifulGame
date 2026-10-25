@@ -656,7 +656,7 @@ class Coupled:
         d = float(np.hypot(*(landing - start)))
         speed = draw_speed(self.rng, "lofted", d, float(self.skill[i]))
         traj = flight(start, landing, "lofted", speed)
-        extras: dict[str, object] = {"restart": "corner", "set_piece": "corner"}
+        extras: dict[str, object] = {"restart": "corner", "set_piece": "corner", "lofted": True}
         ev = self.emit("pass", team, i, start, speed=round(speed, 2), extras=extras)
         arrive = round(traj.duration / C.DT)
         collect_from = self.k + max(1, arrive - 4)
@@ -848,7 +848,8 @@ class Coupled:
             else:
                 heavy = target is not None
         timing = self.s.run_error_s if target is not None and target == self.s.runner else 0.0
-        ev = self.emit(type_, team, i, start, speed=round(speed, 2), extras=extras)
+        ev = self.emit(type_, team, i, start, speed=round(speed, 2),
+                       extras={**extras, "lofted": kind == "lofted"})  # fmt: skip
         free = self.k + round((traj.duration + C.FREE_AFTER_S) / C.DT)
         self.launch(_Flight(traj, self.k, team, i, collector, collect_from, free, ev, target,
                             offside, round(timing, 2), heavy))  # fmt: skip

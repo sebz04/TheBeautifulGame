@@ -5,6 +5,7 @@
 | Metric | Module | Status | Notes |
 |---|---|---|---|
 | Pitch control | `stats/pitch_control.py` | done | Spearman 2018; vectorized; parity-tested against Friends of Tracking |
+| Pass quality | `stats/passes.py` | done | Difficulty, xT added, accuracy |
 | Player match lines | `stats/player_lines.py` | done | Per-player stat lines (season history, live) |
 | xT | `stats/xt.py` | done | Singh 2019 value iteration on synthetic events only; grid in `data/models/xt_grid.npy` |
 | Pass quality | `stats/passes.py` | planned | Distance, accuracy, difficulty |
@@ -33,4 +34,13 @@
 
 ## Player match lines (`stats/player_lines.py`, TASK-10.4)
 `player_match_lines(data, motion, round_, xt=None) -> list[PlayerMatchLine]`, one per player who appeared. Fields: minutes, passes, completed, forward (5+ m gained), progressive (completed, 10+ m and ≥ 25% closer to goal), key passes and assists (the receiver's next action is a shot or a goal, with only his own carries between), xT added (completed passes and carries), shots, on target (scored or saved next), xG, dribbles (carries), tackles, interceptions, pressures, fouls, distance, sprints, top speed (from `Motion`), box touches, goals, assists, yellow, red.
+
+## Pass quality (`stats/passes.py`, TASK-11.1)
+- `pass_quality(event, frame, xt_grid, attacks_right, goalkeepers) -> PassQuality(distance_m, completed, difficulty, xt_added)`.
+  - Difficulty: `sigmoid(1.2 · distance/40 + 0.8 · defenders within 3 m of the lane + 1.5 · (1 − pitch control at the end) + 0.4 · lofted − 1.6)`, with fixed weights.
+  - Pitch control: offside-filtered, measured on the frame at the pass, with the ball at the kick.
+  - Lofted: from `extras.lofted` (level-3 passes record it); without the flag, passes of 30 m or more count as lofted.
+  - End points off the pitch are clamped to the edge. `xt_added` is None for failed passes.
+- `player_accuracy(events, player_id, t_to=(period, t))`: completed share of the player's passes up to that moment, inclusive (NaN if he has none). The pair is needed because `t` restarts each half.
+- In a level-3 match, failed passes are harder on average than completed ones (tested).
 

@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-11.1 · pass quality (difficulty, xT added) and player accuracy; level-3 passes record extras.lofted; floodlight added as a dev-only reference · README, stats, data-model
 - 2026-10-25 · TASK-10.5 · multi-match tests moved to the nightly slow run (CI about 37 → 13 min); determinism test reruns events only · conventions
 - 2026-10-24 · TASK-10.5 · storyline win-rate check moved to a slow 80-seed test; the fast test checks the goal effect · engine-level4
 - 2026-10-23 · TASK-10.5 · CI-robust statistical tests (results differ slightly across platforms), comeback storyline reworked (red at 55'), red-card beats open no storyline window, events-only engine tests use profiles · engine-level4, decisions
