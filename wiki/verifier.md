@@ -9,10 +9,10 @@
    - Every number in the text must match a verified claim, a real event minute, a scoreline the match passed through, or a formation actually used. This is `numbers.check_text`, run in the text's own language.
    - If anything fails, the model isn't asked at all.
    - Failures name the claim's text, its value, and the stored value. An unclaimed number is quoted in its sentence ("in “…5 shots and a 41% pass accuracy…”"), with a note that every number needs its own claim. `fixed_claims` carries the stored values.
-   - **Which half**, also deterministic: if the text names the first or second half ("segundo tiempo", "première mi-temps", "الشوط الثاني"), its cited events must be in that half. The model missed this in a live run.
+   - **Which half** is the agent's call, not the code's. A phrase match flagged "extend their lead in the second half", which is advice about later. The prompt says a half the moment happened in must be its events' half, and a half named for the future or the past is fine.
 2. **Wording (the Verifier agent, temperature 0).** It reads the text against:
    - the cited events, each shown with its minute label, type, team and player names, outcome, `third` (attacking, middle, or defensive, worked out for the acting team), and `just_before` (the 3 events before it, for checking stated causes);
-   - the claims, shown as `facts` (each claim's statement and whose it is, `about`, by name). Values are left out so the model doesn't re-check rounding.
+   - the claims, shown as `facts` (each claim's statement with its numbers blanked to `#`, and whose it is, `about`, by name). Without values the model can't re-check rounding: it flagged "43%" against 42.5%, and "54%" against 53.8%.
    - **It replies one statement at a time** (`checks: [{statement, verdict, reason}]`, with verdicts `supported`, `not_covered`, `contradicted`, or `invented`). `contradicted` and `invented` become `qualitative: '<statement>': <reason>` failures.
    - A malformed reply or an empty check list is retried once. After that the text fails, so the Verifier fails closed.
 - **`verify_loop(decision, moment, client, tools, facts, *, max_regenerations=2, on_attempt=None)`** runs Explainer → Verifier and feeds the failures back (`explain(..., feedback=...)`).
@@ -30,7 +30,7 @@
   - precision 1.00, with 0 false alarms on 60 correct checks;
   - about 2 s per model check.
 - **Live loop (final recording, 3 moments):** all 3 verified on the first try, 12–21 s each. Earlier runs needed up to 2 regenerations. The Verifier caught unclaimed counts ("5 shots", "10 men") and a wrong value (63% field tilt where the stats say 38.5%), and the feedback fixed them.
-- **Known gaps** (also in `docs/evals.md`):
+- **Known gaps** (also in `docs/evals.md`; the fix is deferred to TASK-25.2, after deployment):
   - Numbers are matched to claims by value, not meaning, so a stat given to the wrong team passes when the value is right.
   - Interpretation slips pass, such as PPDA read as pressure faced.
 

@@ -11,7 +11,7 @@ Golden set: `evals/verifier_golden.jsonl`, 40 insights written by code from thre
 | … caught by the Verifier agent | 21/24 = 0.88 | |
 | Precision | 57/57 = 1.00 | |
 | False alarms on correct insights | 0/60 = 0.00 | |
-| Median time per model check | 2143 ms | |
+| Median time per model check | 2111 ms | |
 
 **Missed errors:**
 
@@ -30,6 +30,8 @@ Golden set: `evals/verifier_golden.jsonl`, 40 insights written by code from thre
 | One verdict per statement (`supported`, `not_covered`, `contradicted`, `invented`); temperature 0 | **0.95** | **1.00** | **0/60** |
 
 ### Known gaps
+Deferred to TASK-25.2 (after deployment) on 2026-10-25. The metric-meaning part of the second gap was fixed in the Explainer prompt at the start of TASK-19.
+
 - **Numbers are matched by value, not meaning.** A number passes if any verified claim has that value. `e19` gives one team's PPDA to the other side; the number is right, so only the agent can catch it, and it doesn't (3/3 runs). The same gap let "ten players" pass once because a "10 shots" claim was present. Fix to try: tie each number to the claim whose `text` it sits in, or check that the claim's team or player is named in the same sentence.
 - **Interpretation slips pass.** Live insights have read PPDA as pressure faced rather than pressing done, and stretched a stat at one moment into "since". The events don't contradict these, so the Verifier lets them through; prompt guidance on reading each metric would help.
 - The golden set is written by code from templates, so its sentences are simpler than the Explainer's.

@@ -146,7 +146,7 @@ async def test_qualitative_problems_fail_the_verdict() -> None:
     sent_json = json.loads(sent.split("\n", 1)[1])
     assert sent_json["events"][0]["just_before"][0]["type"] == "pass"
     assert sent_json["facts"] == [
-        {"statement": "they allow 14.2 passes", "about": "Atlético Chapinero"}
+        {"statement": "they allow # passes", "about": "Atlético Chapinero"}
     ]
     assert "claims" not in sent_json
 
@@ -242,25 +242,10 @@ def test_insight_text_is_the_three_fields(lang: str) -> None:
     assert "The press switched off" in text and "Push the wide" in text
 
 
-@pytest.mark.parametrize(
-    ("lang", "text"),
-    [
-        ("en", "Early in the first half they allow 14.2 passes."),
-        ("es", "En el primer tiempo permiten 14,2 pases."),
-        ("pt", "No primeiro tempo permitem 14,2 passes."),
-        ("fr", "En première mi-temps, ils concèdent 14,2 passes."),
-        ("ar", "في الشوط الأول يسمحون بـ ١٤٫٢ تمريرة."),
-    ],
-)
-async def test_wrong_half_is_caught_without_the_model(lang: str, text: str) -> None:
+async def test_a_half_named_for_the_future_is_not_flagged_by_code() -> None:
+    """Which half a moment is in is the Verifier agent's call: "extend the lead in the second
+    half" is advice about later, not a wrong half (a phrase match flagged it, live)."""
     insight = _insight()  # its cited events are in the second half
+    text = "They allow 14.2 passes. Hold this shape until the end of the first half."
     judge = _judge(True)
-    verdict = await verify(insight, lang, text, FakeFacts(), judge)
-    assert not verdict.ok and judge.calls == []
-    assert any("half" in f for f in verdict.failures)
-
-
-async def test_right_half_passes() -> None:
-    insight = _insight()
-    text = "Early in the second half they allow 14.2 passes."
-    assert (await verify(insight, "en", text, FakeFacts(), _judge(True))).ok
+    assert (await verify(insight, "en", text, FakeFacts(), judge)).ok and judge.calls

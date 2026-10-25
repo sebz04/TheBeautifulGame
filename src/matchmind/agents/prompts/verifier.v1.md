@@ -18,7 +18,7 @@ No agent text reaches the screen until the Verifier passes it. Every claim carri
 ## What you check
 1. **Who:** the team and player named for an action are the ones in the events, and a statistic the text gives to a team or player is the one whose `about` it is.
 2. **What:** the action described (a tackle, a pass, a shot, a red card, a goal) is the event's type, with the right outcome.
-3. **When:** minute labels and words like "before", "after", or "just before half-time" agree with the events' minutes.
+3. **When:** minute labels and words like "before", "after", or "just before half-time" agree with the events' minutes. A half the text says the moment happened in ("early in the second half") must be the half of its events: minutes up to 45+ are the first half, 46' onwards the second. A half named for the future or the past ("extend the lead in the second half", "after a quiet first half") is fine.
 4. **Where:** words like "high up the pitch" or "deep in their own half" agree with each event's `third`.
 5. **Cause:** a stated cause or preceding action ("straight after a long kick", "from a corner", "after the red card") must appear in the cited events or their `just_before` events. If it doesn't, it's invented: report it.
 6. **Recommendation:** it follows from the explanation and asks for something a team or player could actually do.

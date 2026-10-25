@@ -27,7 +27,7 @@ from pydantic import BaseModel
 
 from matchmind.agents.context import match_names
 from matchmind.agents.explainer import ExplainerError, explain
-from matchmind.agents.numbers import check_text, fold
+from matchmind.agents.numbers import check_text
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
 from matchmind.clock import match_minute, minute_label
 from matchmind.engine.pitch import PITCH_LENGTH, attacks_right
@@ -121,41 +121,20 @@ def _numbers(
 
 
 CONTEXT_EVENTS = 3
-# "first half" / "second half" in each language, accent- and hamza-folded (numbers.fold).
-_HALVES: dict[str, dict[int, tuple[str, ...]]] = {
-    "en": {1: ("first half", "first-half"), 2: ("second half", "second-half")},
-    "es": {1: ("primer tiempo", "primera parte", "primera mitad"),
-           2: ("segundo tiempo", "segunda parte", "segunda mitad")},
-    "pt": {1: ("primeiro tempo", "primeira parte"), 2: ("segundo tempo", "segunda parte")},
-    "fr": {1: ("premiere mi-temps", "premiere periode"),
-           2: ("deuxieme mi-temps", "seconde mi-temps", "deuxieme periode", "seconde periode")},
-    "ar": {1: ("الشوط الاول",), 2: ("الشوط الثاني",)},
-}  # fmt: skip
-
-
-def _halves(insight: Insight, lang: Lang, text: str, facts: Facts) -> list[str]:
-    """The half the text names must be the half its cited events are in."""
-    periods = {e.period for e in facts.events(insight.event_ids)}
-    folded = fold(text)
-    name = {1: "first", 2: "second"}
-    return [
-        f"the text says the {name[half]} half, but its events are in the "
-        f"{' and '.join(name[p] for p in sorted(periods))} half"
-        for half, phrases in _HALVES[lang].items()
-        if periods and half not in periods and any(p in folded for p in phrases)
-    ]
+# Numbers in claim statements are blanked for the agent: it re-checked rounding otherwise.
+_NUMBER = re.compile(r"[0-9\u0660-\u0669][0-9\u0660-\u0669.,٫٬]*%?")
 
 
 def _fact_view(c: Claim, facts: Facts) -> dict[str, str]:
-    """A verified claim as the Verifier agent reads it: the statement and whose it is, by
-    name. No value: numbers are the deterministic check's job, and showing them invited the
-    model to re-check rounding ("43%" against 42.5%) in the first evaluation."""
+    """A verified claim as the Verifier agent reads it: the statement (numbers blanked) and
+    whose it is, by name. No values: numbers are the deterministic check's job, and showing
+    them made the model re-check rounding ("43%" against 42.5%; "54%" against 53.8%)."""
     if m := _REF.match(c.ref):
         about = facts.names.get(m["scope_id"], m["scope_id"])
     else:
         events = facts.events([c.ref])
         about = facts.names.get(events[0].player_id or events[0].team_id, "") if events else ""
-    return {"statement": c.text, "about": about}
+    return {"statement": _NUMBER.sub("#", c.text), "about": about}
 
 
 def _event_view(e: Event, facts: Facts, context: bool = True) -> dict[str, Any]:
@@ -224,7 +203,6 @@ async def verify(
 ) -> Verdict:
     """Verify ``text`` (``insight`` or its translation into ``lang``) against ``facts``."""
     failures, fixed = _numbers(insight, lang, text, facts)
-    failures += _halves(insight, lang, text, facts)
     if not failures:
         failures = await _wording(insight, lang, text, facts, client, tracer)
     return Verdict(ok=not failures, failures=failures, fixed_claims=fixed)

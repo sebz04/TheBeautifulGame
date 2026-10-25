@@ -73,6 +73,7 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - **Counterfactual claims** (metric `counterfactual_*`) must cite an event id that `get_counterfactual` was called with in the same run.
 - **One regeneration.** A bad reply (malformed JSON, a failed check, an unread counterfactual) is sent back once with the problem. A second bad reply raises `ExplainerError`, and TASK-20 falls back to a template. Service errors (timeouts, 429s) are raised as they are.
 - The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).
+- The prompt gives every metric a one-line meaning (TASK-19.0). PPDA is the team's own pressing (lower means harder pressing), and every stat is its value at the moment's end.
 
 ## Verifier
 The Verifier, its regeneration loop, the number check, and the golden-set evaluation are on [verifier.md](verifier.md).
