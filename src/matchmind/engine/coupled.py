@@ -38,6 +38,7 @@ from matchmind.engine.decisions import (
     choose,
     decision_extras,
     enumerate_options,
+    filter_options,
     shot_xg,
 )
 from matchmind.engine.formations import formation_anchors
@@ -110,7 +111,6 @@ CENTRE = np.array([PITCH_LENGTH / 2, PITCH_WIDTH / 2])
 SPRINT_TICKS = round(SPRINT_MIN_S / C.DT)
 Chooser = Callable[[list[Option]], Option]
 EventDict = dict[str, Any]
-_PASS_ONLY = {"throw_in", "kickoff", "goal_kick", "corner"}
 _NO_OFFSIDE = {"throw_in", "goal_kick", "corner"}
 
 
@@ -724,22 +724,13 @@ class Coupled:
         team = int(self.team_of[i])
         self.end_carry(True)
         boosted = self.match_s() <= self.goal_boost_until[team]
-        ctx = DecisionContext(
-            self.team_ids[team],
-            self.right(team),
-            self.xt,
-            self.goalkeepers,
-            risk_weight=self.pmods[i].risk_weight,
-            shot_cost=C.GOAL_BEAT_SHOT_COST if boosted else C.SHOT_COST,
-            clear_bonus=C.CLEAR_BONUS,
-            keep_weight=C.GOAL_BEAT_KEEP_WEIGHT if boosted else C.SHOT_KEEP_WEIGHT,
-        )
+        risk = self.pmods[i].risk_weight
+        ctx = decision_context(self.team_ids[team], self.right(team), self.xt, self.goalkeepers,
+                               risk, boosted)  # fmt: skip
         options = enumerate_options(self.frame(lagged=True), self.ids[i], ctx)
         restart = s.restart
-        if restart in _PASS_ONLY or i % 11 == 0:
-            options = [o for o in options if o.kind in ("pass", "through", "clear")]
-        if restart == "throw_in":
-            options = [o for o in options if math.dist(o.end, self.ball[:2]) <= C.THROW_MAX_M]
+        ball = (float(self.ball[0]), float(self.ball[1]))
+        options = filter_options(options, restart, i % 11 == 0, ball)
         if not options:
             s.decide_k = self.k + 3
             return
@@ -750,6 +741,10 @@ class Coupled:
                 options, float(self.skill[i]), self.rng, self.pmods[i].decision_temperature
             )
         extras = decision_extras(opt, options)
+        if risk != 1.0:
+            extras["risk_weight"] = risk  # so counterfactuals rebuild the same context
+        if boosted:
+            extras["goal_window"] = True
         if restart:
             extras["restart"] = restart
             s.restart = None
@@ -1637,6 +1632,22 @@ def mods_from_profiles(
     team_mods = (Modifiers.for_team(clubs[0], MatchContext(is_home=True)),
                  Modifiers.for_team(clubs[1], MatchContext(is_home=False)))  # fmt: skip
     return player_mods, team_mods
+
+
+def decision_context(team_id: str, attacks_right: bool, xt: np.ndarray,
+                     goalkeepers: frozenset[str], risk_weight: float = 1.0,
+                     goal_window: bool = False) -> DecisionContext:  # fmt: skip
+    """The context the engine scores a decision with (also used by counterfactuals)."""
+    return DecisionContext(
+        team_id,
+        attacks_right,
+        xt,
+        goalkeepers,
+        risk_weight=risk_weight,
+        shot_cost=C.GOAL_BEAT_SHOT_COST if goal_window else C.SHOT_COST,
+        clear_bonus=C.CLEAR_BONUS,
+        keep_weight=C.GOAL_BEAT_KEEP_WEIGHT if goal_window else C.SHOT_KEEP_WEIGHT,
+    )
 
 
 def simulate_with_motion(

@@ -71,7 +71,6 @@ INTERCEPT_REACT_S = 0.3
 INTERCEPT_SPEED_MS = 6.5
 LOFT_MIN_M = 30.0  # passes this long (or longer) are lofted
 THROW_SPEED_MS = 12.0
-THROW_MAX_M = 30.0
 HEAVY_TOUCH_SPEED = (3.0, 6.0)
 
 # ---- passing ----------------------------------------------------------------------------

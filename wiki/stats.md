@@ -14,6 +14,7 @@
 | Speed and alerts | `stats/speed.py` | planned | Sprint > 7.0 m/s for ≥ 1 s |
 | PPDA, field tilt, momentum, control vs. chaos | `stats/team.py` | planned | |
 | Moments | `stats/moments.py` | done | Rule triggers, merging, formation classifier |
+| Counterfactuals | `stats/counterfactual.py` | done | Alternatives scored by the engine's own option scoring |
 | Baselines, deviations | `stats/baselines.py`, `stats/deviations.py` | done | Shrunk per-90 baselines; live player discrepancies |
 | Counterfactual | `stats/counterfactual.py` | planned | Reuses the engine's option scoring |
 | Materialization | `stats/metrics.py` | planned | `metrics_at(t)`: event-exact, on demand, no look-ahead (agents, MCP, Verifier). Stored rows: 30 s grid for charts plus a snapshot at each moment's `t_end` |
@@ -97,4 +98,12 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
 - `deviation_moments(match, baselines, stats) -> [(Moment(kind="player_deviation", level="player", trigger_metric=stat, trigger_value=observed), Deviation)]`: checks every 5 min, keeps at most 3 new flags per check, and flags each player once per stat group (`GROUP_OF`: passing stats, and shots/on target/goals, move together). Ids are `{match_id}-dNNN`. The Deviation carries `expected`, `baseline_per90`, and `p_value` for the store (TASK-14).
 - **Measured** (season rounds 1–9 as baselines, 20 later fixtures): 0.9 flags per team per match. The most common are interceptions over, forward passes under, and progressive passes over or under.
 - **Limit:** counts run from kickoff, so a change late in the match moves them slowly, and a tired player is soon substituted. The plan's "scripted midfielder flagged within 10 minutes" check couldn't hold, so it was dropped. A rolling-window detector (last 15 minutes) is the deferred fix if live narration needs faster flags.
+
+## Counterfactuals (`stats/counterfactual.py`, TASK-13)
+- `counterfactual(event, frame, xt_grid, attacks_right, goalkeepers) -> Counterfactual(event_id, chosen, best, gain, alternatives)`, for a pass, carry, shot, or clearance with engine decision extras.
+  - The scoring is the engine's: `enumerate_options`, `score_option`, `filter_options`, and `coupled.decision_context`, with `risk_weight` and `goal_window` from the event's extras.
+  - `alternatives` are sorted best first, and `gain = best.score − chosen.score`. `chosen` is the option matching `extras.chosen_option`.
+- `decision_frame(match, event)`: rebuilds the pitch as the player saw it. Positions and velocities come from the frame 4 ticks before the kick (`PERCEPTION_LAG_TICKS` + 1); the ball sits where it was kicked from.
+- `match_counterfactuals(match, xt_grid)`: one per decision event.
+- **Agreement with the engine** (level-3 match with profiles, 1,512 decisions): every best score within 1e-4 of `extras.best_score`, 93% within 1e-5. Not exact, because stored frames are rounded to 1 cm. Players chose the best-scoring option 19% of the time (median gap 0.0012).
 

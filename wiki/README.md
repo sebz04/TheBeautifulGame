@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-12.3 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-22 · **Latest task:** TASK-13 · **Code status:** league, profiles, level-3 engine passing all realism checks
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
 - Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
-- Next: TASK-13 (counterfactual scorer). The user is setting up Azure for Students and Foundry (TASK-16.1).
+- Next: TASK-14 (stats store and showcase match build). The user is setting up Azure for Students and Foundry (TASK-16.1).
 - Blockers: none for TASK-1 to TASK-15. TASK-16.2 onward needs the Foundry deployment.
 
 ## Pages
@@ -57,7 +57,7 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/engine/set_pieces.py`, `scenario.py` | Corners, aerial duels, free kicks, penalties; scenario beats (TOML) | done | 10.2 |
 | `scenarios/*.toml` | The 8 storylines | done | 10.3 |
 | `src/matchmind/stats/pitch_control.py` | Pitch control (vectorized Spearman) with offside filter | done | 6, 6.1 |
-| `src/matchmind/stats/` (rest) | Counterfactuals | planned | 13 |
+| `src/matchmind/stats/counterfactual.py` | Counterfactual options scored like the engine | done | 13 |
 | `src/matchmind/stats/xt.py`, `data/models/xt_grid.{npy,json}` | xT model and trained grid (level 3, 300 seeds) | done | 7, 10.3 |
 | `tests/reference/` | Vendored third-party code for parity tests (test-only) | done | 6 |
 | `src/matchmind/store/` | SQL + tracking blob store | planned | 14 |

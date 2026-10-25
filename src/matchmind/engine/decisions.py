@@ -193,14 +193,33 @@ def choose(
     return options[min(idx, len(options) - 1)]
 
 
+PASS_ONLY_RESTARTS = frozenset({"throw_in", "kickoff", "goal_kick", "corner"})
+THROW_MAX_M = 30.0
+
+
+def filter_options(options: list[Option], restart: str | None, is_keeper: bool,
+                   ball: tuple[float, float]) -> list[Option]:  # fmt: skip
+    """What the player may actually do: restarts and keepers only pass or clear; a throw-in
+    reaches at most `THROW_MAX_M`."""
+    if restart in PASS_ONLY_RESTARTS or is_keeper:
+        options = [o for o in options if o.kind in ("pass", "through", "clear")]
+    if restart == "throw_in":
+        options = [o for o in options if math.dist(o.end, ball) <= THROW_MAX_M]
+    return options
+
+
+def _describe(o: Option) -> dict[str, object]:
+    return {"kind": o.kind, "target": o.target_player_id,
+            "end": [round(o.end[0], 2), round(o.end[1], 2)]}  # fmt: skip
+
+
 def decision_extras(chosen: Option, options: list[Option]) -> dict[str, object]:
+    """Scores (unrounded, so counterfactuals can be checked against them) and the chosen
+    and best options."""
     best = max(options, key=lambda o: o.score)
     return {
-        "chosen_score": round(chosen.score, 4),
-        "best_score": round(best.score, 4),
-        "best_option": {
-            "kind": best.kind,
-            "target": best.target_player_id,
-            "end": [round(best.end[0], 2), round(best.end[1], 2)],
-        },  # fmt: skip
+        "chosen_score": chosen.score,
+        "best_score": best.score,
+        "chosen_option": _describe(chosen),
+        "best_option": _describe(best),
     }

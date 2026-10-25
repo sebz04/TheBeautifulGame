@@ -12,7 +12,7 @@
 ## Models (`schemas.py`)
 | Model | Key fields / rules |
 |---|---|
-| `Event` (frozen) | `event_id` must be `"{match_id}-eNNNNN"` (validator); `period ∈ {1,2}`; `end_x/end_y/outcome/receiver_id/ball_speed_ms` nullable; engine extras go in `extras`: decisions (`chosen_score`, `best_score`, `best_option`), `restart`, `lofted` (level-3 passes), `arrival_t` (when a pass or clearance was controlled; level 3), `xg`, `blocked`, `parried`, `heavy_touch`, `offside`, `deflection`, `own_goal`, `mods`. `out` events carry `extras.restart` (throw_in, goal_kick, corner) |
+| `Event` (frozen) | `event_id` must be `"{match_id}-eNNNNN"` (validator); `period ∈ {1,2}`; `end_x/end_y/outcome/receiver_id/ball_speed_ms` nullable; engine extras go in `extras`: decisions (`chosen_score`, `best_score`, `chosen_option`, `best_option`, `risk_weight`, `goal_window`), `restart`, `lofted` (level-3 passes), `arrival_t` (when a pass or clearance was controlled; level 3), `xg`, `blocked`, `parried`, `heavy_touch`, `offside`, `deflection`, `own_goal`, `mods`. `out` events carry `extras.restart` (throw_in, goal_kick, corner) |
 | `PlayerPos` (frozen), `TrackingFrame` | `ball = (x, y, z)`; `players` list per frame |
 | `Player` | `number` 1–99; `pace`, `skill`, `stamina` in [0, 1]; `position ∈ GK/DF/MF/FW` |
 | `Club` | colors as hex strings; `formation` like `"4-3-3"` |

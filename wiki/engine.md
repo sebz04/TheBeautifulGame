@@ -58,7 +58,8 @@ Tactics, phases, pressing triggers, cards, substitutions, set pieces, and scenar
 - Shot xG in the options includes pressure (`pressure_factor`): × 0.6 per defender within 1.5 m, × 0.8 per defender within 1 m of the line to goal, × 0.6 if the keeper is within 3 m. The engine shoots with that xG × (0.85 + 0.3 · skill).
 - `shot_xg(pos, attacks_right, skill)`: logistic in the goal's opening angle and distance (about 0.39 at 6 m, 0.18 at 11 m, 0.09 at 16 m, 0.04 at 25 m, central; bias −1.7 since TASK-10.1), × (0.85 + 0.3·skill).
 - `choose(options, skill, rng, temperature_mult=1.0)`: softmax over min-max normalized scores, temperature `(0.05 + 0.6·(1 − skill)) × decision_temperature`. Skill 0.95 picks the best of a typical set > 70% of the time; skill 0.2 < 45%.
-- `decision_extras(chosen, options)` → `chosen_score`, `best_score`, `best_option` for `Event.extras`. About 1 ms per decision.
+- `decision_extras(chosen, options)` → `chosen_score`, `best_score` (unrounded since TASK-13), `chosen_option`, `best_option` for `Event.extras`. The engine adds `risk_weight` (when it isn't 1) and `goal_window`, so counterfactuals can rebuild the same context. About 1 ms per decision.
+- `filter_options(options, restart, is_keeper, ball)`: restarts and keepers only pass or clear, and a throw-in reaches at most 30 m. Shared by the engine and `stats/counterfactual.py`, as is `coupled.decision_context(...)`.
 
 ## Level 3 loop (`engine/coupled.py`, TASK-9.3)
 `Coupled(meta, tracking, profiles=None)` (profiles give mods, club tactics, roles); `simulate_coupled(meta, tracking, profiles)`. Each tick: `logic` → ball position → record → `move` (`step_players`, vectorized `step_player`).
