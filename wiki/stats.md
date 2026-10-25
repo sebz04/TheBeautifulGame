@@ -13,7 +13,7 @@
 | Pass quality | `stats/passes.py` | planned | Distance, accuracy, difficulty |
 | Speed and alerts | `stats/speed.py` | planned | Sprint > 7.0 m/s for ≥ 1 s |
 | PPDA, field tilt, momentum, control vs. chaos | `stats/team.py` | planned | |
-| Moments | `stats/moments.py` | planned | Rule triggers |
+| Moments | `stats/moments.py` | done | Rule triggers, merging, formation classifier |
 | Counterfactual | `stats/counterfactual.py` | planned | Reuses the engine's option scoring |
 | Materialization | `stats/metrics.py` | planned | `metrics_at(t)`: event-exact, on demand, no look-ahead (agents, MCP, Verifier). Stored rows: 30 s grid for charts plus a snapshot at each moment's `t_end` |
 
@@ -66,4 +66,18 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
   - pitch-control volatility (0.15; the SD of the home team's mean control on a 16×10 grid every 10 s, frames only);
   - long forward passes of 30 m or more (0.15; typical 15%).
   - Each part is value ÷ (2 × typical), so a typical match sits near 0.5. A level-3 match reads 0.47–0.69 per 10 minutes (about 2 s for a whole match with frames).
+
+## Key moments (`stats/moments.py`, TASK-12.2)
+`detect_moments(match, xt_grid) -> list[Moment]`, ids `{match_id}-mNNN` in time order. Windows never cross half time.
+- **Player:** goal and red card (the event); big chance (a shot with xG above 0.25).
+- **Game:** `momentum_swing`, when the momentum diff changes sign within 5 min by more than 0.08.
+- **Team:**
+  - `pressing_collapse`: a team that was pressing (PPDA ≤ 12) sees its PPDA in the 10 min after a 5-minute mark rise more than 60% over the 10 min before, with at least 10 opponent passes after the mark.
+  - `formation_shift` (frames only): the nearest formation template of a team's mean shape over the last 3 min changes and holds for 3 min.
+  - `offside_trap`: 3+ offsides against one team within 20 min, credited to the defenders.
+  - `corner_pressure`: 3+ corners for one team within 5 min.
+- `classify_formation(outfield)`: splits the sorted depths into each template's number of lines exactly (dynamic programming, `_line_counts`), then picks the template with the closest players per line (4-2-3-1 has four lines).
+- `merge_moments(moments, gap_s=60)`: joins same-kind, same-team moments in a half less than 60 s apart (event ids unioned, the larger trigger value kept).
+- **Rates:** per unscripted match, about 11 momentum swings, 6 pressing collapses, 1–2 goals, 0.7 big chances, 0.7 corner-pressure spells, and 0.3 offside traps. These are candidates the insight agents rank; the thresholds come from the plan. About 1 s per tracked match.
+- **Scripted check:** `press_collapse` gives the away team a `pressing_collapse` within 5 min of its fatigue beat, and `comeback_red_card` gives a `red_card` moment.
 

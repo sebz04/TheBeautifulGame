@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-12.2 · key-moment triggers (goals, reds, big chances, momentum swings, pressing collapses, formation shifts, offside traps, corner pressure) with merging; MomentKind gains offside_trap and corner_pressure · README, stats, data-model
 - 2026-10-25 · TASK-12.1 · team metrics: PPDA (None-safe), field tilt, momentum series, control vs chaos · README, stats, decisions
 - 2026-10-25 · TASK-11.2 · ball and shot speed, player motion from frames, speed/distance/name-tag alert cues, floodlight cross-check within 2% · README, stats
 - 2026-10-25 · TASK-11.1 · pass quality (difficulty, xT added) and player accuracy; level-3 passes record extras.lofted; floodlight added as a dev-only reference · README, stats, data-model
