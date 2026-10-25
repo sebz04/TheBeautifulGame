@@ -122,7 +122,7 @@ def test_get_metric_matches_repo(env: tuple[Repo, TrackingStore, str]) -> None:
             t=r.t,
         )
         assert out["value"] == pytest.approx(r.value)
-        assert out["ref"] == f"metric:{r.name}@{r.period}:{r.t}"
+        assert out["ref"] == f"metric:{r.name}@{r.period}:{r.t}/{r.scope}:{r.scope_id}"
 
 
 def test_team_metrics_event_exact(env: tuple[Repo, TrackingStore, str]) -> None:
@@ -132,6 +132,7 @@ def test_team_metrics_event_exact(env: tuple[Repo, TrackingStore, str]) -> None:
     out = call(env, "get_team_metrics", match_id=mid, team_id=home, period=1, t=615.0)
     exact = metrics_at(data, load_xt(), 1, 615.0, "team", home)
     assert {k: v["value"] for k, v in out["metrics"].items()} == pytest.approx(exact)
+    assert out["metrics"]["ppda"]["ref"] == f"metric:ppda@1:615.0/team:{home}"
     stored = repo.get_metric(mid, "passes", "team", home, (1, 615.0))  # the 600 s row
     assert stored is not None and exact["passes"] > stored
     player = data.meta.home_squad[6].player_id
@@ -139,6 +140,7 @@ def test_team_metrics_event_exact(env: tuple[Repo, TrackingStore, str]) -> None:
     assert {k: v["value"] for k, v in p["metrics"].items()} == pytest.approx(
         metrics_at(data, load_xt(), 2, 1234.5, "player", player)
     )
+    assert p["metrics"]["passes"]["ref"] == f"metric:passes@2:1234.5/player:{player}"
 
 
 def test_no_future_events(env: tuple[Repo, TrackingStore, str]) -> None:
@@ -234,3 +236,50 @@ def test_unknown_team_or_metric(env: tuple[Repo, TrackingStore, str]) -> None:
         period=1,
         t=60.0,
     )
+
+
+def test_stats_facts_verify_what_the_tools_returned(env: tuple[Repo, TrackingStore, str]) -> None:
+    """A claim copied from a tool result verifies against itself; the other team's doesn't."""
+    from matchmind.agents.verifier import StatsFacts
+    from matchmind.mcp_server.server import StatsService
+    from matchmind.schemas import Claim
+
+    repo, store, mid = env
+    facts = StatsFacts(StatsService(repo, store), mid)
+    meta = repo.get_match_meta(mid)
+    assert meta is not None
+    home, away = meta.home.club_id, meta.away.club_id
+    out = call(env, "get_team_metrics", match_id=mid, team_id=home, period=2, t=1200.0)
+    ppda = out["metrics"]["ppda_10min"]
+    claim = Claim(text="t", metric="ppda_10min", value=ppda["value"], unit="", ref=ppda["ref"])
+    assert facts.lookup(claim) == pytest.approx(ppda["value"])
+    swapped = claim.model_copy(update={"ref": ppda["ref"].replace(home, away)})
+    other = facts.lookup(swapped)
+    assert other is not None and other != pytest.approx(ppda["value"])
+    assert facts.lookup(claim.model_copy(update={"metric": "xg"})) is None  # metric ≠ ref
+
+    goals = repo.get_events(mid, types=("goal",))
+    final = (sum(g.team_id == home for g in goals), sum(g.team_id == away for g in goals))
+    assert (0, 0) in facts.scores and final in facts.scores
+    assert {meta.home.formation, meta.away.formation} <= facts.formations
+
+    decided = next(e for e in repo.get_events(mid) if "best_score" in e.extras)
+    cf = call(env, "get_counterfactual", event_id=decided.event_id)
+    cf_claim = Claim(text="t", metric="counterfactual_gain", value=cf["gain"], unit="xT",
+                     ref=decided.event_id)  # fmt: skip
+    assert facts.lookup(cf_claim) == pytest.approx(cf["gain"])
+    goal_claim = Claim(text="t", metric="goal", value=1.0, unit="", ref=goals[0].event_id)
+    assert facts.lookup(goal_claim) == 1.0
+    assert facts.third(goals[0]) == "attacking"
+
+
+def test_players_on_pitch_counts_red_cards(env: tuple[Repo, TrackingStore, str]) -> None:
+    repo, _, mid = env
+    red = next(e for e in repo.get_events(mid, types=("card",)) if e.extras.get("card") != "yellow")
+    before = call(env, "get_team_metrics", match_id=mid, team_id=red.team_id, period=red.period,
+                  t=red.t - 1.0)  # fmt: skip
+    after = call(env, "get_team_metrics", match_id=mid, team_id=red.team_id, period=red.period,
+                 t=red.t)  # fmt: skip
+    assert before["metrics"]["players"]["value"] == 11
+    assert after["metrics"]["players"]["value"] == 10
+    assert after["metrics"]["players"]["ref"].endswith(f"/team:{red.team_id}")

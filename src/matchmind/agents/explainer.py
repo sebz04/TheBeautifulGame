@@ -110,12 +110,22 @@ async def explain(
     tools: Any,
     *,
     names: Mapping[str, str] | None = None,
+    feedback: str | None = None,
     tracer: Tracer | None = None,
 ) -> Insight:
     """Explain one surfaced moment. Raises ``ExplainerError`` after one failed regeneration.
-    ``names`` maps club and player ids to display names (``context.match_names``)."""
-    agent = make_agent("explainer", PROMPT, ExplainerReply, tools, client=client)
+    ``names`` maps club and player ids to display names (``context.match_names``).
+    ``feedback`` is the Verifier's failures on the previous insight, for a regeneration."""
+    agent = make_agent(
+        "explainer", PROMPT, ExplainerReply, tools, client=client, options={"temperature": 0.0}
+    )
     message = _message(decision, moment, names or {})
+    if feedback:
+        message += (
+            f"\n\nThe Verifier rejected your previous insight:\n{feedback}\n"
+            "Fix every point. For a number that matches no verified stat, either delete it or "
+            "call a stats tool and add its claim; never write it again without a claim."
+        )
     problem = ""
     for attempt in (1, 2):
         text = message if attempt == 1 else (

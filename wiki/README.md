@@ -2,12 +2,12 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-17 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-22 · **Latest task:** TASK-18 · **Code status:** league, profiles, level-3 engine passing all realism checks
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
-- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the MCP stats server (`mcp_server/`), agent runtime and number checking (`agents/runtime.py`, `numbers.py`), the Tactical Analyst and Explainer (`agents/analyst.py`, `explainer.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
-- Next: TASK-18 (Verifier agent and regeneration loop).
+- Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the MCP stats server (`mcp_server/`), agent runtime and number checking (`agents/runtime.py`, `numbers.py`), the Tactical Analyst, Explainer, and Verifier (`agents/analyst.py`, `explainer.py`, `verifier.py`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks).
+- Next: TASK-19 (Narrative and Personalization agents: 4 personas, 5 languages).
 - Blockers: none. Foundry `gpt-4.1-mini` is live (North Central US); Application Insights needs its full connection string in `.env`.
 
 ## Pages
@@ -19,7 +19,8 @@ A short, current map of the codebase. **Read this page first, then only the page
 | [engine.md](engine.md) | Synthetic match engine levels 1–3, ball, decisions, realism | Work in `src/matchmind/engine` |
 | [engine-level4.md](engine-level4.md) | Tactics, cards, subs, set pieces, scenario beats | Engine tactics, set pieces, or storylines |
 | [stats.md](stats.md) | xT, pitch control, pass/speed/team metrics, moments, counterfactuals | Work in `src/matchmind/stats` |
-| [agents.md](agents.md) | Agents, prompts, workflow, Verifier rules, fallbacks | Work in `src/matchmind/agents` or `mcp_server` |
+| [agents.md](agents.md) | Agents, prompts, workflow, fallbacks | Work in `src/matchmind/agents` or `mcp_server` |
+| [verifier.md](verifier.md) | Verifier, regeneration loop, number checking, golden set and evals | Work on `agents/verifier.py`, `numbers.py`, or `evals/` |
 | [api-frontend.md](api-frontend.md) | Endpoints, SSE contract, frontend components | Work in `src/matchmind/api` or `web/` |
 | [infra-ops.md](infra-ops.md) | Azure resources, env vars, commands, costs | Deploying, configuring, or debugging cloud |
 | [conventions.md](conventions.md) | Commands, testing, commit and wiki rules | Before your first commit in a session |
@@ -71,7 +72,9 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/agents/explainer.py`, `prompts/explainer.v1.md` | Explainer: one insight per surfaced moment | done | 17.2 |
 | `src/matchmind/agents/context.py`, `src/matchmind/clock.py` | Names and minute labels for agents; match clock | done | 17.2 |
 | `scripts/record_llm_fixtures.py`, `tests/fixtures/llm/` | Live recording and replayed model fixtures | done | 17.2 |
-| `src/matchmind/agents/` (verifier, narrative, …) | Agents + orchestrator | planned | 18–20 |
+| `src/matchmind/agents/verifier.py`, `prompts/verifier.v1.md` | Verifier (numbers, then wording), `verify_loop`, `StatsFacts` | done | 18.1 |
+| `scripts/build_verifier_golden.py`, `scripts/run_foundry_eval.py`, `evals/`, `docs/evals.md` | Verifier golden set and live evaluation | done | 18.2 |
+| `src/matchmind/agents/` (narrative, personalizer, workflow) | Agents + orchestrator | planned | 19–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |

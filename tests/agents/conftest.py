@@ -53,7 +53,7 @@ class StatsStub:
         def get_team_metrics(match_id: str, team_id: str, period: int, t: float) -> str:
             """Team metrics at (period, t)."""
             calls.append(("get_team_metrics", {"match_id": match_id, "period": period, "t": t}))
-            return json.dumps({"ppda": 7.5, "ref": f"metric:ppda@{period}:{t}"})
+            return json.dumps({"ppda": 7.5, "ref": f"metric:ppda@{period}:{t}/team:{team_id}"})
 
         return [get_moment, get_counterfactual, get_team_metrics]
 

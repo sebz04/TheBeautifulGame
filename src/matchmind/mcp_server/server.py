@@ -50,8 +50,13 @@ TOP_ALTERNATIVES = 5
 Json = dict[str, Any]
 
 
-def _ref(name: str, period: int, t: float) -> str:
-    return f"metric:{name}@{period}:{t}"
+def _ref(name: str, period: int, t: float, scope: str, scope_id: str, kind: str = "metric") -> str:
+    """``metric:<name>@<period>:<t>/<scope>:<scope_id>``: what the Verifier looks up.
+
+    ``kind`` is ``deviation`` for a player's deviation at t (claim metrics ``<stat>``,
+    ``<stat>_expected``, ``<stat>_baseline_per90``, ``<stat>_p_value``).
+    """
+    return f"{kind}:{name}@{period}:{t}/{scope}:{scope_id}"
 
 
 def _error(message: str) -> Json:
@@ -115,9 +120,12 @@ class StatsService:
             self._snaps.popitem(last=False)
         return snap
 
-    def _scoped(self, values: dict[str, float], period: int, t: float) -> Json:
+    def _scoped(
+        self, values: dict[str, float], period: int, t: float, scope: str, scope_id: str
+    ) -> Json:
         return {
-            name: {"value": v, "ref": _ref(name, period, t)} for name, v in sorted(values.items())
+            name: {"value": v, "ref": _ref(name, period, t, scope, scope_id)}
+            for name, v in sorted(values.items())
         }
 
     # ---- tools --------------------------------------------------------------------------------
@@ -172,7 +180,7 @@ class StatsService:
             "team_id": team_id,
             "period": period,
             "t": t,
-            "metrics": self._scoped(values, period, t),
+            "metrics": self._scoped(values, period, t, "team", team_id),
         }
 
     def get_player_stats(self, match_id: str, player_id: str, period: int, t: float) -> Json:
@@ -188,7 +196,7 @@ class StatsService:
             "period": period,
             "t": t,
             "on_pitch_yet": bool(values),
-            "metrics": self._scoped(values, period, t),
+            "metrics": self._scoped(values, period, t, "player", player_id),
         }
 
     def get_metric(
@@ -209,7 +217,7 @@ class StatsService:
             "period": period,
             "t": t,
             "value": value,
-            "ref": _ref(name, period, t),
+            "ref": _ref(name, period, t, scope, scope_id),
         }
 
     def get_moment(self, moment_id: str) -> Json:
@@ -222,7 +230,7 @@ class StatsService:
             if r.scope == "team":
                 at_end.setdefault(r.scope_id, {})[r.name] = {
                     "value": r.value,
-                    "ref": _ref(r.name, r.period, r.t),
+                    "ref": _ref(r.name, r.period, r.t, r.scope, r.scope_id),
                 }
         return {
             "moment": moment.model_dump(),
@@ -321,7 +329,11 @@ class StatsService:
             "match_id": match_id,
             "period": period,
             "t": t,
-            "deviations": [d.model_dump() | {"ref": _ref(d.stat, period, t)} for d in devs],
+            "deviations": [
+                d.model_dump()
+                | {"ref": _ref(d.stat, period, t, "player", d.player_id, "deviation")}
+                for d in devs
+            ],
         }
 
 

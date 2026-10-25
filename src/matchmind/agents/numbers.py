@@ -126,7 +126,7 @@ class NumberCheck:
     failures: list[str] = field(default_factory=list)
 
 
-def _fold(word: str) -> str:
+def fold(word: str) -> str:
     decomposed = unicodedata.normalize("NFD", word.lower())
     return "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
 
@@ -167,9 +167,9 @@ def _word_numbers(text: str, lang: str) -> Iterator[ExtractedNumber]:
         if skip:
             skip = False
             continue
-        folded = _fold(tok.group())
+        folded = fold(tok.group())
         if lang == "ar":
-            nxt = _fold(tokens[k + 1].group()) if k + 1 < len(tokens) else ""
+            nxt = fold(tokens[k + 1].group()) if k + 1 < len(tokens) else ""
             unit = _ar_word(folded, {**words, **_AR_TEEN_UNITS})
             if unit is not None and 1 <= unit <= 9 and nxt in _AR_TEN:
                 skip = True
@@ -293,9 +293,17 @@ def check_text(
     for c in claims:
         stored = lookup(c)
         if stored is None:
-            failures.append(f"unverifiable claim {c.metric!r} ({c.ref})")
-        elif not _close(c.value, stored, _decimals(c.value), rel_tol, 0.0):
-            failures.append(f"claim {c.metric}={c.value:g} but the stats say {stored:g}")
+            failures.append(
+                f"unverifiable claim {c.text!r} ({c.metric}, ref {c.ref}): no stored value"
+            )
+        elif not any(
+            _close(c.value, target, _decimals(c.value), rel_tol, 0.0)
+            for target in _candidates(stored, c.unit, None)
+        ):
+            failures.append(
+                f"claim {c.text!r} says {c.metric}={c.value:g}, but the stats say {stored:g} "
+                f"(ref {c.ref})"
+            )
         else:
             verified.append((stored, c.unit))
 
@@ -316,5 +324,6 @@ def check_text(
             for value, unit in verified
             for cand in _candidates(value, unit, n.unit)
         ):
-            failures.append(f"number {written!r} matches no verified stat")
+            context = " ".join(text[max(0, n.span[0] - 25) : n.span[1] + 25].split())
+            failures.append(f"number {written!r} (in “…{context}…”) matches no verified stat")
     return NumberCheck(ok=not failures, failures=failures)

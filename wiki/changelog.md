@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-18.1 · Verifier (deterministic numbers first, then wording against cited events; fails closed) and verify_loop (2 regenerations with feedback); scoped metric refs (`/team:<id>`, `/player:<id>`, `deviation:`); `players` team metric; StatsFacts; Explainer feedback; recorder replays the full loop · README, agents, verifier, data-model, decisions, stats
 - 2026-10-25 · TASK-17.2 · Explainer (claims with refs, event ids, recommendations, counterfactuals read from get_counterfactual, one regeneration); plain reply model plus checks; FakeChatClient parses replies like Foundry; bad_reply; names and minute labels for agents (clock.py, agents/context.py); live recording script and replayed fixtures for 3 moments · README, agents, data-model, decisions, glossary
 - 2026-10-25 · TASK-17.1 · Tactical Analyst (5-minute batches, must look up every surfaced moment, one retry then drop; prompt v1 with the constitution and 2 examples); AnalystDecision schema; FakeChatClient tool-call replies; TPM quota recorded · README, agents, data-model, infra-ops
 - 2026-10-25 · TASK-16.3 · agent runtime (Foundry chat client, FakeChatClient, make_agent, run_agent spans, MCP stats tool, Application Insights tracing, --ping); blank .env lines keep defaults; mcp_url setting; CNRI-Python allowed; Agent Framework dependencies · README, agents, infra-ops, decisions

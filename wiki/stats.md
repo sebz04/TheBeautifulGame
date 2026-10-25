@@ -110,7 +110,7 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
 ## Metric snapshots (`stats/metrics.py`, TASK-14.3)
 - `metrics_at(match, xt_grid, period, t, scope, scope_id) -> {name: value}`, event-exact: it reads only events and frames at or before (period, t), so deleting everything later changes nothing (tested).
 - **Team** (`TEAM_METRICS`):
-  - match so far: goals, shots, shots on target, xG, passes, pass completion, possession (pass share), PPDA, corners, fouls, offsides, yellow, red;
+  - match so far: goals, shots, shots on target, xG, passes, pass completion, possession (pass share), PPDA, corners, fouls, offsides, yellow, red, players (11 − red cards; TASK-18);
   - last 10 min: PPDA, field tilt, control vs chaos (events only, for speed);
   - momentum (xT added + shot xG, last 5 min of the half);
   - territory: the home side's mean pitch control on a 16×10 grid at the latest event, with the away side getting 1 − that.

@@ -158,3 +158,10 @@ def test_formations_are_one_token() -> None:
     assert (n.unit, n.formation) == ("formation", "4-2-3-1")
     assert check_text("now a 4-4-2", "en", [], _verified, formations={"4-4-2"}).ok
     assert not check_text("now a 3-5-2", "en", [], _verified, formations={"4-4-2"}).ok
+
+
+def test_unmatched_number_failure_quotes_its_context() -> None:
+    text = "Balero has 0.409 xG from 5 shots, a fine half."
+    check = check_text(text, "en", [_claim(0.409)], _verified)
+    (failure,) = check.failures
+    assert "'5'" in failure and "from 5 shots" in failure

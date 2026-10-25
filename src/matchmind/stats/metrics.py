@@ -32,7 +32,7 @@ MOMENTUM_S = 300.0
 TEAM_METRICS: tuple[str, ...] = (
     "goals", "shots", "shots_on_target", "xg", "passes", "pass_completion", "possession",
     "ppda", "ppda_10min", "field_tilt_10min", "momentum", "control_chaos", "territory",
-    "corners", "fouls", "offsides", "yellow", "red",
+    "corners", "fouls", "offsides", "yellow", "red", "players",
 )  # fmt: skip
 PLAYER_METRICS: tuple[str, ...] = (
     "minutes", "passes", "completed", "pass_accuracy", "forward_passes", "progressive_passes",
@@ -95,6 +95,7 @@ def _team_stats(match: MatchData, upto: Sequence[Event], grid: np.ndarray, perio
             s["ppda_10min"] = recent
         s["field_tilt_10min"] = field_tilt(upto, team, home, start, (period, t))
         s["control_chaos"] = control_chaos(upto, [], start, (period, t), home)
+        s["players"] = 11.0 - s["red"]  # on the pitch: agents may say "ten men" with a ref
     return out
 
 

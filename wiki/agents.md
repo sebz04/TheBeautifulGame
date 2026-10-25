@@ -1,12 +1,12 @@
 # Agents
 
-**Status:** the MCP stats server (TASK-15), number checking and the runtime (TASK-16), and the Tactical Analyst and Explainer (TASK-17) are built. The Verifier, Narrative, Personalizer, and workflow are planned (TASK-18 to TASK-20; phase two: 26, 27, 28, 33).
+**Status:** the MCP stats server (TASK-15), number checking and the runtime (TASK-16), the Tactical Analyst and Explainer (TASK-17), and the Verifier with its regeneration loop (TASK-18) are built. Narrative, Personalizer, and the workflow are planned (TASK-19, TASK-20; phase two: 26, 27, 28, 33).
 
 | Agent | Module | Prompt | Output | Status |
 |---|---|---|---|---|
 | Tactical Analyst | `agents/analyst.py` | `prompts/analyst.v1.md` | `AnalystDecision` | done (17.1) |
 | Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | done (17.2) |
-| Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | planned |
+| Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | done (18.1) |
 | Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | planned |
 | Personalization | `agents/personalizer.py` | `prompts/personalizer.v1.md` | `list[PersonalizedText]` | planned |
 | Scenario Designer | `agents/scenario_designer.py` | | `Scenario` | phase 2 |
@@ -74,13 +74,18 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - **One regeneration.** A bad reply (malformed JSON, a failed check, an unread counterfactual) is sent back once with the problem. A second bad reply raises `ExplainerError`, and TASK-20 falls back to a template. Service errors (timeouts, 429s) are raised as they are.
 - The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).
 
+## Verifier
+The Verifier, its regeneration loop, the number check, and the golden-set evaluation are on [verifier.md](verifier.md).
+
 ## Agent context (`agents/context.py`, `clock.py`)
 - Agents are given `names` (club and player id → name, from `match_names(meta)`) and minute labels for each moment (`moment_context`: `minute_start` and `minute_end`, such as `56'`). Code computes both (Constitution I).
+- `moment_context` also gives an `events_window` of at least the last 5 minutes up to the moment's end. Moments found from rolling stats, such as a pressing collapse (the instant PPDA crossed its line), have no events and a zero-length window, and the Explainer kept returning no `event_ids` for them.
 - `clock.minute_label(period, t)` follows football convention: 55:38 elapsed is `56'`, and stoppage time is `45+2'` or `90+3'`. `match_minute` gives the same as one number (45+2' → 47), the way the number checker reads it.
 
 ## Recorded fixtures (`tests/fixtures/llm/`)
-- `scripts/record_llm_fixtures.py [--scenario comeback_red_card]` runs the real Analyst and Explainer on 3 moments (red card, goal, pressing collapse) against the built database. It uses the in-process stats server, and chat middleware records every reply.
-- `tests/agents/test_recorded.py` replays the recordings through `FakeChatClient`. Live run on 2026-10-25: 8–15 s per moment.
+- `scripts/record_llm_fixtures.py [--scenario comeback_red_card]` runs the real Analyst, then `verify_loop` (Explainer → Verifier), on 3 moments (red card, goal, pressing collapse) against the built database. It uses the in-process stats server, and chat middleware records every reply with its agent.
+- **It records:** each attempt's draft, verdict, and turns, plus every fact the Verifier looked up (`RecordingFacts`).
+- **`tests/agents/test_recorded.py`** replays the Analyst and the whole loop with `RecordedFacts`. It expects the same drafts, the same verdicts, and the same final insight, and it needs neither the model nor the database.
 - **What the first live run showed (fixed in prompt v1):**
   - ids used as names ("Ala-17");
   - clock times ("10:38") instead of minutes;
@@ -89,29 +94,12 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
   - xG called "expected threat".
 - **Still flagged after the fix:** "ten men". The number checker catches it, and the Verifier's regeneration (TASK-18) handles it.
 
-## Number checking (`agents/numbers.py`, TASK-16.2)
-The Verifier's deterministic rule: every number an agent writes must match a verified stat, a real event minute, the real score, or a formation actually used. Nothing is skipped.
-
-- `extract_numbers(text, lang) -> list[ExtractedNumber]` reads numbers the way each language writes them:
-  - decimal commas (`es`, `pt`, `fr`: "1,5");
-  - thousands separators ("12.000", "12 000" including narrow spaces, "12,000");
-  - Arabic-Indic digits with Arabic separators ("١٢٬٠٠٠", "٣٫٥");
-  - number words 0–20 in all 5 languages, including Arabic teens ("ثلاثة عشر") and prefixes ("و", "ال").
-- **Units:** `%` (and "por ciento", "pour cent"), `km/h`, `m/s`, `km`, `m`.
-- **Minute marks:** "62'", "62nd minute", "minuto 62", "62e minute", "الدقيقة ٦٢", and "90+3'" (read as 93).
-- **Scorelines** ("2-1", "2 a 1") and **formations** ("4-2-3-1") are read as one token each.
-- A separator that isn't a 3-digit group is read as a decimal point in any language ("1.5" in Spanish is 1.5).
-- Words for 1 (un, una, um, une, one, واحد) are not numbers: they double as articles.
-- `check_text(text, lang, claims, lookup, rel_tol=0.01, abs_tol=0.05, *, minutes, scores, formations) -> NumberCheck(ok, failures)`:
-  - Each claim must agree with its stored value, compared at the claim's own precision.
-  - Each number in the text must match a verified claim. Unit conversion is allowed (km/h ↔ m/s, m ↔ km, ratio ↔ %), and so is rounding to the written precision ("12" for 11.6, but not "12.0").
-  - Minutes, scores (either order) and formations must be in the sets passed in.
-
 ## Gotchas
 - **MCP SDK 2.x:** `mcp.server.fastmcp` no longer exists (`MCPServer` is in `mcp.server.mcpserver`). A raised exception comes back as a generic "Error executing tool", so tools return an `error` dict instead. Tests connect in-process with `mcp.Client(server)`.
 - **Instructions travel in options, not messages:** a chat client sees `options["instructions"]`, and the messages are only the user turns. `FakeChatClient` searches both.
 - **In-process MCP for tests:** pass `session=mcp.Client(server).session` (inside `async with`). Passing `mcp_client=` needs `tenacity` (not installed), and `url` and `mcp_client` can't be combined.
 - **Close the async credential** (`async with DefaultAzureCredential()`), or aiohttp warns "Unclosed client session".
+- **Temperature 0 repeats mistakes.** The Explainer and Verifier run at temperature 0, for reproducible demos and stable verdicts. A regeneration only fixes a mistake if the feedback says exactly what to change, so failures quote the sentence and name the fix.
 - **Structured replies are parsed inside the client.** `FoundryChatClient` (OpenAI `responses.parse`) validates the reply against `response_format` during the request, so a pydantic validator that fails turns into `ChatClientException` from `agent.run`, not an error on `.value`.
   - Keep `response_format` models plain and check afterwards.
   - `runtime.bad_reply(exc)` tells a malformed reply (a `ValidationError` inside) from a service error.

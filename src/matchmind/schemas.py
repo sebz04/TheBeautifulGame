@@ -205,6 +205,14 @@ class Insight(BaseModel):
     prompt_version: str
 
 
+class Verdict(BaseModel):
+    """The Verifier's ruling on one text. ``fixed_claims`` carry the stored values."""
+
+    ok: bool
+    failures: list[str]
+    fixed_claims: list[Claim]
+
+
 class PersonalizedText(BaseModel):
     """`club_id` is set for club_fan texts, `player_id` for player_focus texts."""
 

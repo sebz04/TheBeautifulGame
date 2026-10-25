@@ -31,7 +31,7 @@ def _draft(**overrides: Any) -> dict[str, Any]:
                 "metric": "ppda_10min",
                 "value": 14.2,
                 "unit": "",
-                "ref": "metric:ppda_10min@2:3540.0",
+                "ref": "metric:ppda_10min@2:3540.0/team:home",
             }
         ],
         "event_ids": ["x1-e00001"],
@@ -169,3 +169,9 @@ async def test_explainer_gets_names_and_minute_labels(stats: StatsStub) -> None:
     sent = json.loads(client.calls[0].text.split("\n", 1)[1])
     assert sent["names"] == {"home": "Atlético Chapinero"}
     assert sent["moment"]["minute_end"] == "56'"
+
+
+async def test_explainer_runs_at_temperature_zero(stats: StatsStub) -> None:
+    client = _client(_draft())
+    await explain(_decision(), moment(1), client, stats.tools())
+    assert client.calls[0].options.get("temperature") == 0.0

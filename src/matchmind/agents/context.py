@@ -19,10 +19,18 @@ def match_names(meta: MatchMeta) -> dict[str, str]:
     return names
 
 
+EVENTS_WINDOW_S = 300.0
+
+
 def moment_context(moment: Moment) -> dict[str, Any]:
-    """The moment as agents see it: its fields plus the minutes it starts and ends in."""
+    """The moment as agents see it: its fields, the minutes it starts and ends in, and the
+    window to read its events from. Moments found from rolling stats (a pressing collapse
+    is the instant PPDA crossed its line) can have no events and a zero-length window, so
+    the window is at least the last 5 minutes up to the moment's end."""
+    t_from = max(0.0, min(moment.t_start, moment.t_end - EVENTS_WINDOW_S))
     return {
         **moment.model_dump(),
         "minute_start": minute_label(moment.period, moment.t_start),
         "minute_end": minute_label(moment.period, moment.t_end),
+        "events_window": {"period": moment.period, "t_from": t_from, "t_to": moment.t_end},
     }

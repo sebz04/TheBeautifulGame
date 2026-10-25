@@ -173,12 +173,16 @@ def make_agent(
     tools: Any,
     *,
     client: SupportsChatGetResponse[Any],
+    options: Mapping[str, Any] | None = None,
 ) -> Agent[Any]:
     """An agent whose instructions come from ``prompt_file`` (in ``PROMPT_DIR`` unless
-    absolute) and whose replies parse into ``output_model`` (``response.value``)."""
+    absolute) and whose replies parse into ``output_model`` (``response.value``).
+    ``options`` are extra chat options for every run, such as ``temperature``."""
     instructions = _prompt_path(prompt_file).read_text(encoding="utf-8")
-    options = {"response_format": output_model} if output_model else None
-    return Agent(client, instructions, name=name, tools=tools, default_options=options)
+    merged: dict[str, Any] = dict(options or {})
+    if output_model:
+        merged["response_format"] = output_model
+    return Agent(client, instructions, name=name, tools=tools, default_options=merged or None)
 
 
 async def run_agent(
