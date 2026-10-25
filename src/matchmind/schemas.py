@@ -224,6 +224,7 @@ class PersonalizedText(BaseModel):
     verified: bool
     club_id: str | None = None
     player_id: str | None = None
+    dir: Literal["ltr", "rtl"] = "ltr"  # Arabic is right to left
 
 
 class Variant(BaseModel):

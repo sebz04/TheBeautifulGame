@@ -75,6 +75,19 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).
 - The prompt gives every metric a one-line meaning (TASK-19.0). PPDA is the team's own pressing (lower means harder pressing), and every stat is its value at the moment's end.
 
+## Fallback templates (`agents/templates.py`, TASK-19.1)
+- **`render(insight, variant, lang, names) -> PersonalizedText`** is deterministic. It's what a fan sees when an agent text can't be verified: 4 personas × 5 languages, built from the verified claims alone, with `verified=True`.
+- **Numbers** come only from claims, in the language's format: decimal comma for es, pt, and fr; Arabic-Indic digits with `٫` and `٪` for ar; ratios with a `%` unit as percentages.
+  - Labels contain **no digits or number words**: "PPDA (last 10 min)" would read as a minute mark.
+  - Every combination passes `numbers.check_text` (tested).
+- **Per persona:**
+  - `analyst`: up to 5 claims, plain label plus the standard name ("recent pressing (passes allowed per defensive action, PPDA)").
+  - `casual`: 2 claims, plain labels, no team names, and no jargon (`JARGON`: xT, PPDA, field tilt, pitch control).
+  - `club_fan` and `player_focus`: up to 3 claims, that club's or player's first.
+  - `WORD_LIMITS`: analyst 90, casual 45, club_fan and player_focus 60.
+- `PersonalizedText.dir` is `"rtl"` for Arabic (new field, default `"ltr"`).
+- **Known nicety, deferred to TASK-25.2:** French elision ("de Atlético" should be "d'Atlético") and the space before French colons.
+
 ## Verifier
 The Verifier, its regeneration loop, the number check, and the golden-set evaluation are on [verifier.md](verifier.md).
 

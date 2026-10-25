@@ -22,7 +22,7 @@
 | `Verdict` | `ok`, `failures` (actionable sentences; `qualitative: …` from the agent), `fixed_claims` (claims with the stored value) |
 | `AnalystDecision` | `moment_id`, `surface`, `level`, `priority` 1–5, `tactical_context` (no numbers), `metrics_to_cite` |
 | `Insight` | `confidence` high/medium/low; `source` agent/template; `prompt_version` |
-| `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus |
+| `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus; `dir` ("rtl" for Arabic) |
 | `OverlayCue` | `kind` (7 literals), `t_in`/`t_out`, `priority`, free `payload` |
 
 `trusted(cls, data)` builds a model without validation, about 3× cheaper than `model_construct`. Use it only for data our own code produced (engine frames, our Parquet files).
