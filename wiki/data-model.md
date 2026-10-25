@@ -19,6 +19,7 @@
 | `MatchMeta`, `MatchData` | `added_time_s = (period1, period2)` seconds |
 | `Moment` | `kind` (10 literals: momentum_swing, pressing_collapse, formation_shift, big_chance, goal, red_card, sprint_alert, offside_trap, corner_pressure, player_deviation), `level` game/team/player, `event_ids` |
 | `Claim` | `ref` = event_id or `"metric:<name>@<t>"` |
+| `AnalystDecision` | `moment_id`, `surface`, `level`, `priority` 1–5, `tactical_context` (no numbers), `metrics_to_cite` |
 | `Insight` | `confidence` high/medium/low; `source` agent/template; `prompt_version` |
 | `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus |
 | `OverlayCue` | `kind` (7 literals), `t_in`/`t_out`, `priority`, free `payload` |

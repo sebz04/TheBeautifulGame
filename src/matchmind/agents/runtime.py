@@ -24,6 +24,7 @@ from agent_framework import (
     AgentResponse,
     BaseChatClient,
     ChatResponse,
+    Content,
     FunctionInvocationLayer,
     MCPStreamableHTTPTool,
     Message,
@@ -71,16 +72,35 @@ class FakeCall:
     messages: Sequence[Message]
     options: Mapping[str, Any]
 
+    @property
+    def tool_results(self) -> list[str]:
+        """Results of the tool calls made so far in this run, as text, in order."""
+        return [
+            str(c.result) for m in self.messages for c in m.contents if c.type == "function_result"
+        ]
 
-FakeReplies = Mapping[str, str] | Callable[[FakeCall], str]
+
+FakeReply = str | Sequence[Content]
+FakeReplies = Mapping[str, FakeReply] | Callable[[FakeCall], FakeReply]
+
+
+def tool_call(name: str, **arguments: Any) -> Content:
+    """A tool call for a ``FakeChatClient`` reply; the agent runs the tool and asks again."""
+    return Content.from_function_call(
+        call_id=f"call_{name}_{len(arguments)}_{abs(hash(str(arguments)))}",
+        name=name,
+        arguments=arguments,
+    )
 
 
 class FakeChatClient(FunctionInvocationLayer[Any], BaseChatClient[Any]):
     """A chat client that answers from canned replies, for tests.
 
-    ``responses`` is either a callable ``(FakeCall) -> str`` or a mapping from a
+    ``responses`` is either a callable ``(FakeCall) -> reply`` or a mapping from a
     substring to the reply: the first key found in the instructions or messages wins,
-    and ``"*"`` is the fallback. Every request is kept in ``calls``.
+    and ``"*"`` is the fallback. A reply is text, or a list of ``tool_call(...)``
+    contents: the agent runs those tools and calls the client again with the results.
+    Every request is kept in ``calls``.
     """
 
     def __init__(self, responses: FakeReplies) -> None:
@@ -88,7 +108,7 @@ class FakeChatClient(FunctionInvocationLayer[Any], BaseChatClient[Any]):
         self.responses = responses
         self.calls: list[FakeCall] = []
 
-    def _reply(self, call: FakeCall) -> str:
+    def _reply(self, call: FakeCall) -> FakeReply:
         if callable(self.responses):
             return self.responses(call)
         haystack = f"{call.instructions}\n{call.text}"
@@ -110,8 +130,10 @@ class FakeChatClient(FunctionInvocationLayer[Any], BaseChatClient[Any]):
             options=dict(options),
         )
         self.calls.append(call)
+        reply = self._reply(call)
+        contents = [reply] if isinstance(reply, str) else list(reply)
         return ChatResponse(
-            messages=[Message("assistant", [self._reply(call)])],
+            messages=[Message("assistant", contents)],
             response_format=options.get("response_format"),
         )
 

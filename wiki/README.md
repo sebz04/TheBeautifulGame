@@ -67,7 +67,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/mcp_server/server.py` | MCP stats server (12 read-only tools, event-exact) | done | 15 |
 | `src/matchmind/agents/numbers.py` | Locale-aware number extraction and checking (Verifier rule) | done | 16.2 |
 | `src/matchmind/agents/runtime.py` | Foundry chat client, FakeChatClient, agents from prompt files, run spans, MCP stats tool, tracing | done | 16.3 |
-| `src/matchmind/agents/` (analyst, explainer, verifier, …) | Agents + orchestrator | planned | 17–20 |
+| `src/matchmind/agents/analyst.py`, `prompts/analyst.v1.md` | Tactical Analyst: which moments to explain | done | 17.1 |
+| `src/matchmind/agents/` (explainer, verifier, …) | Agents + orchestrator | planned | 17–20 |
 | `src/matchmind/api/` | FastAPI REST + SSE | planned | 21 |
 | `web/` | React frontend | planned | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |

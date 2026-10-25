@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-25 · TASK-17.1 · Tactical Analyst (5-minute batches, must look up every surfaced moment, one retry then drop; prompt v1 with the constitution and 2 examples); AnalystDecision schema; FakeChatClient tool-call replies; TPM quota recorded · README, agents, data-model, infra-ops
 - 2026-10-25 · TASK-16.3 · agent runtime (Foundry chat client, FakeChatClient, make_agent, run_agent spans, MCP stats tool, Application Insights tracing, --ping); blank .env lines keep defaults; mcp_url setting; CNRI-Python allowed; Agent Framework dependencies · README, agents, infra-ops, decisions
 - 2026-10-25 · TASK-16.2 · locale-aware number extraction and checking for the Verifier (decimal commas, thousands separators, Arabic-Indic digits, number words, units, minutes, scores, formations) · README, agents, decisions
 - 2026-10-25 · TASK-15 · MCP stats server (12 read-only, event-exact tools with refs; errors as dicts); Repo get_event/get_moment/get_snapshot; decision_frame finds frames by time; license gate skips other-platform packages; mcp dependency · README, agents, architecture, decisions

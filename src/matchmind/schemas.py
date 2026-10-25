@@ -177,6 +177,17 @@ class Claim(BaseModel):
     ref: str
 
 
+class AnalystDecision(BaseModel):
+    """The Tactical Analyst's call on one moment: explain it or not, at what level."""
+
+    moment_id: str
+    surface: bool
+    level: Level
+    priority: int = Field(ge=1, le=5)
+    tactical_context: str
+    metrics_to_cite: list[str]
+
+
 class Insight(BaseModel):
     insight_id: str
     moment_id: str

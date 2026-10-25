@@ -9,12 +9,15 @@ from pydantic import BaseModel
 
 from matchmind.agents.runtime import (
     PROMPT_DIR,
+    FakeCall,
     FakeChatClient,
+    FakeReply,
     configure_tracing,
     make_agent,
     make_chat_client,
     run_agent,
     stats_tools,
+    tool_call,
 )
 from matchmind.config import Settings
 from matchmind.mcp_server.server import TOOL_NAMES, build_mcp
@@ -121,3 +124,25 @@ def test_configure_tracing_warns_and_stays_off_on_a_bad_connection_string(caplog
     settings = Settings(_env_file=None, appinsights_connection_string="not-a-connection-string")
     assert configure_tracing(settings) is False
     assert "connection string" in caplog.text
+
+
+async def test_fake_client_can_call_tools(prompt: str) -> None:
+    from agent_framework import tool
+
+    seen: list[str] = []
+
+    @tool
+    def get_moment(moment_id: str) -> str:
+        """Look up a moment."""
+        seen.append(moment_id)
+        return '{"kind": "goal"}'
+
+    def reply(call: FakeCall) -> FakeReply:
+        if not call.tool_results:
+            return [tool_call("get_moment", moment_id="m1")]
+        return Answer(headline=call.tool_results[0], count=1).model_dump_json()
+
+    agent = make_agent("tester", prompt, Answer, tools=[get_moment], client=FakeChatClient(reply))
+    response = await agent.run("go")
+    assert seen == ["m1"]
+    assert response.value == Answer(headline='{"kind": "goal"}', count=1)

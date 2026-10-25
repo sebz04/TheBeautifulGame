@@ -4,7 +4,7 @@
 
 | Agent | Module | Prompt | Output | Status |
 |---|---|---|---|---|
-| Tactical Analyst | `agents/analyst.py` | `prompts/analyst.v1.md` | `AnalystDecision` | planned |
+| Tactical Analyst | `agents/analyst.py` | `prompts/analyst.v1.md` | `AnalystDecision` | done (17.1) |
 | Explainer | `agents/explainer.py` | `prompts/explainer.v1.md` | `Insight` | planned |
 | Verifier | `agents/verifier.py` | `prompts/verifier.v1.md` | `Verdict` | planned |
 | Narrative | `agents/narrative.py` | `prompts/narrative.v1.md` | live line, `Recap` | planned |
@@ -51,6 +51,16 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - **Event-exact:** time-scoped tools compute `stats.metrics.snapshot` from events up to (period, t), plus the single frame territory needs, cached per (match_id, period, t) (LRU, 256). They never return the latest 30 s row, and never use anything after t. Metric refs are `metric:<name>@<period>:<t>`.
 - **Errors:** unknown ids, teams, players, or metric names return `{"error": ...}`, not an exception.
 - **Live, against the built database:** summary 80 ms; first team snapshot about 0.6 s (cached after); deviations 130 ms; season context 1 ms.
+
+## Tactical Analyst (`agents/analyst.py`, TASK-17.1)
+- `batches(moments, minutes=5)` groups moments into 5-match-minute windows per period. `analyze(batch, client, tools) -> list[AnalystDecision]` returns only surfaced moments, highest `priority` first.
+- `AnalystDecision(moment_id, surface, level, priority 1–5, tactical_context, metrics_to_cite)` is in `schemas.py`. `tactical_context` has no numbers.
+- **Every surfaced moment must be looked up.** A tool call counts if it names the `moment_id` or one of its events, or is time-scoped (`t`, or `t_from`/`t_to`) to the moment's period within 60 s of its window.
+  - If a moment isn't looked up, the batch is sent once more, naming the moments that were skipped (attempt 2).
+  - Anything still not looked up is dropped.
+- Decisions for moment ids not in the batch are ignored. The first decision per moment wins.
+- The prompt states Constitution I and II verbatim, with 2 worked examples. Metric names in it are the real `TEAM_METRICS`, `PLAYER_METRICS`, and `TRACKED_STATS` names.
+- Tests: `tests/agents/conftest.py` has `StatsStub`, Agent Framework `@tool` stand-ins with the MCP tool names that record their calls. `FakeChatClient` replies can be `[tool_call(name, **args)]`, and a callable reply sees earlier results in `call.tool_results`.
 
 ## Number checking (`agents/numbers.py`, TASK-16.2)
 The Verifier's deterministic rule: every number an agent writes must match a verified stat, a real event minute, the real score, or a formation actually used. Nothing is skipped.
