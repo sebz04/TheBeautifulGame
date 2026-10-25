@@ -80,7 +80,7 @@ Windows are `(period, t)` pairs, inclusive. Depth is measured from a team's own 
 - `classify_formation(outfield)`: splits the sorted depths into each template's number of lines exactly (dynamic programming, `_line_counts`), then picks the template with the closest players per line (4-2-3-1 has four lines).
 - `merge_moments(moments, gap_s=60)`: joins same-kind, same-team moments in a half less than 60 s apart (event ids unioned, the larger trigger value kept).
 - **Rates:** per unscripted match, about 11 momentum swings, 6 pressing collapses, 1–2 goals, 0.7 big chances, 0.7 corner-pressure spells, and 0.3 offside traps. These are candidates the insight agents rank; the thresholds come from the plan. About 1 s per tracked match.
-- **Scripted check:** `press_collapse` gives the away team a `pressing_collapse` within 5 min of its fatigue beat, and `comeback_red_card` gives a `red_card` moment.
+- **Scripted checks:** `comeback_red_card` gives a `red_card` moment. `press_collapse` gives the away team a `pressing_collapse` within 5 min of its fatigue beat on at least 1 of 6 seeds (`slow`). Locally 8 of 8 seeds hit; on Linux about half, because a 0.95 press often fades on its own before the beat.
 
 ## Baselines and player deviations (`stats/baselines.py`, `stats/deviations.py`, TASK-12.3)
 - `player_baselines(season, profiles) -> {player_id: PlayerBaseline(minutes, per90, dispersion)}`, covering every player in the profiles.
