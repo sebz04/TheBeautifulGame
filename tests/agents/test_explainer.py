@@ -175,3 +175,17 @@ async def test_explainer_runs_at_temperature_zero(stats: StatsStub) -> None:
     client = _client(_draft())
     await explain(_decision(), moment(1), client, stats.tools())
     assert client.calls[0].options.get("temperature") == 0.0
+
+
+async def test_insight_keeps_at_most_eight_key_events(stats: StatsStub) -> None:
+    from matchmind.agents.explainer import MAX_EVENTS
+
+    cited = [f"x1-e{i:05d}" for i in range(50, 100)]
+    cf = {"text": "t", "metric": "counterfactual_gain", "value": 0.03, "unit": "xT",
+          "ref": "x1-e00077"}  # fmt: skip
+    draft = _draft(event_ids=[*cited, "x1-e00001"], claims=[*_draft()["claims"], cf])
+    look = [("get_counterfactual", {"event_id": "x1-e00077"})]
+    insight = await explain(_decision(), moment(1), _client(draft, look_up=look), stats.tools())
+    assert MAX_EVENTS == 8 and len(insight.event_ids) == 8
+    assert insight.event_ids[:2] == ["x1-e00001", "x1-e00077"]  # the moment's, then the claims'
+    assert insight.event_ids[2:] == cited[:6] and len(set(insight.event_ids)) == 8

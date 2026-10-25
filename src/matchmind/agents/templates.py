@@ -216,5 +216,5 @@ def render(
     return PersonalizedText(
         insight_id=insight.insight_id, persona=persona, lang=lang, headline=headline,
         body=body, verified=True, club_id=variant.club_id, player_id=variant.player_id,
-        dir="rtl" if lang == "ar" else "ltr",
+        dir="rtl" if lang == "ar" else "ltr", source="template",
     )  # fmt: skip

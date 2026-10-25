@@ -21,7 +21,7 @@ from matchmind.engine.pitch import attacks_right
 from matchmind.league.league import build_league
 from matchmind.league.season import Season
 from matchmind.pipeline.build_match import LEAGUE_SEED
-from matchmind.schemas import MatchData, MatchMeta
+from matchmind.schemas import Event, MatchData, MatchMeta
 from matchmind.schemas_profile import Profiles
 from matchmind.stats.baselines import PlayerBaseline, player_baselines
 from matchmind.stats.counterfactual import counterfactual, decision_frame
@@ -57,6 +57,18 @@ def _ref(name: str, period: int, t: float, scope: str, scope_id: str, kind: str 
     ``<stat>_expected``, ``<stat>_baseline_per90``, ``<stat>_p_value``).
     """
     return f"{kind}:{name}@{period}:{t}/{scope}:{scope_id}"
+
+
+MAX_EVENTS = 40  # get_events returns the latest 40 events of the window
+# Engine decision scoring stays out of get_events (get_counterfactual explains decisions).
+_SCORING_EXTRAS = {"chosen_score", "best_score", "chosen_option", "best_option",
+                   "risk_weight", "goal_window", "arrival_t"}  # fmt: skip
+
+
+def _compact(e: Event) -> Json:
+    view = e.model_dump()
+    view["extras"] = {k: v for k, v in e.extras.items() if k not in _SCORING_EXTRAS}
+    return view | {"ref": e.event_id}
 
 
 def _error(message: str) -> Json:
@@ -162,10 +174,12 @@ class StatsService:
         if t_from > t_to:
             return _error(f"empty window: t_from {t_from} > t_to {t_to}")
         evs = self.repo.get_events(match_id, (period, t_from), (period, t_to), types)
+        latest = evs[-MAX_EVENTS:]
         return {
             "match_id": match_id,
             "period": period,
-            "events": [e.model_dump() | {"ref": e.event_id} for e in evs],
+            "truncated": len(evs) > len(latest),
+            "events": [_compact(e) for e in latest],
         }
 
     def get_team_metrics(self, match_id: str, team_id: str, period: int, t: float) -> Json:

@@ -300,3 +300,20 @@ def test_recap_context_from_the_store(env: tuple[Repo, TrackingStore, str]) -> N
     text = "\n".join([fallback.title, *fallback.paragraphs])
     assert check_text(text, "en", [], lambda c: c.value, minutes=ctx.minutes,
                       scores=ctx.scores).ok  # fmt: skip
+
+
+def test_get_events_is_compact(env: tuple[Repo, TrackingStore, str]) -> None:
+    """Explanations need what happened, not the engine's decision scoring (that's
+    get_counterfactual); a full window of raw events cost the Explainer 30k tokens a call."""
+    from matchmind.mcp_server.server import MAX_EVENTS
+
+    mid = env[2]
+    out = call(env, "get_events", match_id=mid, period=1, t_from=0.0, t_to=2700.0)
+    assert len(out["events"]) == MAX_EVENTS and out["truncated"] is True
+    assert out["events"][-1]["t"] <= 2700.0 and out["events"][0]["t"] > 600.0  # the latest
+    assert not any("chosen_option" in e["extras"] or "best_score" in e["extras"]
+                   for e in out["events"])  # fmt: skip
+    shots = [e for e in out["events"] if e["type"] == "shot"]
+    assert all("xg" in e["extras"] for e in shots)
+    few = call(env, "get_events", match_id=mid, period=1, t_from=300.0, t_to=310.0)
+    assert few["truncated"] is False

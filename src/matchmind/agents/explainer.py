@@ -32,6 +32,7 @@ from matchmind.schemas import AnalystDecision, Claim, Insight, Moment
 PROMPT = "explainer.v1.md"
 PROMPT_VERSION = "explainer.v1"
 COUNTERFACTUAL_PREFIX = "counterfactual"
+MAX_EVENTS = 8  # what an insight cites: enough for the "Why?" panel, small for the Verifier
 QUESTIONS = {
     "team": "What should they do?",
     "player": "What should they do?",
@@ -103,6 +104,18 @@ def _counterfactuals_read(draft: ExplainerDraft, calls: list[tuple[str, dict[str
         )
 
 
+def _key_events(draft: ExplainerDraft, moment: Moment) -> list[str]:
+    """At most ``MAX_EVENTS`` events: the moment's own, then those the claims cite, then the
+    rest in the order given. The model tends to cite every event of a window it fetched."""
+    claim_events = [c.ref for c in draft.claims if not c.ref.startswith(("metric:", "deviation:"))]
+    ordered = [
+        *(e for e in moment.event_ids if e in draft.event_ids),
+        *(e for e in claim_events if e in draft.event_ids),
+        *draft.event_ids,
+    ]
+    return list(dict.fromkeys(ordered))[:MAX_EVENTS]
+
+
 async def explain(
     decision: AnalystDecision,
     moment: Moment,
@@ -161,7 +174,7 @@ async def explain(
             why=draft.why,
             recommendation=draft.recommendation,
             claims=draft.claims,
-            event_ids=draft.event_ids,
+            event_ids=_key_events(draft, moment),
             confidence=draft.confidence,
             verified=False,
             source="agent",

@@ -55,9 +55,10 @@ _MINUTE_WORDS = r"min\b\.?|minutes?\b|minutos?\b|minuto\b|دقيقة|الدقي�
 _MINUTE_AFTER = re.compile(
     rf"(?:st|nd|rd|th|ème|eme|er|e|º|ª|°)?\s*(?:['’′]|{_MINUTE_WORDS})", re.IGNORECASE
 )
-_MINUTE_BEFORE = re.compile(r"(?:minute|minuto|min\.?|الدقيقة|دقيقة)\s*(?:de\s+)?$", re.I)
+_MINUTE_BEFORE = re.compile(r"(?:minutes?|minutos?|min\.?|الدقيقة|دقيقة)\s*(?:de\s+)?$", re.I)
 _STOPPAGE = re.compile(r"\s*\+\s*$")
 _FORMATION = re.compile(r"[1-6](?:[-–][1-6]){2,3}(?![-–]?\d)")
+_RANGE_GAP = re.compile(r"^\s*(?:y|e|and|et|to|al|hasta|até|-|–|و)\s*$", re.IGNORECASE)
 _SCORE_GAP = re.compile(r"^\s*[-–—:]\s*$|^\s+(?:a|à|مقابل)\s+$", re.IGNORECASE)
 
 
@@ -222,7 +223,13 @@ def extract_numbers(text: str, lang: Lang) -> list[ExtractedNumber]:
             out.append(ExtractedNumber(0.0, (n.span[0], nxt.span[1]), "score", pair=pair))
             i += 2
             continue
-        out.append(_with_unit(text, n))
+        n = _with_unit(text, n)
+        prev = out[-1] if out else None
+        if (n.unit is None and n.decimals == 0 and prev is not None and prev.unit == "minute"
+                and n.value > prev.value  # ranges run forward in time
+                and _RANGE_GAP.match(text[prev.span[1] : n.span[0]])):  # fmt: skip
+            n = ExtractedNumber(n.value, n.span, "minute")  # "minuto 5 y 13": both are minutes
+        out.append(n)
         i += 1
     return sorted(out, key=lambda n: n.span)
 
@@ -310,7 +317,6 @@ def check_text(
             verified.append((stored, c.unit))
     # "over the last 10 minutes" describes a cited window metric's window, not a stat.
     windows = {w for suffix, w in WINDOWS.items() if any(c.metric.endswith(suffix) for c in claims)}
-    verified += [(w, "") for w in windows]
 
     for n in extract_numbers(text, lang):
         written = text[n.span[0] : n.span[1]]
@@ -325,6 +331,8 @@ def check_text(
             assert n.pair is not None
             if n.pair not in scores and n.pair[::-1] not in scores:
                 failures.append(f"scoreline {written!r} is not the match score")
+        elif n.decimals == 0 and n.value in windows:
+            pass  # "the last 10 minutes" next to a cited 10-minute metric: exact match only
         elif not any(
             _close(n.value, cand, n.decimals, rel_tol, abs_tol)
             for value, unit in verified

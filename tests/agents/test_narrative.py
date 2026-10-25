@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+import pytest
+
 from matchmind.agents.narrative import MAX_LINE, RecapContext, live_line, recap
 from matchmind.agents.runtime import PROMPT_DIR, FakeChatClient
 from matchmind.schemas import Claim, Insight
@@ -156,3 +158,9 @@ def test_only_milestones_from_earlier_rounds() -> None:
     ]
     assert milestones_before(items, 4) == [items[0], items[3]]
     assert milestones_before(items, 1) == []
+
+
+async def test_recap_fallback_logs_why(caplog: pytest.LogCaptureFixture) -> None:
+    bad = _recap_reply(["They won 3-0 with 99 shots."], [])
+    await recap(_ctx(), [_insight()], _replies(bad, bad))
+    assert "template recap for x1" in caplog.text and "99" in caplog.text

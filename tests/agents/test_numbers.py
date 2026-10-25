@@ -175,3 +175,22 @@ def test_window_length_of_a_cited_window_metric_is_allowed() -> None:
     assert check_text("0.33 over the last 5 minutes", "en", [momentum], _verified).ok
     plain = Claim(text="t", metric="possession", value=0.58, unit="%", ref="r")
     assert not check_text("58% in the last 10 minutes", "en", [plain], _verified).ok
+
+
+def test_window_length_matches_only_exactly() -> None:
+    ppda = Claim(text="t", metric="ppda_10min", value=6.4, unit="", ref="r")
+    assert not check_text("They allow 9.9 passes per action.", "en", [ppda], _verified).ok
+    assert not check_text("They allow 10.0 passes per action.", "en", [ppda], _verified).ok
+
+
+def test_minute_ranges() -> None:
+    assert _values("Entre el minuto 5 y 13 presionaron", "es") == [
+        (5.0, "minute"),
+        (13.0, "minute"),
+    ]
+    assert _values("Entre os minutos 5 e 13", "pt") == [(5.0, "minute"), (13.0, "minute")]
+    assert _values("between minutes 5 and 13", "en") == [(5.0, "minute"), (13.0, "minute")]
+    assert _values("from 5' to 13'", "en") == [(5.0, "minute"), (13.0, "minute")]
+    assert _values("بين الدقيقة ٥ و١٣", "ar") == [(5.0, "minute"), (13.0, "minute")]
+    assert check_text("Entre el minuto 5 y 13.", "es", [], _verified, minutes={5, 13}).ok
+    assert _values("minute 5 and 2 shots", "en")[1] == (2.0, None)  # not a range: words between

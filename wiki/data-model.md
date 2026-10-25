@@ -20,10 +20,11 @@
 | `Moment` | `kind` (10 literals: momentum_swing, pressing_collapse, formation_shift, big_chance, goal, red_card, sprint_alert, offside_trap, corner_pressure, player_deviation), `level` game/team/player, `event_ids` |
 | `Claim` | `ref` = event_id, `"metric:<name>@<period>:<t>/<team|player>:<id>"`, or `"deviation:<stat>@<period>:<t>/player:<id>"`; counterfactual claims use metric `counterfactual_*` and an event id ref |
 | `Verdict` | `ok`, `failures` (actionable sentences; `qualitative: …` from the agent), `fixed_claims` (claims with the stored value) |
+| `AgentRun` | one agent call or fallback: `agent` (`template:<step>` for fallbacks), `status` ok/retry/failed/fallback, `attempts`, `latency_ms`, `trace_id`, `error`, `tokens_in`, `tokens_out` |
 | `Recap` | `title`, `paragraphs`, `key_numbers` (the verified claims it cites), `verified`, `source` agent/template |
 | `AnalystDecision` | `moment_id`, `surface`, `level`, `priority` 1–5, `tactical_context` (no numbers), `metrics_to_cite` |
 | `Insight` | `confidence` high/medium/low; `source` agent/template; `prompt_version` |
-| `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus; `dir` ("rtl" for Arabic) |
+| `PersonalizedText`, `Variant` | `Persona`, `Lang` literals; `club_id` for club_fan, `player_id` for player_focus; `dir` ("rtl" for Arabic); `source` agent/template |
 | `OverlayCue` | `kind` (7 literals), `t_in`/`t_out`, `priority`, free `payload` |
 
 `trusted(cls, data)` builds a model without validation, about 3× cheaper than `model_construct`. Use it only for data our own code produced (engine frames, our Parquet files).
@@ -47,7 +48,8 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - `matches` (meta JSON); `events` (columns + `extras_json`).
 - `metrics` (`match_id, period, t, scope, scope_id, name, value, kind`), indexed for latest-before-t lookups.
 - `moments` (+ `event_ids_json`, `details_json` for a deviation's expected, baseline per 90, and p-value).
-- `insights`, `personalized` (persona, lang, club_id, player_id), `overlay_cues`, `agent_runs`.
+- `insights`, `personalized` (persona, lang, club_id, player_id), `overlay_cues`, `agent_runs` (with `tokens_in`, `tokens_out`).
+- `narratives` (`key`, `match_id`, `kind`, `body_json`): live lines (`line:<insight>`), the recap (`recap:<match>`), and moments the Analyst passed on (`passed:<moment>`).
 - `season_results`, `season_standings`, `season_player_lines`, `season_meta` (rounds, milestones, discipline, sat-out lists).
 
 `Repo(url)`:
@@ -55,7 +57,8 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - **Metrics:** `save_metrics` (replaces the match's rows), `list_metrics`, `get_metric(match_id, name, scope, scope_id, (period, t))`, which returns the latest value at or before t, or None.
 - **Moments:** `save_moments(match_id, moments, details)`, `list_moments` (time order), `moment_details`.
 - **Insights:** `save_insight` (upsert), `list_insights(match_id)`, `save_personalized`, `list_personalized(match_id, persona, lang)`.
-- **Cues and agent runs:** `save_cues`, `list_cues`, `log_agent_run`, `list_agent_runs(moment_id)`.
+- **Cues and agent runs:** `save_cues`, `list_cues`, `log_agent_run`, `list_agent_runs(moment_id)`, `list_match_runs(match_id)`.
+- **Narratives:** `save_live_line`, `list_live_lines`, `save_recap`, `get_recap`, `save_passed_moments`, `list_passed_moments`; `clear_agent_outputs(match_id)` deletes every agent output of a match (precompute `--reset`).
 - **Season:** `save_season`, `load_season`.
 - **Rebuilds:** `delete_match`.
 

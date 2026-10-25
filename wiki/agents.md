@@ -29,7 +29,7 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - `stats_tools(settings, *, session=None)`: an `MCPStreamableHTTPTool` for the 12 stats tools at `MATCHMIND_MCP_URL`, or an open in-process MCP session.
 - `configure_tracing(settings) -> bool`: Application Insights through `AzureMonitorTraceExporter` and Agent Framework's `configure_otel_providers`. With no connection string, or an invalid one, tracing is off and a warning is logged.
 - `python -m matchmind.agents.runtime --ping`: a live smoke test.
-- Retries (TASK-20): 1 s / 2 s / 4 s backoff; at most 2 Verifier-driven regenerations; then a template fallback.
+- **Retries, run logging, and throttling** (`pipeline_scope`, `RunLog`, `TokenBucket`; TASK-20) are on [orchestrator.md](orchestrator.md).
 
 ## MCP stats server (`mcp_server/server.py`, TASK-15)
 `build_mcp(repo, store) -> MCPServer` named `matchmind-stats`. The MCP Python SDK 2.x renamed FastMCP to `MCPServer`. `mcp_app()` is the streamable-HTTP ASGI app (Starlette) for `/mcp` (Task 21). The tools wrap `StatsService`, which can also be used directly.
@@ -37,7 +37,7 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 | Tool | Returns (all with `ref`) |
 |---|---|
 | `get_match_summary(match_id)` | teams, stadium, kickoff, added time, score, goal refs, moment count (`match:<id>`) |
-| `get_events(match_id, period, t_from, t_to, types)` | events in the window; each `ref` = event id |
+| `get_events(match_id, period, t_from, t_to, types)` | the latest 40 events in the window (`truncated` if more), without decision-scoring extras; each `ref` = event id |
 | `get_team_metrics(match_id, team_id, period, t)` | every `TEAM_METRICS` value at t |
 | `get_player_stats(match_id, player_id, period, t)` | every `PLAYER_METRICS` value at t (`on_pitch_yet`) |
 | `get_metric(match_id, name, scope, scope_id, period, t)` | one value |

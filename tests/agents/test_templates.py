@@ -103,3 +103,7 @@ def test_jargon_detection() -> None:
     assert jargon_in("their field tilt grew") == ["field tilt"]
     assert jargon_in("what happens next") == []  # "xT" only as its own word
     assert set(JARGON) == {"xT", "PPDA", "field tilt", "pitch control"}
+
+
+def test_templates_are_marked_as_templates() -> None:
+    assert render(_insight(), VARIANTS[0], "en", NAMES).source == "template"

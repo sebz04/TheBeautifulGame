@@ -24,8 +24,10 @@ from sqlalchemy import (
     create_engine,
     delete,
     insert,
+    inspect,
     or_,
     select,
+    text,
 )
 from sqlalchemy.pool import StaticPool
 
@@ -40,6 +42,7 @@ from matchmind.schemas import (
     Moment,
     OverlayCue,
     PersonalizedText,
+    Recap,
 )
 from matchmind.schemas_profile import Discipline
 from matchmind.stats.player_lines import PlayerMatchLine
@@ -150,6 +153,17 @@ agent_runs = Table(
     Column("latency_ms", Integer),
     Column("trace_id", String(ID)),
     Column("error", Text),
+    Column("tokens_in", Integer, default=0),
+    Column("tokens_out", Integer, default=0),
+)
+# Live lines (key "line:<insight_id>") and the recap (key "recap:<match_id>").
+narratives = Table(
+    "narratives",
+    md,
+    Column("key", String(ID + 8), primary_key=True),
+    Column("match_id", String(ID), index=True),
+    Column("kind", String(8)),
+    Column("body_json", Text),
 )
 season_results = Table(
     "season_results",
@@ -199,6 +213,15 @@ class Repo:
             kw = {"poolclass": StaticPool, "connect_args": {"check_same_thread": False}}
         self.engine: Engine = create_engine(url, **kw)
         md.create_all(self.engine)
+        self._add_missing_columns()
+
+    def _add_missing_columns(self) -> None:
+        """Columns added after a table first shipped (``create_all`` won't alter it)."""
+        existing = {c["name"] for c in inspect(self.engine).get_columns("agent_runs")}
+        with self.engine.begin() as c:
+            for col in ("tokens_in", "tokens_out"):
+                if col not in existing:
+                    c.execute(text(f"ALTER TABLE agent_runs ADD {col} INTEGER DEFAULT 0"))
 
     # ---- matches and events ---------------------------------------------------------------
 
@@ -513,6 +536,62 @@ class Repo:
         )
         with self.engine.connect() as c:
             return [AgentRun(**r) for r in c.execute(q).mappings()]
+
+    def list_match_runs(self, match_id: str) -> list[AgentRun]:
+        """Agent runs for a match's moments (moment ids start with the match id)."""
+        q = select(agent_runs).where(agent_runs.c.moment_id.like(f"{match_id}-%"))
+        with self.engine.connect() as c:
+            return [AgentRun(**r) for r in c.execute(q.order_by(agent_runs.c.run_id)).mappings()]
+
+    # ---- live lines and recap -------------------------------------------------------------
+
+    def _put_narrative(self, key: str, match_id: str, kind: str, body: str) -> None:
+        with self.engine.begin() as c:
+            c.execute(delete(narratives).where(narratives.c.key == key))
+            c.execute(insert(narratives).values(key=key, match_id=match_id, kind=kind,
+                                                body_json=body))  # fmt: skip
+
+    def clear_agent_outputs(self, match_id: str) -> None:
+        """Delete everything the agents wrote for a match (insights, fan texts, live lines,
+        recap, agent runs), keeping the match and its stats: a fresh precompute."""
+        with self.engine.begin() as c:
+            c.execute(delete(insights).where(insights.c.match_id == match_id))
+            c.execute(delete(personalized).where(personalized.c.insight_id.like(f"{match_id}-%")))
+            c.execute(delete(narratives).where(narratives.c.match_id == match_id))
+            c.execute(delete(agent_runs).where(agent_runs.c.moment_id.like(f"{match_id}-%")))
+
+    def save_live_line(self, match_id: str, insight_id: str, line: str) -> None:
+        self._put_narrative(f"line:{insight_id}", match_id, "line", json.dumps(line))
+
+    def list_live_lines(self, match_id: str) -> dict[str, str]:
+        """insight_id -> live line."""
+        q = select(narratives.c.key, narratives.c.body_json).where(
+            and_(narratives.c.match_id == match_id, narratives.c.kind == "line")
+        )
+        with self.engine.connect() as c:
+            return {k.removeprefix("line:"): json.loads(b) for k, b in c.execute(q)}
+
+    def save_passed_moments(self, match_id: str, moment_ids: Iterable[str]) -> None:
+        """Moments the Analyst looked at and chose not to surface, so a re-run skips them."""
+        for moment_id in moment_ids:
+            self._put_narrative(f"passed:{moment_id}", match_id, "passed", "true")
+
+    def list_passed_moments(self, match_id: str) -> set[str]:
+        q = select(narratives.c.key).where(
+            and_(narratives.c.match_id == match_id, narratives.c.kind == "passed")
+        )
+        with self.engine.connect() as c:
+            return {k.removeprefix("passed:") for (k,) in c.execute(q)}
+
+    def save_recap(self, recap: Recap) -> None:
+        self._put_narrative(f"recap:{recap.match_id}", recap.match_id, "recap",
+                            recap.model_dump_json())  # fmt: skip
+
+    def get_recap(self, match_id: str) -> Recap | None:
+        q = select(narratives.c.body_json).where(narratives.c.key == f"recap:{match_id}")
+        with self.engine.connect() as c:
+            row = c.execute(q).first()
+        return None if row is None else Recap.model_validate_json(row[0])
 
     # ---- season -----------------------------------------------------------------------------
 

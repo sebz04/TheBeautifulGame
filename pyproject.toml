@@ -38,6 +38,7 @@ dev = [
     "mypy>=1.13",
     "pip-licenses>=5.0",
     "floodlight>=1.2",
+    "agent-framework-devui>=1.0.0b261022",
 ]
 
 [build-system]

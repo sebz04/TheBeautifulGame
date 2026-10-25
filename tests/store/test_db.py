@@ -221,3 +221,74 @@ def test_single_lookups() -> None:
     snap = repo.get_snapshot(mid, 1, 30.0, kind="moment")
     assert [(r.name, r.value, r.kind) for r in snap] == [("ppda", 8.0, "moment")]
     assert repo.get_snapshot(mid, 1, 31.0, kind="moment") == []
+
+
+def test_agent_runs_keep_tokens_and_list_by_match(tmp_path) -> None:
+    from matchmind.schemas import AgentRun
+
+    repo = Repo(f"sqlite:///{tmp_path}/a.db")
+    run = AgentRun(run_id="r1", agent="explainer", moment_id="x1-m001", status="ok",
+                   attempts=1, latency_ms=900, trace_id=None, error=None, tokens_in=1200,
+                   tokens_out=300)  # fmt: skip
+    repo.log_agent_run(run)
+    assert repo.list_agent_runs("x1-m001") == [run]
+
+
+def test_old_agent_runs_table_gets_token_columns(tmp_path) -> None:
+    from sqlalchemy import create_engine, text
+
+    url = f"sqlite:///{tmp_path}/old.db"
+    with create_engine(url).begin() as c:  # the TASK-14 table, before token counts
+        c.execute(text("CREATE TABLE agent_runs (run_id VARCHAR(96) PRIMARY KEY, "
+                       "agent VARCHAR(32), moment_id VARCHAR(96), status VARCHAR(16), "
+                       "attempts INTEGER, latency_ms INTEGER, trace_id VARCHAR(96), "
+                       "error TEXT)"))  # fmt: skip
+    from matchmind.schemas import AgentRun
+
+    repo = Repo(url)
+    run = AgentRun(run_id="r1", agent="a", moment_id="m", status="ok", attempts=1, latency_ms=1,
+                   trace_id=None, error=None, tokens_in=5, tokens_out=2)  # fmt: skip
+    repo.log_agent_run(run)
+    assert repo.list_agent_runs("m")[0].tokens_in == 5
+
+
+def test_live_lines_and_recap(tmp_path) -> None:
+    from matchmind.schemas import Claim, Recap
+
+    repo = Repo(f"sqlite:///{tmp_path}/n.db")
+    repo.save_live_line("x1", "x1-m001-ins", "Laureles' press fades.")
+    repo.save_live_line("x1", "x1-m002-ins", "Morejo again!")
+    assert repo.list_live_lines("x1") == {"x1-m001-ins": "Laureles' press fades.",
+                                          "x1-m002-ins": "Morejo again!"}  # fmt: skip
+    claim = Claim(text="t", metric="xg", value=0.4, unit="", ref="r")
+    recap = Recap(match_id="x1", title="T", paragraphs=["p"], key_numbers=[claim],
+                  verified=True, source="agent")  # fmt: skip
+    assert repo.get_recap("x1") is None
+    repo.save_recap(recap)
+    assert repo.get_recap("x1") == recap
+
+
+def test_clear_agent_outputs(tmp_path) -> None:
+    from matchmind.schemas import AgentRun, Recap
+
+    repo = Repo(f"sqlite:///{tmp_path}/c.db")
+    repo.save_live_line("x1", "x1-m001-ins", "line")
+    repo.save_live_line("x2", "x2-m001-ins", "other match")
+    repo.save_recap(Recap(match_id="x1", title="T", paragraphs=["p"], key_numbers=[],
+                          verified=True, source="template"))  # fmt: skip
+    repo.log_agent_run(AgentRun(run_id="r", agent="a", moment_id="x1-m001", status="ok",
+                                attempts=1, latency_ms=1, trace_id=None, error=None))  # fmt: skip
+    repo.clear_agent_outputs("x1")
+    assert repo.list_live_lines("x1") == {} and repo.get_recap("x1") is None
+    assert repo.list_match_runs("x1") == [] and repo.list_insights("x1") == []
+    assert repo.list_live_lines("x2") == {"x2-m001-ins": "other match"}
+
+
+def test_passed_moments(tmp_path) -> None:
+    repo = Repo(f"sqlite:///{tmp_path}/p.db")
+    repo.save_passed_moments("x1", ["x1-m001", "x1-m003"])
+    repo.save_passed_moments("x2", ["x2-m001"])
+    assert repo.list_passed_moments("x1") == {"x1-m001", "x1-m003"}
+    repo.clear_agent_outputs("x1")
+    assert repo.list_passed_moments("x1") == set()
+    assert repo.list_passed_moments("x2") == {"x2-m001"}
