@@ -18,7 +18,7 @@
 | Purpose | Command |
 |---|---|
 | Install | `uv sync` |
-| Test | `uv run pytest` (skips `slow`); `uv run pytest -m slow` for season budget and effect tests (nightly in CI) |
+| Test | `uv run pytest` (skips `slow`, about 6 min locally); `uv run pytest -m slow` for multi-match statistics, season history, storylines, and effects (nightly in CI) |
 | Lint / format | `uv run ruff check .` · `uv run ruff format .` |
 | Types | `uv run mypy src` (strict) |
 | License gate | `uv run python scripts/check_licenses.py` |
@@ -30,3 +30,5 @@ CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests, the licen
 - No live model calls in tests (`FakeChatClient`, recorded fixtures in `tests/fixtures/llm/`).
 - Tests mirror `src/matchmind/` under `tests/`; tests for `scripts/` live in `tests/scripts/` (`scripts/` is on the pytest path).
 - New runtime dependencies must pass the license gate and be added to `THIRD_PARTY_NOTICES.md`.
+- **Slow vs fast tests:** a test that simulates many matches (statistics over seeds, season rounds, storylines, attribute effects) is marked `@pytest.mark.slow` and runs nightly. Single-match checks (determinism, consistency, offsides, red cards, motion) stay in CI. Statistical margins allow for platform differences: the same seed is not bit-identical on macOS and Linux.
+

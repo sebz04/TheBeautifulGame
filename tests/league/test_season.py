@@ -33,6 +33,7 @@ def _season(rounds: int = 2) -> Season:
     return simulate_history(league, profiles, fixtures, rounds=rounds)
 
 
+@pytest.mark.slow
 def test_history_deterministic() -> None:
     league, profiles, fixtures = _setup()
     again = simulate_history(league, profiles, fixtures, rounds=1)
@@ -41,6 +42,7 @@ def test_history_deterministic() -> None:
     assert again.player_lines == [line for line in first.player_lines if line.round == 1]
 
 
+@pytest.mark.slow
 def test_standings_match_results() -> None:
     season = _season(2)
     assert len(season.results) == 20 and {r.round for r in season.results} == {1, 2}
@@ -57,6 +59,7 @@ def test_standings_match_results() -> None:
     assert keys == sorted(keys)
 
 
+@pytest.mark.slow
 def test_lines_agree_with_their_match() -> None:
     league, profiles, fixtures = _setup()
     season = _season(2)
@@ -90,6 +93,7 @@ def test_suspensions_from_cards() -> None:
     assert unavailable_for(disc, 5) == set()
 
 
+@pytest.mark.slow
 def test_suspended_players_sit_out() -> None:
     season = _season(2)
     for match_id, out in season.unavailable.items():
@@ -97,6 +101,7 @@ def test_suspended_players_sit_out() -> None:
         assert not out & played
 
 
+@pytest.mark.slow
 def test_milestones() -> None:
     season = _season(2)
     scorers = {line.player_id for line in season.player_lines if line.goals}

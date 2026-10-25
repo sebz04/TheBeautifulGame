@@ -53,6 +53,7 @@ def _profiles():  # type: ignore[no-untyped-def]
     return build_profiles(build_league(), seed=2026)
 
 
+@pytest.mark.slow
 def test_storylines_run() -> None:
     jobs = [(p.stem, load_scenario(p).seed, True) for p in _paths()]
     with ProcessPoolExecutor(4) as pool:
@@ -70,6 +71,7 @@ def _comeback(n: int) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
     return results[:n], results[n:]
 
 
+@pytest.mark.slow
 def test_beats_shift_outcome() -> None:
     """The goal beats lift the ten-man side's scoring (about +0.8 per match locally).
 

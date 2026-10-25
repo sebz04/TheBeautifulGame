@@ -59,10 +59,12 @@ def _where(frame: TrackingFrame, player_id: str | None) -> tuple[float, float]:
 
 
 def test_level3_deterministic() -> None:
-    again = simulate_match(_meta(7), level=3)
-    assert again.events == _match(7).events
-    assert again.frames[-1] == _match(7).frames[-1]
-    assert _events_only(3).events != _events_only(4).events
+    # Same seed, same match: the events-only rerun of seed 7 equals the tracked match
+    # (test_events_only_mode_gives_identical_events), and test_level4's motion test reruns
+    # it with profiles and frames. Here: a different seed gives a different match.
+    other = simulate_match(_meta(8), level=3, tracking=False)
+    assert other.events != _match(7).events
+    assert simulate_match(_meta(8), level=3, tracking=False).events == other.events
 
 
 def test_events_only_mode_gives_identical_events() -> None:
@@ -135,12 +137,14 @@ def test_out_of_play_happens_on_the_lines_by_last_touch() -> None:
         assert e.extras["restart"] == restart_for((e.x, e.y), right), e.event_id
 
 
+@pytest.mark.slow
 def test_corners_happen() -> None:
     corners = [sum(e.extras.get("restart") == "corner" for e in _events_only(s).events if
                    e.type == "out") for s in range(1, 21)]  # fmt: skip
     assert np.mean(corners) / 2 > 2.0
 
 
+@pytest.mark.slow
 def test_clearances_blocks_and_parries_happen() -> None:
     events = [e for s in range(1, 6) for e in _events_only(s).events]
     assert any(e.type == "clearance" for e in events)

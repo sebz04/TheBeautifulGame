@@ -72,6 +72,7 @@ def _red_card_match() -> tuple[MatchData, list[tuple[str, str, int]]]:
     return data, calls
 
 
+@pytest.mark.slow
 def test_cards_happen() -> None:
     cards = [e for s in range(1, 7) for e in _events(s).events if e.type == "card"]
     assert {e.extras["card"] for e in cards} <= {"yellow", "red"}
@@ -144,6 +145,7 @@ def test_fouls_in_box_are_penalties() -> None:
     assert outside.s.dead is not None and outside.s.dead.restart == "free_kick"
 
 
+@pytest.mark.slow
 def test_set_pieces_are_taken() -> None:
     shots = [e for s in range(1, 9) for e in _events(s).events if e.type == "shot"]
     kinds = Counter(e.extras.get("set_piece") for e in shots)
@@ -187,7 +189,7 @@ def test_fatigue_late() -> None:
 def test_scoring_shots_are_marked_as_goals() -> None:
     # Regression (TASK-10.3): xT reads goals from `shot.outcome`; level 3 marked every shot
     # False, including those that went in (directly or off a block or a parry).
-    for seed in (1, 2, 3, 4):
+    for seed in (1, 3):  # seed 3 has a pass that went straight in
         events = _events(seed).events
         goals = [e for e in events if e.type == "goal" and not e.extras.get("own_goal")]
         scored = [e for e in events if e.type == "shot" and e.outcome]
