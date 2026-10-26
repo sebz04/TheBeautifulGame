@@ -14,6 +14,7 @@ An Agent Framework graph (`WorkflowBuilder`, `@executor` steps), run once per 5-
 - **API:**
   - `run_window(match_id, period, t_from, t_to, deps) -> WindowReport` covers moments starting in `[t_from, t_to)`.
   - `run_match(match_id, deps, *, max_windows=2, limit=None) -> PipelineReport` runs every window, then the full-time recap (agent or template). `limit` runs only the first windows and skips the recap.
+- **`regenerate(moment_id, variant, lang, deps) -> Regenerated(insight, text, runs)`:** one moment live for the API: Explainer ⟲ Verifier from a decision built from the moment (no Analyst), then one Personalizer text verified in `lang`; templates on failure; nothing saved.
 - **`Deps`:** `repo`, `client`, `tools`, `facts_for(match_id)`, `sleep` (the backoff clock), `langs`, `limiter`, and `max_parallel` (moments at once).
 - **Saving:** each step saves as it goes (insights, live lines, texts, recap), and the window's agent runs are logged at its end.
 - **Resumable:** a moment that already has an insight, a live line, and texts in every language, or that the Analyst passed on, is skipped (`WindowReport.skipped`). A partly done moment continues where it stopped. A re-run of a finished match makes 0 model calls.

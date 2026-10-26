@@ -20,6 +20,8 @@ Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are 
 | `MATCHMIND_APPINSIGHTS_CONNECTION_STRING` | Traces. The full connection string (`InstrumentationKey=…;IngestionEndpoint=…`), not the bare key. Invalid or blank: tracing is off with a warning |
 | `MATCHMIND_BLOB_ACCOUNT_URL` | Tracking store in the cloud |
 | `MATCHMIND_MCP_URL` | Where agents reach the MCP stats server (default `http://localhost:8000/mcp`) |
+| `MATCHMIND_WEB_ORIGIN` | The Static Web App origin allowed by CORS (localhost:5173 is always allowed) |
+| `MATCHMIND_API_HOST` | The API's public host name, allowed by the `/mcp` DNS-rebinding check |
 
 Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty`).
 

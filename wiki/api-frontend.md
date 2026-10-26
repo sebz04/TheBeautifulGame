@@ -1,11 +1,13 @@
 # API and Frontend
 
-**Status:** API read endpoints (TASK-21.1) and SSE live replay (21.2) built; regenerate, `/mcp`, CORS (21.3) next. Frontend planned (TASK-22 to TASK-23). The full contract is in plan Task 21.
+**Status:** API built (TASK-21): read endpoints, SSE live replay, live regenerate with rate limits, `/mcp`, CORS. Frontend planned (TASK-22 to TASK-23). Frontend planned (TASK-22 to TASK-23). The full contract is in plan Task 21.
 
 ## API (`src/matchmind/api/`)
 - **Run:** `uv run uvicorn matchmind.api.app:app` (port 8000). The served app warms the cheap caches (momentum, replay index) in a background thread at startup.
 - **Realism** is stored by `matchmind build` (`Repo.save_realism`); a match built before that is checked once on first request (about 10 s) and saved. It is not warmed: computing it holds the GIL for seconds and stalled live streams.
-- **`create_app(repo=None, store=None, *, warm=False)`** builds the app; tests pass an in-memory `Repo` and a temp `TrackingStore`.
+- **`create_app(repo=None, store=None, *, warm=False, settings=None, limiter=None, regenerator=None)`** builds the app; tests pass an in-memory `Repo`, a temp `TrackingStore`, a fake-clock `RateLimiter`, and a fake regenerator.
+- **CORS:** only `MATCHMIND_WEB_ORIGIN` (the Static Web App) and `localhost:5173`, methods GET and POST.
+- **`/mcp`:** the MCP stats server (streamable HTTP), mounted last at the root so it only sees `/mcp`; its session manager runs in the app lifespan. The SDK's DNS-rebinding check allows localhost plus `MATCHMIND_API_HOST` (set it to the deployed host name).
 - **`Services`** (`services.py`, on `app.state.services`, injected as `Svc`): the repo, the tracking store, the MCP `StatsService` (metrics, profiles, baselines, counterfactuals), and per-match caches of events, realism, and momentum.
 - **Errors:** unknown match, insight, team, or player → 404; invalid query values (persona, lang, scope, period not 1–2, a tracking window over 60 s) → 422.
 
@@ -23,12 +25,18 @@
 | `GET /api/matches/{id}/pitch-control?period=&t=` | `routes_matches.py` | `{grid: 21 × 32, attacking_team}` |
 | `GET /api/matches/{id}/recap?lang=&persona=` | `routes_matches.py` | `Recap` |
 | `GET /api/league` | `routes_matches.py` | `{clubs, players}` |
+| `POST /api/matches/{id}/regenerate` | `routes_insights.py` | `{insight, text, agent_runs, trace_id}` |
 
 - **Insights:** `club_fan` texts are for `club_id` (default: the home club); `player_focus` needs a `player_id` in the match. A variant the precompute didn't write (another club's fan, a player no claim is about) gets its template from `templates.render`, so every insight has a text.
 - **Why:** the counterfactual is for the first cited decision event (pass, carry, shot, clearance), else `null`. `trace_id` is `null` for the TASK-20.2 precompute (tracing was off then).
 - **Stats:** `baseline` is the player's season expectation so far (`stats.deviations.expected_so_far`: per-90 rates × minutes played, adjusted for possession and red cards); `null` for teams or players without a season line.
 - **Pitch control:** the last frame at or before t (within 0.5 s); the attacking team is the team of the last event.
 - **Recap:** English only for now; `lang` and `persona` are validated, then ignored (translation is in TASK-25.2).
+
+## Regenerate (live agent run)
+- Body `{moment_id, persona, lang, club_id?, player_id?}`. Runs `orchestrator.regenerate`: Explainer ⟲ Verifier on the moment (the Analyst is skipped: the moment is already chosen), then one Personalizer text checked by the Verifier in `lang`, with the usual template fallbacks. **Nothing is saved**: the precomputed replay stays as reviewed.
+- **Limits** (`ratelimit.py`, in memory): 5 an hour per visitor, 100 a day in all; over either, 429 `{detail, retry_after}` plus a `Retry-After` header. Invalid requests (404, 422) are not counted. The visitor is the rightmost `X-Forwarded-For` entry (the ingress's), else the socket peer.
+- 120 s timeout (504). Live check: 26 s, about 57k tokens ($0.03), with a trace id.
 
 ## Live replay (`routes_live.py`)
 `GET /api/matches/{id}/live?period=1&from_t=0&speed=1` → SSE (`sse-starlette`, ping every 15 s).

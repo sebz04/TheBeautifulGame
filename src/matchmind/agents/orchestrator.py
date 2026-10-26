@@ -39,6 +39,7 @@ from matchmind.schemas import (
     MatchMeta,
     Moment,
     PersonalizedText,
+    Variant,
 )
 from matchmind.store.db import Repo
 
@@ -458,3 +459,54 @@ async def run_match(
         tokens_out=sum(r.tokens_out for r in runs),
         recap_source=recap_source,
     )
+
+
+@dataclass
+class Regenerated:
+    insight: Insight
+    text: PersonalizedText
+    runs: list[AgentRun]
+
+
+async def regenerate(moment_id: str, variant: Variant, lang: Lang, deps: Deps) -> Regenerated:
+    """One moment, live: Explainer ⟲ Verifier, then one fan text through the Personalizer
+    and the Verifier in ``lang``, with the same template fallbacks as the pipeline. Nothing
+    is saved, so the precomputed replay stays as it was reviewed; the runs are returned."""
+    moment = deps.repo.get_moment(moment_id)
+    if moment is None:
+        raise KeyError(f"unknown moment {moment_id!r}")
+    meta = deps.repo.get_match_meta(moment.match_id)
+    assert meta is not None
+    facts, names, log = deps.facts_for(moment.match_id), match_names(meta), RunLog()
+    decision = AnalystDecision(
+        moment_id=moment_id, surface=True, level=moment.level, priority=3,
+        tactical_context=f"A {moment.kind.replace('_', ' ')} moment.",
+        metrics_to_cite=[moment.trigger_metric],
+    )  # fmt: skip
+    with pipeline_scope(log=log, sleep=deps.sleep, limiter=deps.limiter):
+        try:
+            insight = await verify_loop(decision, moment, deps.client, deps.tools, facts)
+        except Exception as exc:
+            insight, reason = None, f"explainer failed: {exc}"
+        else:
+            reason = "no verified explanation after 2 regenerations"
+        if insight is None:
+            _fallback(log, "explainer", moment_id, reason)
+            insight = template_insight(moment, moment.level, names)
+        text = render(insight, variant, lang, names)
+        if insight.source == "agent":
+            try:
+                scores = set(facts.scores)
+                texts = await _personalize(insight, lang, [variant], deps.client, names=names,
+                                           minutes=facts.minutes, scores=scores)  # fmt: skip
+                written = texts[0]
+                if written.source == "agent":
+                    body = f"{written.headline}\n{written.body}"
+                    verdict = await verify(insight, lang, body, facts, deps.client)
+                    if verdict.failures:
+                        _fallback(log, "personalizer", moment_id, "; ".join(verdict.failures))
+                    else:
+                        text = written.model_copy(update={"verified": True})
+            except Exception as exc:
+                _fallback(log, "personalizer", moment_id, f"{lang} failed: {exc}")
+    return Regenerated(insight, text, log.runs)

@@ -10,13 +10,13 @@ import pytest
 from agent_framework.exceptions import ChatClientException
 from conftest import StatsStub
 
-from matchmind.agents.orchestrator import Deps, build_workflow, run_match, run_window
+from matchmind.agents.orchestrator import Deps, build_workflow, regenerate, run_match, run_window
 from matchmind.agents.runtime import FakeCall, FakeChatClient, FakeReply, tool_call
 from matchmind.agents.verifier import DictFacts
 from matchmind.engine.lineup import match_meta
 from matchmind.league.fixtures import build_fixtures
 from matchmind.league.league import build_league
-from matchmind.schemas import MatchData, Moment
+from matchmind.schemas import MatchData, Moment, Variant
 from matchmind.store.db import Repo
 
 LANGS = ("en", "es")
@@ -291,3 +291,25 @@ async def test_rerun_does_not_reask_the_analyst_about_passed_moments() -> None:
     calls = len(client.calls)
     again = await _run(w, client)
     assert len(client.calls) == calls and again.skipped == 2  # one done, one passed on
+
+
+async def test_regenerate_one_moment_live() -> None:
+    w = _world()
+    out = await regenerate(
+        f"{w.match_id}-m001", Variant(persona="casual"), "es", _deps(w, _model(w))
+    )
+    assert out.insight.source == "agent" and out.insight.verified
+    assert (out.text.persona, out.text.lang) == ("casual", "es") and out.text.verified
+    assert out.text.source == "agent"
+    assert {"explainer", "verifier", "personalizer"} <= {r.agent for r in out.runs}
+    assert w.repo.list_insights(w.match_id) == [] and w.repo.list_match_runs(w.match_id) == []
+
+
+async def test_regenerate_falls_back_to_templates() -> None:
+    w = _world()
+    client = _model(w, explainer=lambda n: f"They allow {n + 20} passes per defensive action.")
+    variant = Variant(persona="club_fan", club_id=w.away)
+    out = await regenerate(f"{w.match_id}-m002", variant, "fr", _deps(w, client))
+    assert out.insight.source == "template" and out.text.source == "template"
+    assert out.text.club_id == w.away and out.text.lang == "fr"
+    assert any(r.status == "fallback" for r in out.runs)

@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     blob_account_url: str | None = None
     # Where agents reach the MCP stats server (mounted at /mcp by the API).
     mcp_url: str = "http://localhost:8000/mcp"
+    # The Static Web App's origin (CORS) and the API's public host name (the /mcp host
+    # check). Localhost is always allowed.
+    web_origin: str | None = None
+    api_host: str | None = None
 
     # Foundry variables are read unprefixed, matching Azure tooling conventions.
     foundry_project_endpoint: str | None = Field(
