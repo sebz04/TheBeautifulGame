@@ -27,7 +27,7 @@ from matchmind.stats.player_lines import player_match_lines
 from matchmind.stats.speed import player_motion
 
 __all__ = ["TRACKED_STATS", "Deviation", "ExpectContext", "assess", "detect_deviations",
-           "deviation_moments", "tail_p"]  # fmt: skip
+           "deviation_moments", "expected_so_far", "tail_p"]  # fmt: skip
 
 P_MAX = 0.01
 MIN_MINUTES = 30.0
@@ -128,6 +128,17 @@ def _context(match: MatchData, team: str, t_to: MatchTime, season_share: float) 
                          season_possession=min(max(season_share, 0.2), 0.8),
                          team_men=11 - reds.count(team),
                          opp_men=11 - (len(reds) - reds.count(team)))  # fmt: skip
+
+
+def expected_so_far(match: MatchData, baseline: PlayerBaseline, t: MatchTime,
+                    stats: Sequence[str] = TRACKED_STATS) -> dict[str, float]:  # fmt: skip
+    """What the season baseline expects of the player by (period, t): the API's
+    "vs season average", with the same minutes and possession context as the flags."""
+    played = minutes_played(match, t).get(baseline.player_id, 0.0)
+    club = next(p.club_id for p in match.meta.home_squad + match.meta.away_squad
+                if p.player_id == baseline.player_id)  # fmt: skip
+    ctx = _context(match, club, t, baseline.club_possession)
+    return {s: round(expected_at(baseline, s, played, ctx), 3) for s in stats}
 
 
 def detect_deviations(match: MatchData, baselines: dict[str, PlayerBaseline], t: MatchTime,

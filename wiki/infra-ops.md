@@ -20,6 +20,8 @@ Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are 
 | `MATCHMIND_APPINSIGHTS_CONNECTION_STRING` | Traces. The full connection string (`InstrumentationKey=…;IngestionEndpoint=…`), not the bare key. Invalid or blank: tracing is off with a warning |
 | `MATCHMIND_BLOB_ACCOUNT_URL` | Tracking store in the cloud |
 | `MATCHMIND_MCP_URL` | Where agents reach the MCP stats server (default `http://localhost:8000/mcp`) |
+| `MATCHMIND_WEB_ORIGIN` | The Static Web App origin allowed by CORS (localhost:5173 is always allowed) |
+| `MATCHMIND_API_HOST` | The API's public host name, allowed by the `/mcp` DNS-rebinding check |
 
 Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty`).
 
@@ -27,6 +29,7 @@ Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty
 - `uv run python -m matchmind.agents.runtime --ping`: one call to the Foundry deployment (about 3–4 s including sign-in).
 - `uv run matchmind build --all`: build the 8 showcase matches.
 - `uv run python scripts/record_llm_fixtures.py`: run Analyst → Explainer → Verifier live on 3 moments and save the replies (`tests/fixtures/llm/`). About 1 minute.
+- `uv run uvicorn matchmind.api.app:app`: the API on port 8000 (see [api-frontend.md](api-frontend.md)).
 - `uv run python scripts/precompute.py --all`: precompute every match live (resumable; `--limit 1 --match <id>` for a smoke test). About 2 h and $9.50 for all 8; a re-run of finished matches takes seconds. See [orchestrator.md](orchestrator.md).
 - `uv run python scripts/devui.py`: open the workflow in Agent Framework DevUI (needs the MCP server running).
 - `uv run python scripts/build_verifier_golden.py`, then `uv run python scripts/run_foundry_eval.py --runs 3`: rebuild the Verifier golden set and evaluate it live (`docs/evals.md`). About 5 minutes, 84 model calls.

@@ -53,6 +53,12 @@ def test_build_match_end_to_end(built: tuple[BuildResult, Repo, TrackingStore]) 
     assert result.seconds > 0
 
 
+def test_build_stores_the_realism_report(built: tuple[BuildResult, Repo, TrackingStore]) -> None:
+    result, repo, _ = built
+    stored = repo.get_realism(result.match_id)
+    assert stored is not None and stored["checks"] and isinstance(stored["ok"], bool)
+
+
 def test_every_moment_has_a_snapshot(built: tuple[BuildResult, Repo, TrackingStore]) -> None:
     result, repo, _ = built
     meta = repo.get_match_meta(result.match_id)
