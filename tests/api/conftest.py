@@ -32,10 +32,13 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> Built:
     result = build_scenario(SCENARIO_DIR / "comeback_red_card.toml", repo, store)
     meta = repo.get_match_meta(result.match_id)
     assert meta is not None
-    # A moment that cites a decision (a big chance), so /why has a counterfactual.
-    moment = next(m for m in repo.list_moments(meta.match_id)
-                  if any("best_score" in (e.extras if (e := repo.get_event(i)) else {})
-                         for i in m.event_ids))  # fmt: skip
+    # Which moments the engine produces differs slightly across platforms (macOS vs the
+    # Linux CI runner), so take the first moment and cite a real decision event after it:
+    # /why then has a counterfactual to show.
+    moment = repo.list_moments(meta.match_id)[0]
+    after = repo.get_events(meta.match_id, t_from=(moment.period, moment.t_start))
+    decision = next(e for e in after if "best_score" in e.extras)
+    cited = [decision.event_id, *(i for i in moment.event_ids[:2] if i != decision.event_id)]
     home, away = meta.home.club_id, meta.away.club_id
     # A one-round stored season, so player baselines ("vs season average") exist.
     result_ = MatchResult(match_id="r00-x", round=1, date="2026-08-01", home_id=home,
@@ -52,7 +55,7 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> Built:
         match_id=meta.match_id, level=moment.level, headline="The press switched off",
         why="They allow 9.0 passes per defensive action.", recommendation="Step up.",
         claims=[Claim(text="9.0 passes", metric="ppda_10min", value=9.0, unit="", ref=ref)],
-        event_ids=moment.event_ids[:3], confidence="high", verified=True, source="agent",
+        event_ids=cited, confidence="high", verified=True, source="agent",
         trace_id="abc123", prompt_version="explainer.v1",
     )  # fmt: skip
     repo.save_insight(insight)
