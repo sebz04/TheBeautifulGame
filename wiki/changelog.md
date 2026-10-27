@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-26 · TASK-23.7 · welcome page (club tiles, favorite player, language, Fan/Scout; previews language and colors; returning visitors skip it; Change my setup), match list in the fan's colors · api-frontend
 - 2026-10-26 · TASK-23.5 · Team ⇄ Player and Fan ⇄ Scout switches, persona mapping, side picker, club color takeover on the match page, 5-language interface text, RTL with physical views and numbers kept left to right · api-frontend
 - 2026-10-26 · TASK-23.4 · insights list gains best_play_event_id; served API turns tracing on; insight panel and cards, Ask why with counterfactual and grouped agent runs, Ask the pundit live (429/504 messages, one request at a time), full-time recap, Game/Team/Player tabs · api-frontend
 - 2026-10-26 · TASK-23.3 · cue overlays (max 3), moment timeline with plain names and seek, visx momentum chart, stats strip, smooth pitch-control heatmap, still frame when paused · api-frontend

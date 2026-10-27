@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -42,7 +42,7 @@ describe("MatchPicker", () => {
   it("lists the fan's club's matches first", async () => {
     vi.spyOn(api, "matches").mockResolvedValue(ROWS);
     renderPicker();
-    const links = await screen.findAllByRole("link");
+    const links = within(await screen.findByRole("list")).getAllByRole("link");
     expect(links[0]).toHaveTextContent("Atlético Chapinero");
     expect(links[0]).toHaveAttribute("href", "/match/r02-chapinero-v-laureles");
     expect(links).toHaveLength(3);
@@ -54,7 +54,7 @@ describe("MatchPicker", () => {
     renderPicker();
     expect(screen.getByRole("status")).toHaveTextContent(/loading/i);
     resolve(ROWS);
-    await screen.findAllByRole("link");
+    await screen.findByRole("list");
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
@@ -65,6 +65,6 @@ describe("MatchPicker", () => {
     expect(alert).toHaveTextContent(/couldn't load/i);
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
     await waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
-    expect(await screen.findAllByRole("link")).toHaveLength(3);
+    expect(within(await screen.findByRole("list")).getAllByRole("link")).toHaveLength(3);
   });
 });
