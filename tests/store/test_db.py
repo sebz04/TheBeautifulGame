@@ -339,8 +339,6 @@ def test_token_sign_in_drops_windows_sign_in() -> None:
         def get_token(self, scope: str) -> object:
             return type("T", (), {"token": "xyz"})()
 
-    cargs = [
-        "DRIVER={ODBC Driver 18};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"
-    ]
+    cargs = ["DRIVER={ODBC Driver 18};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"]
     _token_hook(FakeCredential())(None, None, cargs, {})
     assert "Trusted_Connection" not in cargs[0] and "Encrypt=yes" in cargs[0]
