@@ -342,3 +342,11 @@ def test_token_sign_in_drops_windows_sign_in() -> None:
     cargs = ["DRIVER={ODBC Driver 18};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"]
     _token_hook(FakeCredential())(None, None, cargs, {})
     assert "Trusted_Connection" not in cargs[0] and "Encrypt=yes" in cargs[0]
+
+
+def test_agent_run_moment_ids_fit_a_batched_analyst_run() -> None:
+    """The Analyst logs one run for a batch: "m000,m001,..." (231 characters in the precompute).
+    SQLite ignores column lengths; Azure SQL enforces them."""
+    from matchmind.store.db import agent_runs
+
+    assert agent_runs.c.moment_id.type.length >= 512

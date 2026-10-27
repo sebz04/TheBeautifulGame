@@ -14,20 +14,22 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from sqlalchemy import delete, insert, select, text
+from sqlalchemy import insert, select, text
 
 from matchmind.config import get_settings
 from matchmind.store.blob import CONTAINER, Backend
-from matchmind.store.db import Repo, md
+from matchmind.store.db import Repo, make_engine, md
 
 
 def copy_tables(src_url: str, dst_url: str, chunk: int = 5000) -> dict[str, int]:
-    """Replace every table of ``dst_url`` with the rows of ``src_url``; returns the counts."""
-    src, dst = Repo(src_url), Repo(dst_url)  # Repo creates the schema on the target
+    """Replace ``dst_url``'s tables with ``src_url``'s schema and rows; returns the counts.
+    The target's tables are dropped first, so a schema change (a wider column) applies."""
+    src = Repo(src_url)
+    target = make_engine(dst_url)
+    md.drop_all(target)
+    target.dispose()
+    dst = Repo(dst_url)  # creates the current schema
     counts: dict[str, int] = {}
-    with dst.engine.begin() as out:
-        for table in reversed(md.sorted_tables):
-            out.execute(delete(table))
     for table in md.sorted_tables:
         with src.engine.connect() as inp, dst.engine.begin() as out:
             rows = [dict(r) for r in inp.execute(select(table)).mappings()]

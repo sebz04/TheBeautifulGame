@@ -31,3 +31,15 @@ def test_grant_sql_names_the_app_identity() -> None:
     sql = grant_sql("ca-matchmind-api")
     assert "CREATE USER [ca-matchmind-api] FROM EXTERNAL PROVIDER" in sql[0]
     assert any("db_datareader" in s for s in sql) and any("db_datawriter" in s for s in sql)
+
+
+def test_copy_tables_rebuilds_the_target_schema(tmp_path: Path) -> None:
+    """A target created by an older schema (a narrower column, say) is dropped and rebuilt."""
+    from sqlalchemy import create_engine, inspect, text
+
+    dst = f"sqlite:///{tmp_path}/b.db"
+    with create_engine(dst).begin() as c:
+        c.execute(text("CREATE TABLE agent_runs (run_id VARCHAR(5) PRIMARY KEY)"))
+    copy_tables(f"sqlite:///{tmp_path}/a.db", dst)
+    cols = {c["name"] for c in inspect(create_engine(dst)).get_columns("agent_runs")}
+    assert {"moment_id", "tokens_in"} <= cols

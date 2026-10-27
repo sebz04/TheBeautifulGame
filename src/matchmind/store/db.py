@@ -148,7 +148,8 @@ agent_runs = Table(
     md,
     Column("run_id", String(ID), primary_key=True),
     Column("agent", String(32)),
-    Column("moment_id", String(ID), index=True),
+    # A batched Analyst run lists its moments: "m000,m001,..." (Azure SQL enforces widths).
+    Column("moment_id", String(512), index=True),
     Column("status", String(16)),
     Column("attempts", Integer),
     Column("latency_ms", Integer),
