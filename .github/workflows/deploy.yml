@@ -1,12 +1,14 @@
-# Deploy to Azure on every push to main, signing in with GitHub OIDC (no stored secrets).
-# `azd pipeline config` creates the federated credential and sets these repository variables:
-# AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_ENV_NAME, AZURE_LOCATION
-# (plus FOUNDRY_RESOURCE_ID, FOUNDRY_PROJECT_ENDPOINT, ALERT_EMAIL from the azd environment).
-# Until then the job is skipped.
+# Deploy each image the Image workflow publishes from main: point the container app at it,
+# then wait for /api/health. Signs in with GitHub OIDC (no stored secrets). Set up once:
+# an Entra app registration with a federated credential for this repo's main branch, the
+# Contributor role on rg-matchmind, and repository variables AZURE_CLIENT_ID,
+# AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID. Until then this job is skipped.
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: [Image]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -16,27 +18,19 @@ permissions:
 
 jobs:
   deploy:
-    if: vars.AZURE_CLIENT_ID != ''
+    if: vars.AZURE_CLIENT_ID != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      FOUNDRY_RESOURCE_ID: ${{ vars.FOUNDRY_RESOURCE_ID }}
-      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
-      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
+      IMAGE: ghcr.io/${{ github.repository_owner }}/matchmind-api:${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: Azure/setup-azd@v2
-      - name: Sign in with OIDC
-        run: |
-          azd auth login --client-id "$AZURE_CLIENT_ID" --federated-credential-provider github \
-            --tenant-id "$AZURE_TENANT_ID"
-      - name: Provision and deploy (image built in Azure Container Registry)
-        run: azd up --no-prompt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Point the container app at the new image
+        run: az containerapp update -n ca-matchmind-api -g rg-matchmind --image "$IMAGE"
       - name: Health check
         run: |
-          url=$(azd env get-value SERVICE_API_URI)
+          url="https://$(az containerapp show -n ca-matchmind-api -g rg-matchmind --query properties.configuration.ingress.fqdn -o tsv)"
           for i in $(seq 1 30); do curl -fsS "$url/api/health" && exit 0; sleep 10; done; exit 1

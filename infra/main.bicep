@@ -21,6 +21,9 @@ param foundryProjectEndpoint string
 
 param foundryModelDeployment string = 'gpt-4.1-mini'
 
+@description('The API + website image; the deploy workflow sets it to the commit being deployed.')
+param apiImage string = 'ghcr.io/sebz04/matchmind-api:latest'
+
 @description('Azure SQL region. North Central US stopped accepting new SQL servers, so the database may sit in another allowed region (Canada Central is nearest).')
 param sqlLocation string = location
 
@@ -50,6 +53,7 @@ module app 'resources.bicep' = {
     sqlLocation: sqlLocation
     foundryProjectEndpoint: foundryProjectEndpoint
     foundryModelDeployment: foundryModelDeployment
+    apiImage: apiImage
   }
 }
 

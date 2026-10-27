@@ -7,6 +7,9 @@ param sqlLocation string
 param foundryProjectEndpoint string
 param foundryModelDeployment string
 
+@description('The API + website image (GitHub Container Registry; ACR builds are paused on Azure for Students).')
+param apiImage string
+
 var token = toLower(uniqueString(subscription().id, resourceGroup().id, location))
 var appName = 'ca-matchmind-api'
 var roles = {
@@ -37,7 +40,8 @@ resource insights 'Microsoft.Insights/components@2020-02-02' = {
   properties: { Application_Type: 'web', WorkspaceResourceId: logs.id }
 }
 
-// Images, built in the registry by `azd deploy` (remote build).
+// Kept for azd, but unused: ACR builds are paused on Azure for Students, so the app runs the
+// public GitHub Container Registry image (apiImage) instead.
 resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: 'crmatchmind${token}'
   location: location
@@ -167,14 +171,13 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: env.id
     configuration: {
       ingress: { external: true, targetPort: 8000, transport: 'auto' }
-      registries: [{ server: registry.properties.loginServer, identity: identity.id }]
       secrets: [{ name: 'appinsights', value: insights.properties.ConnectionString }]
     }
     template: {
       containers: [
         {
           name: 'api'
-          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          image: apiImage
           resources: { cpu: json('0.5'), memory: '1Gi' }
           env: [
             { name: 'MATCHMIND_DB_URL', value: sqlUrl }

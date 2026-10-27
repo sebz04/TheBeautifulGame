@@ -8,6 +8,7 @@
     "foundryResourceId": { "value": "${FOUNDRY_RESOURCE_ID}" },
     "foundryProjectEndpoint": { "value": "${FOUNDRY_PROJECT_ENDPOINT}" },
     "foundryModelDeployment": { "value": "${FOUNDRY_MODEL_DEPLOYMENT=gpt-4.1-mini}" },
+    "apiImage": { "value": "${API_IMAGE=ghcr.io/sebz04/matchmind-api:latest}" },
     "sqlLocation": { "value": "${SQL_LOCATION=northcentralus}" },
     "alertEmail": { "value": "${ALERT_EMAIL}" },
     "createBudget": { "value": "${CREATE_BUDGET=true}" }
