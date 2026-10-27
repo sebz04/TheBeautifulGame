@@ -2,6 +2,13 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-24.3 · first deploy live and verified (health, API, SSE, live re-ask through Foundry, App Insights agent spans, site at 61 fps); template runs the GitHub image (apiImage) instead of the placeholder; deploy workflow updates the app's image after each Image build (needs one-time OIDC setup) · infra-ops, README
+- 2026-10-27 · TASK-24.3 · agent_runs.moment_id widened to 512 (batched Analyst runs; Azure SQL enforces widths), seed rebuilds the target schema, Mac seeding notes (ODBC driver, OpenSSL 3) · infra-ops
+- 2026-10-27 · TASK-24.3 · Azure SQL token sign-in drops Trusted_Connection (FA005 on the first cloud seed) · data-model
+- 2026-10-27 · TASK-24.2 · image built by GitHub Actions and published to GitHub Container Registry (ACR Tasks are paused on Azure for Students) · infra-ops
+- 2026-10-26 · TASK-24.1 · Azure SQL in its own region (Canada Central): North Central US refused new SQL servers on the first `azd up` · infra-ops
+- 2026-10-26 · TASK-24.2 · Dockerfile (website + API, ODBC Driver 18, non-root), .dockerignore, deploy workflow (azd up with GitHub OIDC, health check), scripts/seed_cloud.py (Azure SQL copy, identity grants, blob upload) · infra-ops
+- 2026-10-26 · TASK-24.1 · azd + Bicep infrastructure (Container Apps, ACR remote build, Azure SQL Basic with Entra-only sign-in, Blob, App Insights, one managed identity, Foundry role grants, budget); Azure SQL token sign-in in make_engine; the API serves the built website with deep links and an explicit /mcp route · infra-ops, api-frontend, data-model
 - 2026-10-26 · TASK-23 · final review fixes: accent readable on cards for every club, deep shade for tabs and switches, card-colored loading text, readable monograms, Player tab only opens on a favorite in the match, Ask why resets per insight and scrolls into view, a failed stream stops playing and says so · api-frontend
 - 2026-10-26 · TASK-23.6 · Playwright smoke and accessibility tests (axe at 1280/375 px, keyboard) in CI against a seeded model-free match (scripts/seed_demo.py); tabs move focus with arrow keys · api-frontend, conventions, README
 - 2026-10-26 · TASK-23.8 · Best Plays tab (live strip, moments so far, freeze-frame with heat, real vs best scorecard, other options, pundit text, "picked the best option"), shared useFanMatch hook and option wording · api-frontend

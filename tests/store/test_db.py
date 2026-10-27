@@ -301,3 +301,52 @@ def test_realism_survives_clearing_agent_outputs(tmp_path) -> None:
     repo.save_realism("x1", {"checks": [], "ok": True})
     repo.clear_agent_outputs("x1")
     assert repo.get_realism("x1") == {"checks": [], "ok": True}
+
+
+def test_azure_sql_token_struct() -> None:
+    from matchmind.store.db import _token_struct
+
+    raw = _token_struct("ab")
+    assert raw == (4).to_bytes(4, "little") + "ab".encode("utf-16-le")
+
+
+def test_azure_sql_urls_sign_in_with_a_token() -> None:
+    from matchmind.store.db import _token_hook, _wants_token
+
+    assert _wants_token("mssql+pyodbc://@srv.database.windows.net/db?driver=x")
+    assert not _wants_token("sqlite:///data/x.db") and not _wants_token("sqlite://")
+
+    class FakeCredential:
+        scopes: list[str] = []
+
+        def get_token(self, scope: str) -> object:
+            self.scopes.append(scope)
+            return type("T", (), {"token": "xyz"})()
+
+    cred = FakeCredential()
+    cparams: dict = {}
+    _token_hook(cred)(None, None, [], cparams)
+    assert cred.scopes == ["https://database.windows.net/.default"]
+    assert cparams["attrs_before"] == {1256: (6).to_bytes(4, "little") + "xyz".encode("utf-16-le")}
+
+
+def test_token_sign_in_drops_windows_sign_in() -> None:
+    """With no username in the URL, SQLAlchemy asks for Trusted_Connection (Windows sign-in),
+    which the ODBC driver refuses to combine with an access token (FA005)."""
+    from matchmind.store.db import _token_hook
+
+    class FakeCredential:
+        def get_token(self, scope: str) -> object:
+            return type("T", (), {"token": "xyz"})()
+
+    cargs = ["DRIVER={ODBC Driver 18};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"]
+    _token_hook(FakeCredential())(None, None, cargs, {})
+    assert "Trusted_Connection" not in cargs[0] and "Encrypt=yes" in cargs[0]
+
+
+def test_agent_run_moment_ids_fit_a_batched_analyst_run() -> None:
+    """The Analyst logs one run for a batch: "m000,m001,..." (231 characters in the precompute).
+    SQLite ignores column lengths; Azure SQL enforces them."""
+    from matchmind.store.db import agent_runs
+
+    assert agent_runs.c.moment_id.type.length >= 512

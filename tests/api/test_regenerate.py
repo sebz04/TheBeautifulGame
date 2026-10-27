@@ -128,3 +128,24 @@ def test_served_app_turns_tracing_on(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delitem(app_module.__dict__, "app", raising=False)
     assert app_module.app == "the app"
     assert len(calls) == 1  # only the served app (tests build theirs with create_app)
+
+
+def test_serves_the_built_site_with_deep_links(built: Built, tmp_path) -> None:  # noqa: ANN001
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>MatchMind</title>")
+    (dist / "assets" / "app.js").write_text("console.log('hi')")
+    settings = Settings(_env_file=None, web_dist=dist, api_host="testserver")  # type: ignore[call-arg]
+    app = create_app(repo=built.repo, store=built.store, settings=settings, regenerator=None)
+    with TestClient(app) as c:
+        assert "MatchMind" in c.get("/").text
+        assert "MatchMind" in c.get(f"/match/{built.meta.match_id}/best-plays").text  # deep link
+        assert c.get("/assets/app.js").text == "console.log('hi')"
+        assert c.get("/api/health").json()["ok"] is True
+        missing = c.get("/api/nope")
+        assert missing.status_code == 404 and "MatchMind" not in missing.text
+        init = {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                "params": {"protocolVersion": LATEST_PROTOCOL_VERSION, "capabilities": {},
+                           "clientInfo": {"name": "t", "version": "1"}}}  # fmt: skip
+        mcp = c.post("/mcp", json=init, headers={"Accept": "application/json, text/event-stream"})
+        assert mcp.status_code == 200 and "matchmind-stats" in mcp.text

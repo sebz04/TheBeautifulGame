@@ -8,11 +8,15 @@ Run with ``uv run uvicorn matchmind.api.app:app``. Tests build their own app wit
 import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from mcp.server.transport_security import TransportSecuritySettings
+from starlette.routing import Route
 
 from matchmind.agents.orchestrator import ALL_LANGS, Deps, Regenerated, regenerate
 from matchmind.agents.runtime import configure_tracing
@@ -104,8 +108,27 @@ def create_app(
     app.include_router(routes_matches.router)
     app.include_router(routes_insights.router)
     app.include_router(routes_live.router)
-    app.mount("/", mcp_asgi)  # last, so it only sees /mcp
+    app.router.routes.append(Route("/mcp", endpoint=mcp_asgi))  # the MCP server's own route
+    if settings.web_dist and (settings.web_dist / "index.html").exists():
+        _serve_site(app, settings.web_dist)
     return app
+
+
+def _serve_site(app: FastAPI, dist: Path) -> None:
+    """The built website: its assets, its root files, and index.html for every other page
+    (deep links such as /match/<id> are client-side routes). /api paths never fall through."""
+    if (dist / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+    root = dist.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def site(path: str) -> FileResponse:
+        if path == "api" or path.startswith(("api/", "mcp")):
+            raise HTTPException(404, "not found")
+        file = (root / path).resolve()
+        if path and file.is_file() and file.is_relative_to(root):
+            return FileResponse(file)
+        return FileResponse(root / "index.html")
 
 
 def __getattr__(name: str) -> Any:

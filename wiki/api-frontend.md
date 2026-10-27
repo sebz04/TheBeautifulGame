@@ -3,7 +3,7 @@
 **Status:** API built (TASK-21): read endpoints, SSE live replay, live regenerate with rate limits, `/mcp`, CORS. Frontend planned (TASK-22 to TASK-23). Frontend planned (TASK-22 to TASK-23). The full contract is in plan Task 21.
 
 ## API (`src/matchmind/api/`)
-- **Run:** `uv run uvicorn matchmind.api.app:app` (port 8000). The served app warms the cheap caches (momentum, replay index) in a background thread at startup.
+- **Run:** `uv run uvicorn matchmind.api.app:app` (port 8000). It also serves the built website from `web/dist` when present: `/assets/*`, root files, and `index.html` for every other path (deep links), never for `/api/*`. `/mcp` is an explicit route to the MCP app. The served app warms the cheap caches (momentum, replay index) in a background thread at startup.
 - **Realism** is stored by `matchmind build` (`Repo.save_realism`); a match built before that is checked once on first request (about 10 s) and saved. It is not warmed: computing it holds the GIL for seconds and stalled live streams.
 - **`create_app(repo=None, store=None, *, warm=False, settings=None, limiter=None, regenerator=None)`** builds the app; tests pass an in-memory `Repo`, a temp `TrackingStore`, a fake-clock `RateLimiter`, and a fake regenerator.
 - **CORS:** only `MATCHMIND_WEB_ORIGIN` (the Static Web App) and `localhost:5173`, methods GET and POST.
