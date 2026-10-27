@@ -59,7 +59,7 @@ describe("AskWhyPanel", () => {
     vi.spyOn(api, "regenerate").mockRejectedValue(new ApiError(429, "too many live runs; try again later", 1500));
     render(<AskWhyPanel {...PROPS} />);
     fireEvent.click(await screen.findByRole("button", { name: /ask the pundit live/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/try again in 25 minutes/i);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/try again in 25 min/i);
     expect(screen.getByText("xG of 0.777")).toBeInTheDocument(); // the panel still works
   });
 

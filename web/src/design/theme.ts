@@ -48,7 +48,7 @@ export function contrast(a: string, b: string): number {
 }
 
 /** Near-black or white, whichever has the higher contrast on `bg`. */
-function textOn(bg: string): string {
+export function textOn(bg: string): string {
   return contrast(INK, bg) >= contrast(PAPER, bg) ? INK : PAPER;
 }
 

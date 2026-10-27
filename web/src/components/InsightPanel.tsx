@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { InsightRow, Moment, Period } from "../api/types";
+import { useT } from "../i18n/i18n";
 import { minuteLabel } from "../live/minute";
 import InsightCard from "./InsightCard";
 
@@ -33,13 +34,14 @@ export interface InsightPanelProps {
 }
 
 export default function InsightPanel({ rows, moments, period, t, addedS, onAskWhy, onBestPlay }: InsightPanelProps) {
+  const tr = useT();
   const [pinned, setPinned] = useState<string | null>(null);
   const soFar = insightsSoFar(rows, moments, period, t);
   if (soFar.length === 0) {
     return (
       <div className="bg-surface p-6 text-text">
-        <p className="m-0 font-display text-3xl font-extrabold">Your pundit is watching.</p>
-        <p className="mb-0 mt-2 text-sm text-muted">The first insight appears at the first key moment. Press play, or jump to a moment on the timeline.</p>
+        <p className="m-0 font-display text-3xl font-extrabold">{tr("panel.watching")}</p>
+        <p className="mb-0 mt-2 text-sm text-muted">{tr("panel.hint")}</p>
       </div>
     );
   }
@@ -52,7 +54,7 @@ export default function InsightPanel({ rows, moments, period, t, addedS, onAskWh
     <div>
       <InsightCard key={top.insight.insight_id} row={top} minute={minuteOf(top)} onAskWhy={() => onAskWhy(top)} onBestPlay={(e) => onBestPlay(top, e)} />
       {soFar.length > 1 && (
-        <ul className="m-0 mt-0.5 list-none bg-surface px-6 py-1.5 text-text" aria-label="Earlier insights">
+        <ul className="m-0 mt-0.5 list-none bg-surface px-6 py-1.5 text-text" aria-label={tr("panel.earlier")}>
           {soFar
             .filter((r) => r !== top)
             .slice(0, EARLIER)
@@ -65,7 +67,7 @@ export default function InsightPanel({ rows, moments, period, t, addedS, onAskWh
                   dir={r.text.dir}
                   className="grid w-full grid-cols-[3.2rem_1fr] gap-2.5 border-0 bg-transparent py-3 text-start text-sm text-text"
                 >
-                  <span className="font-display text-xl font-extrabold text-muted">{minuteOf(r)}</span>
+                  <span dir="ltr" className="font-display text-xl font-extrabold text-muted [text-align:start]">{minuteOf(r)}</span>
                   <span>{r.text.headline}</span>
                 </button>
               </li>

@@ -1,6 +1,7 @@
 // Both teams' numbers side by side at the replay's time.
 import { api } from "../api/client";
 import type { Period } from "../api/types";
+import { useT, type Key } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { LoadError, Loading } from "./Status";
 
@@ -12,12 +13,7 @@ const TEAM_NAMES: Record<string, (v: number) => string> = {
   yellow: (v) => String(v), red: (v) => String(v),
 }; // prettier-ignore
 
-const LABELS: Record<string, string> = {
-  goals: "Goals", xg: "Expected goals", possession: "Possession", territory: "Territory", shots: "Shots",
-  shots_on_target: "On target", passes: "Passes", pass_completion: "Pass completion", ppda: "Passes per defensive action",
-  field_tilt_10min: "Final-third share, last 10 min", corners: "Corners", fouls: "Fouls", yellow: "Yellow cards", red: "Red cards",
-}; // prettier-ignore
-
+const LABELS = Object.keys(TEAM_NAMES);
 export interface TeamTabProps {
   matchId: string;
   home: { club_id: string; name: string };
@@ -27,13 +23,14 @@ export interface TeamTabProps {
 }
 
 export default function TeamTab({ matchId, home, away, period, t }: TeamTabProps) {
+  const tr = useT();
   const at = Math.floor(t / 30) * 30;
   const state = useAsync(
     () => Promise.all([home, away].map((c) => api.stats(matchId, { scope: "team", scope_id: c.club_id, period, t: at }))),
     [matchId, home.club_id, away.club_id, period, at],
   );
-  if (state.status === "loading") return <Loading what="the team stats" />;
-  if (state.status === "error") return <LoadError what="the team stats" retry={state.retry} />;
+  if (state.status === "loading") return <Loading what="what.teamStats" />;
+  if (state.status === "error") return <LoadError what="what.teamStats" retry={state.retry} />;
   const [h, a] = state.data.map((s) => s.metrics);
   return (
     <table className="w-full border-collapse text-sm">
@@ -45,10 +42,10 @@ export default function TeamTab({ matchId, home, away, period, t }: TeamTabProps
         </tr>
       </thead>
       <tbody>
-        {Object.keys(LABELS).map((k) => (
+        {LABELS.map((k) => (
           <tr key={k} className="border-t border-[color:var(--mm-rule)]">
             <td className="py-2 text-left font-display text-xl font-extrabold tabular-nums">{h[k] == null ? "–" : TEAM_NAMES[k](h[k]!)}</td>
-            <td className="py-2 text-center text-muted">{LABELS[k]}</td>
+            <td className="py-2 text-center text-muted">{tr(`stat.${k}` as Key)}</td>
             <td className="py-2 text-right font-display text-xl font-extrabold tabular-nums">{a[k] == null ? "–" : TEAM_NAMES[k](a[k]!)}</td>
           </tr>
         ))}

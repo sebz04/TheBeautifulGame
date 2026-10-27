@@ -9,20 +9,25 @@ import MomentumChart from "../components/MomentumChart";
 import Overlays from "../components/Overlays";
 import Pitch from "../components/Pitch";
 import PlaybackBar from "../components/PlaybackBar";
+import PersonaBar from "../components/PersonaBar";
 import PlayerTab from "../components/PlayerTab";
 import RealismPanel from "../components/RealismPanel";
 import RecapPanel from "../components/RecapPanel";
+import SidePicker from "../components/SidePicker";
 import StatsStrip from "../components/StatsStrip";
 import { LoadError, Loading } from "../components/Status";
 import TeamTab from "../components/TeamTab";
 import Timeline from "../components/Timeline";
+import { NEUTRAL_THEME, applyTheme, clubTheme } from "../design/theme";
+import { useT } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { minuteLabel } from "../live/minute";
 import { scoreAt } from "../live/score";
+import { personaFor, themeClubFor, type MatchSides, type Voice } from "../persona";
 import { useStore } from "../state/store";
 
 const HALF_S = 45 * 60;
-const TABS = ["Game", "Team", "Player"] as const;
+const TABS = ["game", "team", "player"] as const;
 type Tab = (typeof TABS)[number];
 const HEAT_EVERY_MS = 1000;
 
@@ -72,12 +77,34 @@ export default function Match() {
   const timeline = useAsync(() => api.timeline(id), [id]);
   const [about, setAbout] = useState(false);
   const [showHeat, setShowHeat] = useState(false);
-  const [tab, setTab] = useState<Tab>("Game");
+  const [tab, setTab] = useState<Tab>("game");
   const [asking, setAsking] = useState<InsightRow | null>(null);
-  const lang = useStore((s) => s.prefs.lang);
-  // The fan's voice comes from the switches (TASK-23.5); until then, the casual voice.
-  const query = { persona: "casual" as const, lang };
-  const rows = useAsync(() => api.insights(id, query), [id, lang]);
+  const t = useT();
+  const prefs = useStore((s) => s.prefs);
+  const setPrefs = useStore((s) => s.setPrefs);
+  const lang = prefs.lang;
+  const league = useAsync(() => api.league(), []);
+  const sides: MatchSides | null = useMemo(
+    () =>
+      state.status === "ready"
+        ? { match_id: id, home: state.data.home, away: state.data.away,
+            players: [...state.data.home_squad, ...state.data.away_squad].map((p) => p.player_id) } // prettier-ignore
+        : null,
+    [state, id],
+  );
+  const voice = sides ? personaFor(prefs, sides) : null;
+  const ready: Voice | null = voice && !("needsSide" in voice) ? voice : null;
+  const voiceKey = ready ? `${ready.persona}:${ready.club_id ?? ""}:${ready.player_id ?? ""}` : "";
+  const rows = useAsync(
+    () => (ready ? api.insights(id, { ...ready, lang }) : new Promise<never>(() => undefined)),
+    [id, lang, voiceKey],
+  );
+  const themeClub = sides ? themeClubFor(prefs, sides) : null;
+  useEffect(() => {
+    const club = state.status === "ready" ? [state.data.home, state.data.away].find((c) => c.club_id === themeClub) : undefined;
+    applyTheme(club ? clubTheme(club, "dark") : NEUTRAL_THEME);
+  }, [state, themeClub]);
+  useEffect(() => () => applyTheme(NEUTRAL_THEME), []);
   const heat = useHeat(id, showHeat);
   const live = useStore();
   const openMatch = useStore((x) => x.openMatch);
@@ -90,8 +117,8 @@ export default function Match() {
     [state],
   );
 
-  if (state.status === "loading") return <main className="px-7"><Loading what="the match" /></main>;
-  if (state.status === "error") return <main className="px-7 py-8"><LoadError what="the match" retry={state.retry} /></main>;
+  if (state.status === "loading") return <main className="px-7"><Loading what="what.match" /></main>;
+  if (state.status === "error") return <main className="px-7 py-8"><LoadError what="what.match" retry={state.retry} /></main>;
   const m = state.data;
   const firstHalfS = HALF_S + m.added_time_s[0];
   const minute = minuteLabel(live.period, live.t, m.added_time_s);
@@ -103,18 +130,24 @@ export default function Match() {
   const positions = Object.fromEntries((latest?.players ?? []).map((p) => [p.player_id, { x: p.x, y: p.y }]));
   const momentById = Object.fromEntries(moments.map((x) => [x.moment_id, x]));
   const squad = [...m.home_squad, ...m.away_squad].map((p) => ({ player_id: p.player_id, name: p.name }));
+  const leagueNames = league.status === "ready" ? Object.fromEntries([...league.data.clubs.map((c) => [c.club_id, c.name]), ...league.data.players.map((p) => [p.player_id, p.name])]) : {};
+  const clubName = themeClub ? (themeClub === m.home.club_id ? m.home.name : m.away.name) : prefs.favorite_club_id ? (leagueNames[prefs.favorite_club_id] ?? null) : null;
+  const playerName = prefs.favorite_player_id ? (names[prefs.favorite_player_id] ?? leagueNames[prefs.favorite_player_id] ?? null) : null;
   const teamColors = { "--mm-home": m.home.primary_color, "--mm-away": m.away.primary_color } as React.CSSProperties;
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 pb-10 pt-5 md:px-7" style={teamColors}>
-      <header aria-label="Score" className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
+      {voice && "needsSide" in voice && (
+        <SidePicker home={m.home} away={m.away} onPick={(club) => setPrefs({ sides: { ...prefs.sides, [id]: club } })} />
+      )}
+      <header aria-label={t("match.score")} className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
         <div className="flex items-center gap-3.5 font-bold">
           <Monogram club={m.home} />
           <span className="hidden sm:inline">{m.home.name}</span>
         </div>
         <div className="flex items-baseline gap-4 font-display text-6xl font-black leading-none tabular-nums md:text-7xl">
           <span>{score.home}</span>
-          <span className="bg-accent px-2.5 py-1.5 text-2xl font-extrabold text-on-accent">{minute}</span>
+          <span dir="ltr" className="bg-accent px-2.5 py-1.5 text-2xl font-extrabold text-on-accent">{minute}</span>
           <span>{score.away}</span>
         </div>
         <div className="flex items-center justify-end gap-3.5 font-bold">
@@ -123,11 +156,14 @@ export default function Match() {
         </div>
       </header>
 
-      <div className="my-4 flex flex-wrap items-center gap-3 text-sm">
-        <Link to="/matches" className="text-text-on-bg">All matches</Link>
-        <button type="button" onClick={() => setAbout(true)} className="border-0 bg-transparent p-0 text-sm text-text-on-bg underline">
-          About this match
-        </button>
+      <div className="my-4 flex flex-wrap items-center justify-between gap-3">
+        <PersonaBar clubName={clubName} playerName={playerName} />
+        <div className="flex gap-4 text-sm">
+          <Link to="/matches" className="text-text-on-bg">{t("match.all")}</Link>
+          <button type="button" onClick={() => setAbout(true)} className="border-0 bg-transparent p-0 text-sm text-text-on-bg underline">
+            {t("match.about")}
+          </button>
+        </div>
       </div>
 
       {about && (
@@ -139,8 +175,8 @@ export default function Match() {
       )}
 
       <div className="grid items-start gap-5 md:grid-cols-[7fr_5fr]">
-        <section aria-label="Match">
-          <div role="tablist" aria-label="View" className="flex gap-0.5">
+        <section aria-label={t("what.match")}>
+          <div role="tablist" aria-label={t("match.view")} className="flex gap-0.5">
             {TABS.map((name) => (
               <button
                 key={name}
@@ -157,17 +193,17 @@ export default function Match() {
                 }}
                 className={`border-0 px-4 py-3 text-sm font-bold ${tab === name ? "bg-surface text-text" : "bg-black/30 text-text-on-bg"}`}
               >
-                {name}
+                {t(`tab.${name}`)}
               </button>
             ))}
           </div>
           <div id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="bg-surface p-3.5 text-text">
-          {tab === "Team" && <TeamTab matchId={id} home={m.home} away={m.away} period={live.period} t={live.t} />}
-          {tab === "Player" && (
+          {tab === "team" && <TeamTab matchId={id} home={m.home} away={m.away} period={live.period} t={live.t} />}
+          {tab === "player" && (
             <PlayerTab matchId={id} players={squad} playerId={useStore.getState().prefs.favorite_player_id ?? m.home_squad[9]?.player_id ?? squad[0].player_id} period={live.period} t={live.t} />
           )}
-          <div hidden={tab !== "Game"}>
-          <Pitch colors={colors} label={`Live pitch at ${minute}`} heat={heat}>
+          <div hidden={tab !== "game"}>
+          <Pitch colors={colors} label={t("match.pitch", { minute })} heat={heat}>
             <Overlays cues={live.cues} period={live.period} t={live.t} names={names} positions={positions} />
           </Pitch>
           <PlaybackBar
@@ -183,13 +219,13 @@ export default function Match() {
           />
           <label className="mt-3 flex items-center gap-2 text-sm text-muted">
             <input type="checkbox" checked={showHeat} onChange={(e) => setShowHeat(e.target.checked)} className="h-4 w-4 accent-[color:var(--mm-accent)]" />
-            Show which team controls each area of the pitch
+            {t("match.heat")}
           </label>
           </div>
-          {live.connection === "reconnecting" && <p role="status" className="mt-2 text-sm text-warn">Reconnecting to the match…</p>}
+          {live.connection === "reconnecting" && <p role="status" className="mt-2 text-sm text-warn">{t("match.reconnecting")}</p>}
           </div>
         </section>
-        <aside aria-label="Your pundit" className="order-first md:order-none">
+        <aside aria-label={t("what.pundit")} className="order-first md:order-none">
           {live.ended ? (
             <RecapPanel matchId={id} lang={lang} />
           ) : rows.status === "ready" ? (
@@ -203,23 +239,23 @@ export default function Match() {
               onBestPlay={(row) => setAsking(row) /* the Best Plays tab arrives in TASK-23.8 */}
             />
           ) : rows.status === "error" ? (
-            <LoadError what="your pundit's insights" retry={rows.retry} />
+            <LoadError what="what.insights" retry={rows.retry} />
           ) : (
-            <div className="bg-surface p-6 text-text"><Loading what="your pundit" /></div>
+            <div className="bg-surface p-6 text-text"><Loading what="what.pundit" /></div>
           )}
         </aside>
       </div>
 
       {asking && (
         <div className="mt-5">
-          <AskWhyPanel row={asking} matchId={id} variant={query} lang={lang} addedS={m.added_time_s} names={names} onClose={() => setAsking(null)} />
+          <AskWhyPanel row={asking} matchId={id} variant={ready ?? { persona: "casual" }} lang={lang} addedS={m.added_time_s} names={names} onClose={() => setAsking(null)} />
         </div>
       )}
 
       <div className="mt-5">
         <StatsStrip matchId={id} homeId={m.home.club_id} awayId={m.away.club_id} period={live.period} t={live.t} />
       </div>
-      <section aria-label="How the match has swung" className="mt-0.5 bg-surface px-4 pb-4 pt-3 text-text">
+      <section aria-label={t("match.flow")} className="mt-0.5 bg-surface px-4 pb-4 pt-3 text-text">
         <Timeline moments={moments} firstHalfS={firstHalfS} totalS={totalS} period={live.period} t={live.t} addedS={m.added_time_s} onSeek={live.seek} />
         {timeline.status === "ready" && (
           <MomentumChart points={timeline.data.momentum} firstHalfS={firstHalfS} totalS={totalS} period={live.period} t={live.t} homeName={m.home.name} awayName={m.away.name} />

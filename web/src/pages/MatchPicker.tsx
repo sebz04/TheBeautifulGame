@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { MatchRow } from "../api/types";
 import { LoadError, Loading } from "../components/Status";
+import { useT } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { useStore } from "../state/store";
 
@@ -25,14 +26,15 @@ function Monogram({ club }: { club: MatchRow["home"] }) {
 }
 
 export default function MatchPicker() {
+  const t = useT();
   const clubId = useStore((s) => s.prefs.favorite_club_id);
   const state = useAsync(() => api.matches(), []);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 md:px-7">
-      <h1 className="m-0 mb-6 font-display text-5xl font-black leading-none">Pick a match</h1>
-      {state.status === "loading" && <Loading what="matches" />}
-      {state.status === "error" && <LoadError what="the matches" retry={state.retry} />}
+      <h1 className="m-0 mb-6 font-display text-5xl font-black leading-none">{t("picker.title")}</h1>
+      {state.status === "loading" && <Loading what="what.matches" />}
+      {state.status === "error" && <LoadError what="what.matches" retry={state.retry} />}
       {state.status === "ready" && (
         <ul className="m-0 grid list-none gap-0.5 p-0">
           {orderForFan(state.data, clubId).map((m) => {
@@ -46,7 +48,7 @@ export default function MatchPicker() {
                   <Monogram club={m.home} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-base font-bold">{m.title}</span>
-                    {yours && <span className="text-sm text-muted">Your club is playing</span>}
+                    {yours && <span className="text-sm text-muted">{t("picker.yours")}</span>}
                   </span>
                   <span className="font-display text-4xl font-black tabular-nums">
                     {m.score.home}–{m.score.away}

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import { ApiError, api } from "../api/client";
 import type { AgentRun, Counterfactual, InsightRow, Lang, Persona, Regenerated, Why } from "../api/types";
+import { useT, type Key } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { minuteLabel } from "../live/minute";
 import { LoadError, Loading } from "./Status";
@@ -15,13 +16,13 @@ export interface Variant {
 }
 
 /** A small pitch with the real choice dashed and the best option as an arrow. */
-export function CounterfactualPitch({ cf, from }: { cf: Counterfactual; from: [number, number] }) {
+export function CounterfactualPitch({ cf, from, label }: { cf: Counterfactual; from: [number, number]; label: string }) {
   const p = ([x, y]: [number, number]) => [x * 3, (68 - y) * 3] as const;
   const [ox, oy] = p(from);
   const [cx, cy] = p(cf.chosen.end);
   const [bx, by] = p(cf.best.end);
   return (
-    <svg viewBox="0 0 315 204" role="img" aria-label="The real choice as a dashed line and the best option as an arrow" className="block h-auto w-full bg-[color:var(--mm-pitch)]">
+    <svg viewBox="0 0 315 204" role="img" aria-label={label} className="block h-auto w-full bg-[color:var(--mm-pitch)]">
       <defs>
         <marker id="mm-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill="var(--mm-accent)" />
@@ -40,12 +41,13 @@ export function CounterfactualPitch({ cf, from }: { cf: Counterfactual; from: [n
   );
 }
 
-const OPTION_WORDS: Record<string, string> = { pass: "Pass", through: "Through ball", carry: "Carry", shot: "Shot", clear: "Clearance" };
+type T = (key: Key, vars?: Record<string, string | number>) => string;
 
-function optionText(o: Counterfactual["chosen"], names: Record<string, string>): string {
-  const to = o.target_player_id ? ` to ${names[o.target_player_id] ?? "a teammate"}` : "";
-  const danger = Math.abs(o.xt_gain) < 0.005 ? "no added danger" : `${o.xt_gain > 0 ? "+" : ""}${o.xt_gain.toFixed(2)} danger`;
-  return `${OPTION_WORDS[o.kind] ?? o.kind}${to}: ${Math.round(o.pc_prob * 100)}% to work, ${danger}`;
+function optionText(o: Counterfactual["chosen"], names: Record<string, string>, t: T): string {
+  const kind = t(`opt.${o.kind}` as Key);
+  const what = o.target_player_id ? t("opt.to", { kind, player: names[o.target_player_id] ?? t("opt.teammate") }) : kind;
+  const danger = Math.abs(o.xt_gain) < 0.005 ? t("opt.noDanger") : t("opt.danger", { value: `${o.xt_gain > 0 ? "+" : ""}${o.xt_gain.toFixed(2)}` });
+  return t("opt.line", { what, chance: Math.round(o.pc_prob * 100), danger });
 }
 
 /** Agent runs grouped by agent: "explainer: 3 runs, 38.1 s" (fallbacks to templates counted). */
@@ -69,13 +71,12 @@ function decisionOf(why: Why): [number, number] | null {
   return e ? [e.x, e.y] : null;
 }
 
-function liveError(e: unknown): string {
+function liveError(e: unknown, t: T): string {
   if (e instanceof ApiError && e.status === 429) {
-    const mins = Math.max(1, Math.ceil((e.retry_after ?? 60) / 60));
-    return `You've used your live questions for now. Try again in ${mins} minute${mins === 1 ? "" : "s"}.`;
+    return t("live.limit", { minutes: Math.max(1, Math.ceil((e.retry_after ?? 60) / 60)) });
   }
-  if (e instanceof ApiError && e.status === 504) return "The pundit took too long to answer. Try again.";
-  return "The live pundit isn't available right now. The checked answer above still stands.";
+  if (e instanceof ApiError && e.status === 504) return t("live.timeout");
+  return t("live.down");
 }
 
 export interface AskWhyPanelProps {
@@ -89,6 +90,7 @@ export interface AskWhyPanelProps {
 }
 
 export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names, onClose }: AskWhyPanelProps) {
+  const t = useT();
   const why = useAsync(() => api.why(row.insight.insight_id), [row.insight.insight_id]);
   const [live, setLive] = useState<{ state: "idle" | "running" } | { state: "done"; result: Regenerated } | { state: "error"; message: string }>({ state: "idle" });
   const running = useRef(false);
@@ -101,7 +103,7 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
       .regenerate(matchId, { moment_id: row.insight.moment_id, persona: variant.persona, lang, ...(variant.club_id ? { club_id: variant.club_id } : {}), ...(variant.player_id ? { player_id: variant.player_id } : {}) })
       .then(
         (result) => setLive({ state: "done", result }),
-        (e: unknown) => setLive({ state: "error", message: liveError(e) }),
+        (e: unknown) => setLive({ state: "error", message: liveError(e, t) }),
       )
       .finally(() => (running.current = false));
   };
@@ -110,19 +112,19 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
     <section aria-labelledby="why-title" className="bg-surface p-6 text-text" onKeyDown={(e) => e.key === "Escape" && onClose()}>
       <div className="flex items-start justify-between gap-4">
         <h2 id="why-title" className="m-0 font-display text-3xl font-extrabold">
-          Why your pundit said this
+          {t("why.title")}
         </h2>
         <button type="button" onClick={onClose} className="border border-text bg-transparent px-3 py-2 text-text">
-          Close
+          {t("close")}
         </button>
       </div>
 
-      {why.status === "loading" && <Loading what="the evidence" />}
-      {why.status === "error" && <LoadError what="the evidence" retry={why.retry} />}
+      {why.status === "loading" && <Loading what="what.evidence" />}
+      {why.status === "error" && <LoadError what="what.evidence" retry={why.retry} />}
       {why.status === "ready" && (
         <div className="mt-4 grid gap-6 md:grid-cols-2">
           <div>
-            <h3 className="mb-2 mt-0 text-sm font-bold text-muted">The numbers it rests on</h3>
+            <h3 className="mb-2 mt-0 text-sm font-bold text-muted">{t("why.numbers")}</h3>
             <ul className="m-0 list-none p-0">
               {why.data.claims.map((c) => (
                 <li key={c.ref} className="border-t border-[color:var(--mm-rule)] py-2">
@@ -130,7 +132,7 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
                 </li>
               ))}
             </ul>
-            <h3 className="mb-2 mt-5 text-sm font-bold text-muted">The moments it cites</h3>
+            <h3 className="mb-2 mt-5 text-sm font-bold text-muted">{t("why.moments")}</h3>
             <ul className="m-0 list-none p-0">
               {why.data.events.map((e) => (
                 <li key={e.event_id} className="border-t border-[color:var(--mm-rule)] py-2">
@@ -139,7 +141,7 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
                 </li>
               ))}
             </ul>
-            <h3 className="mb-2 mt-5 text-sm font-bold text-muted">How the agents made it</h3>
+            <h3 className="mb-2 mt-5 text-sm font-bold text-muted">{t("why.agents")}</h3>
             <ul className="m-0 list-none p-0 text-sm">
               {runSummary(why.data.agent_runs).map((line) => (
                 <li key={line} className="border-t border-[color:var(--mm-rule)] py-2">
@@ -147,25 +149,25 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-muted">Trace id: {why.data.trace_id ?? "not recorded for this precomputed insight"}</p>
+            <p className="text-xs text-muted">{why.data.trace_id ? t("why.trace", { id: why.data.trace_id }) : t("why.traceNone")}</p>
           </div>
           <div>
             {why.data.counterfactual && decisionOf(why.data) && (
               <>
-                <h3 className="mb-2 mt-0 text-sm font-bold text-muted">What else was on</h3>
-                <CounterfactualPitch cf={why.data.counterfactual} from={decisionOf(why.data)!} />
-                <p className="mb-1 mt-2 text-sm text-muted">What happened: {optionText(why.data.counterfactual.chosen, names)}</p>
-                <p className="m-0 text-sm">Best option: {optionText(why.data.counterfactual.best, names)}</p>
+                <h3 className="mb-2 mt-0 text-sm font-bold text-muted">{t("why.else")}</h3>
+                <CounterfactualPitch cf={why.data.counterfactual} from={decisionOf(why.data)!} label={t("why.pitch")} />
+                <p className="mb-1 mt-2 text-sm text-muted">{t("why.happened", { option: optionText(why.data.counterfactual.chosen, names, t) })}</p>
+                <p className="m-0 text-sm">{t("why.best", { option: optionText(why.data.counterfactual.best, names, t) })}</p>
               </>
             )}
             <div className="mt-6 border-t border-[color:var(--mm-rule)] pt-4">
               <button type="button" onClick={askLive} disabled={live.state === "running"} className="border-0 bg-accent px-4 py-2.5 font-bold text-on-accent disabled:opacity-60">
-                Ask the pundit live
+                {t("live.ask")}
               </button>
-              <p className="mb-0 mt-2 text-xs text-muted">The agents look at this moment again, right now, in your voice and language. About 30 seconds.</p>
+              <p className="mb-0 mt-2 text-xs text-muted">{t("live.hint")}</p>
               {live.state === "running" && (
                 <p role="status" className="mt-3 text-sm">
-                  The agents are working: explaining, checking every number, then writing it for you…
+                  {t("live.working")}
                 </p>
               )}
               {live.state === "error" && (
@@ -175,17 +177,17 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
               )}
               <div className={`mt-4 grid gap-4 ${live.state === "done" ? "sm:grid-cols-2" : ""}`}>
                 <article lang={row.text.lang} dir={row.text.dir} className="border-l-4 border-[color:var(--mm-rule)] pl-4">
-                  <p className="m-0 text-xs text-muted">Checked before the match</p>
+                  <p className="m-0 text-xs text-muted">{t("why.checked")}</p>
                   <h3 className="mb-0 mt-1 font-display text-2xl font-extrabold">{row.text.headline}</h3>
                   <p className="my-2 text-sm">{row.text.body}</p>
                 </article>
               {live.state === "done" && (
                 <article lang={live.result.text.lang} dir={live.result.text.dir} className="border-l-4 border-accent pl-4">
-                  <p className="m-0 text-xs text-muted">Just now, live</p>
+                  <p className="m-0 text-xs text-muted">{t("why.justNow")}</p>
                   <h3 className="m-0 font-display text-2xl font-extrabold">{live.result.text.headline}</h3>
                   <p className="my-2">{live.result.text.body}</p>
                   <p className="m-0 text-xs text-muted">
-                    {live.result.agent_runs.map((r) => r.agent).join(", ")}. Trace id: {live.result.trace_id ?? "none"}
+                    {live.result.agent_runs.map((r) => r.agent).join(", ")}. {live.result.trace_id ? t("why.trace", { id: live.result.trace_id }) : ""}
                   </p>
                 </article>
               )}

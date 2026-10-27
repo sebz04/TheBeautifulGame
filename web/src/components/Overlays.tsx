@@ -1,6 +1,7 @@
 // The fast lane: precomputed cues (name tags, speed and distance alerts) shown at their
 // time, at most three at once so the pitch stays readable.
 import type { Cue, Period } from "../api/types";
+import { useT } from "../i18n/i18n";
 
 export const MAX_CUES = 3;
 
@@ -11,10 +12,10 @@ export function visibleCues(cues: Cue[], period: Period, t: number, max = MAX_CU
     .slice(0, max);
 }
 
-function text(c: Cue, names: Record<string, string>): string {
+function text(c: Cue, names: Record<string, string>, ran: (who: string, km: string) => string): string {
   const who = names[String(c.payload.player_id ?? "")] ?? "A player";
   if (c.kind === "speed_alert") return `${who}, ${(Number(c.payload.speed_ms) * 3.6).toFixed(1)} km/h`;
-  if (c.kind === "distance_alert") return `${who} has run ${(Number(c.payload.distance_m) / 1000).toFixed(1)} km`;
+  if (c.kind === "distance_alert") return ran(who, (Number(c.payload.distance_m) / 1000).toFixed(1));
   return who;
 }
 
@@ -28,6 +29,8 @@ export interface OverlaysProps {
 }
 
 export default function Overlays({ cues, period, t, names, positions = {} }: OverlaysProps) {
+  const tr = useT();
+  const ran = (who: string, km: string) => tr("overlay.ran", { who, km });
   const shown = visibleCues(cues, period, t);
   let corner = 0;
   return (
@@ -45,7 +48,7 @@ export default function Overlays({ cues, period, t, names, positions = {} }: Ove
             style={style}
             className="absolute whitespace-nowrap bg-accent px-2 py-1 text-xs font-bold text-on-accent shadow"
           >
-            {text(c, names)}
+            {text(c, names, ran)}
           </div>
         );
       })}
