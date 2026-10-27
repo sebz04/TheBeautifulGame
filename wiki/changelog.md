@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-24.4 · Azure SQL swept (0 left) and image c24a0ae deployed; live checks recorded · infra-ops
 - 2026-10-27 · TASK-24.4 · lead wording checked against the score at the moment (agents/scoreline.py) in all 5 languages, in the Verifier before the model; scripts/fix_scoreline.py swept 1 insight and 26 fan texts to templates in the local database · verifier
 - 2026-10-27 · TASK-24 · plan updated with the as-built deployment, why it differs, and the roadblocks; infra-ops roadblock table; TASK-24.4 added for the scoreline check · infra-ops
 - 2026-10-27 · TASK-24.3 · first deploy live and verified (health, API, SSE, live re-ask through Foundry, App Insights agent spans, site at 61 fps); template runs the GitHub image (apiImage) instead of the placeholder; deploy workflow updates the app's image after each Image build (needs one-time OIDC setup) · infra-ops, README
