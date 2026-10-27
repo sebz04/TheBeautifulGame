@@ -235,7 +235,8 @@ class Variant(BaseModel):
 
 
 class Recap(BaseModel):
-    """The full-time recap. ``key_numbers`` are the verified claims it cites."""
+    """The full-time recap. ``key_numbers`` are the verified claims it cites. English is
+    written first; the other languages are translations of it (TASK-25.2)."""
 
     match_id: str
     title: str
@@ -243,6 +244,7 @@ class Recap(BaseModel):
     key_numbers: list[Claim]
     verified: bool
     source: Literal["agent", "template"]
+    lang: Lang = "en"
 
 
 class OverlayCue(BaseModel):

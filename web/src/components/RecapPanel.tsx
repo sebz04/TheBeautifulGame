@@ -11,8 +11,9 @@ export default function RecapPanel({ matchId, lang }: { matchId: string; lang: L
   if (state.status === "loading") return <div className="bg-surface p-6 text-text"><Loading what="what.recap"  onCard /></div>;
   if (state.status === "error") return <LoadError what="what.recap" retry={state.retry} />;
   const r = state.data;
+  const written = r.lang ?? "en";
   return (
-    <article lang="en" dir="ltr" className="border-t-[6px] border-accent bg-surface px-6 pb-6 pt-6 text-text">
+    <article lang={written} dir={written === "ar" ? "rtl" : "ltr"} className="border-t-[6px] border-accent bg-surface px-6 pb-6 pt-6 text-text">
       <p className="m-0 text-sm text-muted">{t("recap.fullTime")}</p>
       <h2 className="mb-4 mt-2 font-display text-[2.6rem] font-extrabold leading-[0.98]">{r.title}</h2>
       {r.paragraphs.map((p) => (
@@ -20,7 +21,7 @@ export default function RecapPanel({ matchId, lang }: { matchId: string; lang: L
           {p}
         </p>
       ))}
-      {lang !== "en" && <p className="mb-0 mt-4 text-xs text-muted">{t("recap.english")}</p>}
+      {written !== lang && <p className="mb-0 mt-4 text-xs text-muted">{t("recap.english")}</p>}
     </article>
   );
 }

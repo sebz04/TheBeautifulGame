@@ -127,6 +127,14 @@ INTROS: dict[Persona, dict[Lang, str]] = {
 }  # fmt: skip
 THE_MATCH: dict[Lang, str] = {"en": "the match", "es": "el partido", "pt": "a partida",
                               "fr": "le match", "ar": "المباراة"}  # fmt: skip
+# When no team or player is named, "What just happened: the match" reads oddly.
+MATCH_HEADLINES: dict[Persona, dict[Lang, str]] = {
+    "analyst": {"en": "Match analysis", "es": "Análisis del partido", "pt": "Análise da partida",
+                "fr": "Analyse du match", "ar": "تحليل المباراة"},
+    "casual": {"en": "What just happened", "es": "Qué acaba de pasar", "pt": "O que aconteceu",
+               "fr": "Ce qui vient de se passer", "ar": "ماذا حدث"},
+}  # fmt: skip
+_FR_VOWEL = re.compile(r"\bde ([AEIOUYHÀÂÉÈÊËÎÏÔÛÜaeiouyhàâéèêëîïôûü])")
 NO_NUMBERS: dict[Lang, str] = {
     "en": "The full breakdown is on its way.", "es": "El análisis completo llegará pronto.",
     "pt": "A análise completa chega em breve.", "fr": "L'analyse complète arrive bientôt.",
@@ -184,11 +192,17 @@ def _ordered(claims: list[Claim], variant: Variant) -> list[Claim]:
     return sorted(claims, key=lambda c: _about(c) != focus) if focus else list(claims)
 
 
-def _subject(insight: Insight, names: Mapping[str, str], lang: Lang) -> str:
+def _subject(insight: Insight, names: Mapping[str, str], lang: Lang) -> str | None:
     scopes = [s for c in insight.claims if (s := _about(c))]
     players = [s for c in insight.claims if "/player:" in c.ref and (s := _about(c))]
     pick = players[0] if insight.level == "player" and players else scopes[0] if scopes else None
-    return names.get(pick, THE_MATCH[lang]) if pick else THE_MATCH[lang]
+    return names.get(pick, pick) if pick else None
+
+
+def _french(text: str) -> str:
+    """French typography: "de" elides before a vowel ("d'Atlético"), and a colon takes a
+    space before it ("Possession : 53,8 %")."""
+    return re.sub(r"(?<=\S):", " :", _FR_VOWEL.sub(r"d'\1", text))
 
 
 def render(
@@ -198,8 +212,12 @@ def render(
     persona = variant.persona
     club = names.get(variant.club_id or "", variant.club_id or "")
     player = names.get(variant.player_id or "", variant.player_id or "")
-    fill = {"subject": _subject(insight, names, lang), "club": club, "player": player}
-    headline = HEADLINES[persona][lang].format(**fill)
+    subject = _subject(insight, names, lang)
+    fill = {"subject": subject or THE_MATCH[lang], "club": club, "player": player}
+    if subject is None and persona in MATCH_HEADLINES:
+        headline = MATCH_HEADLINES[persona][lang]
+    else:
+        headline = HEADLINES[persona][lang].format(**fill)
     lines = []
     for c in _ordered(insight.claims, variant):
         label = _label(c, persona, lang)
@@ -213,6 +231,8 @@ def render(
         if len(lines) == MAX_CLAIMS[persona]:
             break
     body = " ".join([INTROS[persona][lang].format(**fill), *(lines or [NO_NUMBERS[lang]])])
+    if lang == "fr":
+        headline, body = _french(headline), _french(body)
     return PersonalizedText(
         insight_id=insight.insight_id, persona=persona, lang=lang, headline=headline,
         body=body, verified=True, club_id=variant.club_id, player_id=variant.player_id,

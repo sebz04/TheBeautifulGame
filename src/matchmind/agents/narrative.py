@@ -21,9 +21,9 @@ from pydantic import BaseModel
 
 from matchmind.agents.numbers import check_text, extract_numbers
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
-from matchmind.agents.templates import LABELS, format_value
+from matchmind.agents.templates import _ARABIC, LABELS, _french, format_value
 from matchmind.clock import match_minute, minute_label
-from matchmind.schemas import Claim, Insight, Recap
+from matchmind.schemas import Claim, Insight, Lang, Recap
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +41,26 @@ class RecapReply(BaseModel):
     title: str
     paragraphs: list[str]
     key_refs: list[str]
+
+
+class TranslationReply(BaseModel):
+    title: str
+    paragraphs: list[str]
+
+
+LANG_NAMES: dict[Lang, str] = {"en": "English", "es": "Spanish", "pt": "Portuguese",
+                               "fr": "French", "ar": "Arabic"}  # fmt: skip
+# The template recap's words per language (names, minutes, and numbers come from code).
+RECAP_WORDS: dict[str, dict[Lang, str]] = {
+    "full_time": {"en": "Full time", "es": "Final", "pt": "Fim de jogo", "fr": "Fin du match",
+                  "ar": "نهاية المباراة"},
+    "goals": {"en": "Goals", "es": "Goles", "pt": "Gols", "fr": "Buts", "ar": "الأهداف"},
+    "none": {"en": "none", "es": "ninguno", "pt": "nenhum", "fr": "aucun", "ar": "لا يوجد"},
+    "red_cards": {"en": "Red cards", "es": "Tarjetas rojas", "pt": "Cartões vermelhos",
+                  "fr": "Cartons rouges", "ar": "البطاقات الحمراء"},
+    "key_numbers": {"en": "Key numbers", "es": "Cifras clave", "pt": "Números-chave",
+                    "fr": "Chiffres clés", "ar": "أرقام رئيسية"},
+}  # fmt: skip
 
 
 @dataclass
@@ -158,25 +178,34 @@ def _recap_message(ctx: RecapContext, insights: Sequence[Insight]) -> str:
     return f"Write the full-time recap for match {ctx.match_id}.\n{data}"
 
 
-def template_recap(ctx: RecapContext, insights: Sequence[Insight]) -> Recap:
-    """The deterministic recap: result, goals, red cards, and up to 3 key numbers."""
+def template_recap(ctx: RecapContext, insights: Sequence[Insight], lang: Lang = "en") -> Recap:
+    """The deterministic recap in ``lang``: result, goals, red cards, and up to 3 key
+    numbers (French typography, Arabic-Indic digits and punctuation, as in the templates)."""
+    words = {k: v[lang] for k, v in RECAP_WORDS.items()}
+    comma, semi = ("، ", "؛ ") if lang == "ar" else (", ", "; ")
+
+    def digits(text: str) -> str:
+        return text.translate(_ARABIC) if lang == "ar" else text
+
     h, a = ctx.score
-    goals = ", ".join(f"{p} ({t}) {m}" for m, p, t in ctx.goals) or "none"
-    paragraphs = [f"Goals: {goals}."]
+
+    def people(rows: Sequence[tuple[str, str, str]]) -> str:
+        return comma.join(f"{p} ({t}) {digits(m)}" for m, p, t in rows)
+
+    paragraphs = [f"{words['goals']}: {people(ctx.goals) or words['none']}."]
     if ctx.cards:
-        paragraphs.append(
-            "Red cards: " + ", ".join(f"{p} ({t}) {m}" for m, p, t in ctx.cards) + "."
-        )
-    key = list(_claims_by_ref(insights).values())[:MAX_KEY_NUMBERS]
-    lines = [
-        f"{LABELS[c.metric]['en']}: {format_value(c, 'en')}" for c in key if c.metric in LABELS
-    ]
-    if lines:
-        paragraphs.append("Key numbers: " + "; ".join(lines) + ".")
+        paragraphs.append(f"{words['red_cards']}: {people(ctx.cards)}.")
+    key = [c for c in list(_claims_by_ref(insights).values())[:MAX_KEY_NUMBERS]
+           if c.metric in LABELS]  # fmt: skip
+    if key:
+        lines = [f"{LABELS[c.metric][lang]}: {format_value(c, lang)}" for c in key]
+        paragraphs.append(f"{words['key_numbers']}: " + semi.join(lines) + ".")
+    title = f"{words['full_time']}: {ctx.home} {digits(f'{h}-{a}')} {ctx.away}"
+    if lang == "fr":
+        title, paragraphs = _french(title), [_french(p) for p in paragraphs]
     return Recap(
-        match_id=ctx.match_id, title=f"Full time: {ctx.home} {h}-{a} {ctx.away}",
-        paragraphs=paragraphs, key_numbers=[c for c in key if c.metric in LABELS],
-        verified=True, source="template",
+        match_id=ctx.match_id, title=title, paragraphs=paragraphs, key_numbers=key,
+        verified=True, source="template", lang=lang,
     )  # fmt: skip
 
 
@@ -217,6 +246,42 @@ async def recap(ctx: RecapContext, insights: Sequence[Insight], client: Any) -> 
             )  # fmt: skip
     log.warning("template recap for %s: %s", ctx.match_id, "; ".join(problems))
     return template_recap(ctx, insights)
+
+
+async def translate_recap(
+    english: Recap, lang: Lang, ctx: RecapContext, insights: Sequence[Insight], client: Any
+) -> Recap:
+    """``english`` in ``lang``, checked again in that language (Constitution II): every number
+    must be one of its key numbers, a milestone, a real minute, or a real scoreline. One
+    regeneration, then the template recap in ``lang``."""
+    agent = make_agent("narrative", PROMPT, TranslationReply, None, client=client,
+                       options=OPTIONS)  # fmt: skip
+    payload = {"task": "translate_recap", "language": LANG_NAMES[lang],
+               "title": english.title, "paragraphs": english.paragraphs}  # fmt: skip
+    message = (f"Translate this full-time recap into {LANG_NAMES[lang]}.\n"
+               + json.dumps(payload, ensure_ascii=False))  # fmt: skip
+    claims = [*english.key_numbers, *milestone_claims(ctx.milestones)]
+    problems: list[str] = []
+    for attempt in (1, 2):
+        text = message if attempt == 1 else (
+            f"{message}\n\nYour last translation was rejected:\n- " + "\n- ".join(problems)
+        )  # fmt: skip
+        reply, problem = await _ask(agent, text, f"{ctx.match_id}-recap-{lang}", attempt)
+        if not isinstance(reply, TranslationReply):
+            problems = [problem or "the answer was not JSON in the requested shape"]
+            continue
+        body = "\n".join([reply.title, *reply.paragraphs])
+        check = check_text(body, lang, claims, lambda c: c.value,
+                           minutes=ctx.minutes, scores=ctx.scores)  # fmt: skip
+        problems = list(check.failures)
+        if not reply.paragraphs:
+            problems.append("paragraphs is empty")
+        if not problems:
+            return english.model_copy(
+                update={"title": reply.title, "paragraphs": reply.paragraphs, "lang": lang}
+            )
+    log.warning("template recap for %s (%s): %s", ctx.match_id, lang, "; ".join(problems))
+    return template_recap(ctx, insights, lang)
 
 
 def recap_context(repo: Any, match_id: str) -> RecapContext:

@@ -30,15 +30,21 @@
   - precision 1.00, with 0 false alarms on 60 correct checks;
   - about 2 s per model check.
 - **Live loop (final recording, 3 moments):** all 3 verified on the first try, 12–21 s each. Earlier runs needed up to 2 regenerations. The Verifier caught unclaimed counts ("5 shots", "10 men") and a wrong value (63% field tilt where the stats say 38.5%), and the feedback fixed them.
-- **Known gaps** (also in `docs/evals.md`; the fix is deferred to TASK-25.2, after deployment):
-  - Numbers are matched to claims by value, not meaning, so a stat given to the wrong team passes when the value is right.
+- **Known gaps** (also in `docs/evals.md`):
+  - ~~Numbers are matched to claims by value, not meaning~~: team numbers are now tied to the team named (below, TASK-25.2).
   - Interpretation slips pass, such as PPDA read as pressure faced.
 
 ## Lead wording (`agents/scoreline.py`, TASK-24.4)
 - **Why:** the Verifier checked numbers, not who was winning, so "Morejo gives Chapinero the lead" passed at 1–1 and reached the live site.
 - **Check:** `lead_failures(text, lang, teams, score)` finds phrases that tie a lead to a named club in all 5 languages ("gives X the lead", "puts X ahead", "da ventaja a X", "garante vantagem para X", "X prend l'avantage", "يمنح X التقدم") and fails them unless that club is strictly ahead at the moment's end. Other meanings ("leads the press", "ventaja numérica") don't match. `team_variants` gives each club's full name and the words no other club shares.
 - **In the Verifier:** deterministic, before the model; `StatsFacts.lead_context(moment_id)` supplies the names and the score at the moment's end (facts without it skip the check).
-- **Sweep:** `scripts/fix_scoreline.py [--apply] [--db URL]` replaces stored insights (and all their texts and live line) and fan texts that fail with their templates. Found 1 insight and 26 fan texts (most French "prend l'avantage" at a level score).
+- **Sweep:** `scripts/fix_scoreline.py [--apply] [--db URL]` replaces stored insights (and all their texts and live line) and fan texts that fail with their templates. Found 1 insight and 26 fan texts (most French "prend l'avantage" at a level score). Since TASK-25.2 it also applies the team-number check and re-renders template texts.
+
+## Team numbers (`agents/owners.py`, TASK-25.2)
+- **Why:** numbers were matched by value, so "Atlético Chapinero allow 8.7 passes per defensive action" passed with Laureles' PPDA (golden `e19`, missed by the model 3/3).
+- **Check:** `owner_failures(text, lang, claims, teams)` ties each number that matches only team claims to the one team named before it in its clause (at most 8 words, no comma between); it fails if that team owns none of them. Skipped when the owner is named after the number, after "by", "vs", "frente a", "مقابل", "our"/"nuestro" (a fan's own club), after "outshot", for PPDA told from the passing side ("allowing Getsemaní 5.76"), and for "the last 10 minutes".
+- **Measured** on all 3,702 stored agent texts: 19 flags, 18 real (such as "Laureles enjoy 60% of final-third passes" with San Antonio's 60%) and 1 false alarm ("forçou 3 impedimentos"). On the golden set it catches `e18` and `e19` and passes all 20 correct lines.
+- **In the Verifier:** deterministic, before the model, with `Facts.clubs`. The local sweep replaced 1 insight and 16 fan texts and re-rendered 655 templates.
 
 ## Golden set and evaluation (TASK-18.2)
 - **`scripts/build_verifier_golden.py`** writes `evals/verifier_golden.jsonl`, and the output is deterministic. It holds 40 insights written by code from the stats and events of 3 built matches:

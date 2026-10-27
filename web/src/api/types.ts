@@ -221,6 +221,8 @@ export interface Recap {
   key_numbers: Claim[];
   verified: boolean;
   source: "agent" | "template";
+  /** The recap's language: the fan's, or "en" when no translation is stored. */
+  lang: Lang;
 }
 
 export interface League {

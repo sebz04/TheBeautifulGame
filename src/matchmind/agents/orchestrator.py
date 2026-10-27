@@ -23,7 +23,7 @@ from agent_framework import Workflow, WorkflowBuilder, WorkflowContext, executor
 
 from matchmind.agents.analyst import analyze, batches
 from matchmind.agents.context import match_names
-from matchmind.agents.narrative import live_line, recap, recap_context
+from matchmind.agents.narrative import live_line, recap, recap_context, translate_recap
 from matchmind.agents.numbers import fold
 from matchmind.agents.personalizer import personalize_batch as _personalize
 from matchmind.agents.personalizer import variants_for
@@ -443,6 +443,8 @@ async def run_match(
         recap_source = result.source
     else:
         recap_source = existing.source
+    if limit is None:
+        runs += await translate_recaps(match_id, deps)
     stored = deps.repo.list_insights(match_id)
     agent_runs = [r for r in runs if r.status != "fallback"]
     return PipelineReport(
@@ -459,6 +461,35 @@ async def run_match(
         tokens_out=sum(r.tokens_out for r in runs),
         recap_source=recap_source,
     )
+
+
+async def translate_recaps(match_id: str, deps: Deps) -> list[AgentRun]:
+    """The English recap in every other language not stored yet (TASK-25.2): a template
+    recap gets its template in that language; an agent recap is translated and checked."""
+    from matchmind.agents.narrative import template_recap  # noqa: PLC0415
+
+    english = deps.repo.get_recap(match_id)
+    if english is None:
+        return []
+    log = RunLog()
+    ctx = recap_context(deps.repo, match_id)
+    insights = [i for i in deps.repo.list_insights(match_id) if i.source == "agent"]
+    for lang in ALL_LANGS[1:]:
+        if deps.repo.get_recap(match_id, lang) is not None:
+            continue
+        if english.source == "template":
+            deps.repo.save_recap(template_recap(ctx, insights, lang))
+            continue
+        with pipeline_scope(log=log, sleep=deps.sleep, limiter=deps.limiter):
+            try:
+                result = await translate_recap(english, lang, ctx, insights, deps.client)
+            except Exception as exc:
+                _fallback(log, "recap", f"{match_id}-recap-{lang}", f"translation failed: {exc}")
+                result = template_recap(ctx, insights, lang)
+        deps.repo.save_recap(result)
+    for run in log.runs:
+        deps.repo.log_agent_run(run)
+    return list(log.runs)
 
 
 @dataclass

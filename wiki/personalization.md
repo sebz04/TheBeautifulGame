@@ -28,4 +28,5 @@
   - `club_fan` and `player_focus`: up to 3 claims, that club's or player's first.
   - `WORD_LIMITS`: analyst 90, casual 45, club_fan and player_focus 60.
 - `PersonalizedText.dir` is `"rtl"` for Arabic (new field, default `"ltr"`).
-- **Known nicety, deferred to TASK-25.2:** French elision ("de Atlético" should be "d'Atlético") and the space before French colons.
+- **French typography (TASK-25.2):** "de" elides before a vowel ("supporters d'Atlético Chapinero") and colons take a space before them ("Possession : 53,8 %").
+- **No subject (TASK-25.2):** when no claim names a team or player, `casual` and `analyst` use `MATCH_HEADLINES` ("What just happened", "Match analysis") instead of "What just happened: the match".

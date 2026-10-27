@@ -31,7 +31,7 @@
 - **Why:** the counterfactual is for the first cited decision event (pass, carry, shot, clearance), else `null`. `trace_id` is `null` for the TASK-20.2 precompute (tracing was off then).
 - **Stats:** `baseline` is the player's season expectation so far (`stats.deviations.expected_so_far`: per-90 rates × minutes played, adjusted for possession and red cards); `null` for teams or players without a season line.
 - **Pitch control:** the last frame at or before t (within 0.5 s); the attacking team is the team of the last event.
-- **Recap:** English only for now; `lang` and `persona` are validated, then ignored (translation is in TASK-25.2).
+- **Recap:** in `lang` when stored (TASK-25.2), else the English one; `Recap.lang` says which. `persona` is validated, then ignored. `RecapPanel` sets `lang`/`dir` from it and shows the "English for now" note only for a fallback.
 
 ## Regenerate (live agent run)
 - Body `{moment_id, persona, lang, club_id?, player_id?}`. Runs `orchestrator.regenerate`: Explainer ⟲ Verifier on the moment (the Analyst is skipped: the moment is already chosen), then one Personalizer text checked by the Verifier in `lang`, with the usual template fallbacks. **Nothing is saved**: the precomputed replay stays as reviewed.

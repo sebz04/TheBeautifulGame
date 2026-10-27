@@ -267,6 +267,10 @@ def test_live_lines_and_recap(tmp_path) -> None:
     assert repo.get_recap("x1") is None
     repo.save_recap(recap)
     assert repo.get_recap("x1") == recap
+    spanish = recap.model_copy(update={"title": "T es", "lang": "es"})
+    repo.save_recap(spanish)
+    assert repo.get_recap("x1", "es") == spanish and repo.get_recap("x1") == recap
+    assert repo.get_recap("x1", "fr") is None
 
 
 def test_clear_agent_outputs(tmp_path) -> None:

@@ -82,7 +82,8 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - **`recap(ctx, insights, client) -> Recap(title, paragraphs, key_numbers, verified, source)`**:
   - The model cites the numbers it quotes by **`key_refs`**, and code maps each ref back to a verified claim. An unknown ref fails, so the model never supplies a value.
   - Every number in the recap must be a cited claim, a real minute, a real scoreline, or a milestone number.
-  - One regeneration, then `template_recap`: the result, goals and red cards with minutes, and up to 3 key numbers.
+  - One regeneration, then `template_recap(ctx, insights, lang="en")`: the result, goals and red cards with minutes, and up to 3 key numbers, in any of the 5 languages (TASK-25.2).
+- **`translate_recap(english, lang, ctx, insights, client) -> Recap`** (TASK-25.2): the Narrative agent (`task: translate_recap`) translates the English recap; every number is checked again in that language (key numbers, milestones, minutes, scorelines); one regeneration, then the template in that language. Spelled-out derived numbers ("siete goles") fail, so r36's translations are templates.
 - **`recap_context(repo, match_id) -> RecapContext`** gives the score, goals, red cards, names, minutes, scorelines, and milestones of both clubs and the scorers.
   - **`milestones_before(…, round)`** keeps only rounds before this match's round (from `rNN-` in the match id). The season history runs all 38 rounds, and the first live recap boasted of a "25th goal" from round 6 in a round-1 match. Milestones with no round are dropped, since their timing is unknown.
 - The prompt has the same metric meanings as the Explainer's (copied), English, and temperature 0. Messages keep accented names as written (`ensure_ascii=False`).

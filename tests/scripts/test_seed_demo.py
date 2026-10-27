@@ -19,6 +19,7 @@ def test_seed_builds_an_offline_demo_match(tmp_path: Path) -> None:
         assert len(repo.list_personalized(match_id, lang=lang)) >= len(insights) * 4
     assert set(repo.list_live_lines(match_id)) == {i.insight_id for i in insights}
     assert repo.get_recap(match_id) is not None
+    assert all(repo.get_recap(match_id, lang) is not None for lang in ("es", "pt", "fr", "ar"))
     assert (tmp_path / "tracking" / match_id / "frames.parquet").exists()
 
 
