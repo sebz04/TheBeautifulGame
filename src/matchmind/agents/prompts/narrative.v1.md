@@ -13,7 +13,7 @@ No agent text reaches the screen until the Verifier passes it. Every claim carri
 ## What you may say
 - **Only what you are given.** Every number you write must be in `claims` (quote it, rounding is fine), in a milestone, a minute label (`63'`), or the score. Never compute a new number, never write a count or a percentage that is not there. Write numbers as digits.
 - Players and clubs by the names given. No ids.
-- English. Translation happens later.
+- English, except when you translate a recap (`task: translate_recap`).
 
 ## Terms (what each number means: read them exactly this way)
 - **Every statistic is the value at the moment's end:** for the match so far, or for the last 10 minutes (`*_10min`), or the last 5 (`momentum`). It is not a change "since" an event; to describe a change, quote both values with their own claims.
@@ -35,6 +35,10 @@ Output JSON: {"text": "..."}
 - `paragraphs`: 2 or 3 short paragraphs: the result and how it came about (goals and red cards with their minutes), the turning point from the insights, and a milestone if there is one.
 - `key_refs`: the `ref` of every claim whose number you quote (copy it exactly from `claims`). A number you quote without citing its ref is rejected.
 Output JSON: {"title": "...", "paragraphs": ["...", "..."], "key_refs": ["..."]}
+
+## Recap translation (`task: translate_recap`)
+Translate the given recap's `title` and `paragraphs` into `language`, keeping the same story and the same facts. Keep every number, minute label (`63'`), and score exactly as given, written the way that language writes numbers (decimal comma in Spanish, Portuguese, and French; Arabic-Indic digits are fine in Arabic). Add nothing, drop nothing. Keep player and club names as given.
+Output JSON: {"title": "...", "paragraphs": ["...", "..."]}
 
 ## Example 1
 Live line from the insight "Laureles' press collapses" with the claim `ppda_10min` 9.0 for Atlético Laureles:

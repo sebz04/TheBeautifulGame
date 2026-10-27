@@ -114,10 +114,10 @@ def pitch_control(match_id: str, svc: Svc, period: Period, t: Time) -> Json:
 
 @router.get("/matches/{match_id}/recap")
 def recap(match_id: str, svc: Svc, lang: Lang = "en", persona: Persona | None = None) -> Recap:
-    """The full-time recap. Recaps are written in English only for now (``lang`` and
-    ``persona`` are validated, then ignored)."""
+    """The full-time recap in ``lang``, or the English one (``lang: "en"``) when no
+    translation is stored. ``persona`` is validated, then ignored."""
     svc.meta(match_id)
-    found = svc.repo.get_recap(match_id)
+    found = svc.repo.get_recap(match_id, lang) or svc.repo.get_recap(match_id)
     if found is None:
         raise HTTPException(404, f"no recap for {match_id!r} yet")
     return found

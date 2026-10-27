@@ -2,6 +2,8 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-25.2 · recaps in all 5 languages: localized template recaps, `translate_recap` checked in each language, `translate_recaps` step and script, store and API by `lang`, RecapPanel uses the recap's language · agents, orchestrator, api-frontend, data-model, decisions
+- 2026-10-27 · TASK-25.2 · team numbers tied to the team named (agents/owners.py; golden e18 and e19 now caught by code, 18 real errors found in stored texts); French templates elide "de" and space colons; headlines without a subject read "What just happened"; fix_scoreline.py also sweeps team numbers and re-renders templates (local: 1 insight, 16 texts, 655 templates) · verifier, personalization
 - 2026-10-27 · TASK-25 · `docker compose up` verified on Docker: the site runs at http://localhost:5173 · infra-ops
 - 2026-10-27 · TASK-25 · README mapped to every §4.1 requirement, docs/architecture.md (pipeline and Azure diagrams), THIRD_PARTY_NOTICES adds the API, Azure, website, and font credits · README
 - 2026-10-27 · TASK-25 · `docker compose up` local run: seed_demo `--all --if-missing` builds all 8 matches with template insights on a volume, then the app serves them on :5173 · infra-ops, conventions, decisions, README

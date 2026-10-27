@@ -3,7 +3,7 @@ from fix_scoreline import sweep
 from matchmind.engine.lineup import match_meta
 from matchmind.league.fixtures import build_fixtures
 from matchmind.league.league import build_league
-from matchmind.schemas import Event, Insight, MatchData, Moment, PersonalizedText
+from matchmind.schemas import Claim, Event, Insight, MatchData, Moment, PersonalizedText
 from matchmind.store.db import Repo
 
 
@@ -48,12 +48,12 @@ def test_sweep_replaces_texts_that_claim_a_false_lead() -> None:
     good = bad.model_copy(update={"lang": "es", "headline": "Gol del empate"})
     repo.save_personalized([bad, good])
     found = sweep(repo, apply=False)
-    assert found == {"insights": 0, "texts": 1}
-    assert sweep(repo, apply=True) == {"insights": 0, "texts": 1}
+    assert found == {"insights": 0, "texts": 1, "templates": 0}
+    assert sweep(repo, apply=True) == {"insights": 0, "texts": 1, "templates": 0}
     fixed = repo.list_personalized(mid, persona="casual", lang="en")[0]
     assert fixed.source == "template" and "lead" not in fixed.headline.lower()
     assert repo.list_personalized(mid, lang="es")[0].headline == "Gol del empate"
-    assert sweep(repo, apply=False) == {"insights": 0, "texts": 0}
+    assert sweep(repo, apply=False) == {"insights": 0, "texts": 0, "templates": 0}
 
 
 def test_sweep_replaces_a_false_lead_insight_and_all_its_texts() -> None:
@@ -68,3 +68,29 @@ def test_sweep_replaces_a_false_lead_insight_and_all_its_texts() -> None:
     texts = repo.list_personalized(mid)
     assert texts and all(t.source == "template" for t in texts)
     assert repo.list_live_lines(mid)[ins.insight_id] == ins.headline
+
+
+def test_sweep_replaces_a_text_that_gives_a_number_to_the_wrong_team() -> None:
+    repo, mid, home = _world()
+    away_id = repo.get_match_meta(mid).away.club_id  # type: ignore[union-attr]
+    claim = Claim(text="share of the ball", metric="possession", value=0.46, unit="%",
+                  ref=f"metric:possession@1:1200.0/team:{away_id}")  # fmt: skip
+    repo.save_insight(_insight(mid, "A goal levels it").model_copy(update={"claims": [claim]}))
+    body = f"{home} have 46% of the ball."
+    bad = PersonalizedText(insight_id=f"{mid}-m001-ins", persona="casual", lang="en",
+                           headline="h", body=body, verified=True)  # fmt: skip
+    repo.save_personalized([bad])
+    assert sweep(repo, apply=True)["texts"] == 1
+    assert repo.list_personalized(mid)[0].source == "template"
+
+
+def test_sweep_re_renders_stale_templates() -> None:
+    repo, mid, _ = _world()
+    repo.save_insight(_insight(mid, "A goal levels it"))
+    stale = PersonalizedText(insight_id=f"{mid}-m001-ins", persona="casual", lang="en",
+                             headline="What just happened: the match", body="In short:",
+                             verified=True, source="template")  # fmt: skip
+    repo.save_personalized([stale])
+    assert sweep(repo, apply=True)["templates"] == 1
+    assert repo.list_personalized(mid)[0].headline == "What just happened"
+    assert sweep(repo, apply=False)["templates"] == 0

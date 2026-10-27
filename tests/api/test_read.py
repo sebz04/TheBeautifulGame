@@ -5,6 +5,8 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from matchmind.schemas import Recap
+
 Built = Any  # tests/api/conftest.py's Built (conftest modules share a name, so no import)
 
 
@@ -124,8 +126,14 @@ def test_pitch_control(client: TestClient, built: Built) -> None:
 def test_recap(client: TestClient, built: Built) -> None:
     url = f"/api/matches/{built.meta.match_id}/recap"
     body = client.get(url, params={"lang": "en", "persona": "casual"}).json()
-    assert body["title"] == "A comeback" and body["source"] == "agent"
+    assert body["title"] == "A comeback" and body["source"] == "agent" and body["lang"] == "en"
     assert client.get(url, params={"lang": "xx"}).status_code == 422
+    # No French recap stored: the English one, marked as English.
+    assert client.get(url, params={"lang": "fr"}).json()["lang"] == "en"
+    french = Recap(match_id=built.meta.match_id, title="Un renversement", paragraphs=["p"],
+                   key_numbers=[], verified=True, source="agent", lang="fr")  # fmt: skip
+    built.repo.save_recap(french)
+    assert client.get(url, params={"lang": "fr"}).json()["title"] == "Un renversement"
 
 
 def test_league(client: TestClient) -> None:

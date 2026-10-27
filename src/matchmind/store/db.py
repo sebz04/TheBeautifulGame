@@ -648,12 +648,18 @@ class Repo:
             row = c.execute(q).first()
         return None if row is None else dict(json.loads(row[0]))
 
-    def save_recap(self, recap: Recap) -> None:
-        self._put_narrative(f"recap:{recap.match_id}", recap.match_id, "recap",
-                            recap.model_dump_json())  # fmt: skip
+    @staticmethod
+    def _recap_key(match_id: str, lang: str) -> str:
+        """English keeps the original key (``recap:<match_id>``); others add the language."""
+        return f"recap:{match_id}" if lang == "en" else f"recap:{match_id}:{lang}"
 
-    def get_recap(self, match_id: str) -> Recap | None:
-        q = select(narratives.c.body_json).where(narratives.c.key == f"recap:{match_id}")
+    def save_recap(self, recap: Recap) -> None:
+        self._put_narrative(self._recap_key(recap.match_id, recap.lang), recap.match_id,
+                            "recap", recap.model_dump_json())  # fmt: skip
+
+    def get_recap(self, match_id: str, lang: str = "en") -> Recap | None:
+        key = self._recap_key(match_id, lang)
+        q = select(narratives.c.body_json).where(narratives.c.key == key)
         with self.engine.connect() as c:
             row = c.execute(q).first()
         return None if row is None else Recap.model_validate_json(row[0])

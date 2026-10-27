@@ -107,3 +107,26 @@ def test_jargon_detection() -> None:
 
 def test_templates_are_marked_as_templates() -> None:
     assert render(_insight(), VARIANTS[0], "en", NAMES).source == "template"
+
+
+def test_french_elides_de_before_a_vowel() -> None:
+    fan = VARIANTS[2]
+    text = render(_insight(), fan, "fr", NAMES)
+    assert text.headline == "Pour les supporters d'Atlético Chapinero"
+    assert "de Atlético" not in text.body
+
+
+def test_french_spaces_before_colons() -> None:
+    body = render(_insight(), VARIANTS[0], "fr", NAMES).body
+    assert " :" in body and not any(body[i - 1] != " " for i, ch in enumerate(body) if ch == ":")
+
+
+def test_headline_without_a_subject_reads_naturally() -> None:
+    no_scope = [Claim(text="g", metric="counterfactual_gain", value=0.031, unit="xT", ref="x1-e1")]
+    ins = _insight(level="game", claims=no_scope)
+    assert render(ins, VARIANTS[1], "en", NAMES).headline == "What just happened"
+    assert render(ins, VARIANTS[0], "en", NAMES).headline == "Match analysis"
+    assert render(ins, VARIANTS[1], "es", NAMES).headline == "Qué acaba de pasar"
+    for lang in LANGS:
+        for v in VARIANTS[:2]:
+            assert ": the match" not in render(ins, v, lang, NAMES).headline  # type: ignore[arg-type]

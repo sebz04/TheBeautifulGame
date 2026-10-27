@@ -17,6 +17,7 @@ An Agent Framework graph (`WorkflowBuilder`, `@executor` steps), run once per 5-
 - **`regenerate(moment_id, variant, lang, deps) -> Regenerated(insight, text, runs)`:** one moment live for the API: Explainer ⟲ Verifier from a decision built from the moment (no Analyst), then one Personalizer text verified in `lang`; templates on failure; nothing saved.
 - **`Deps`:** `repo`, `client`, `tools`, `facts_for(match_id)`, `sleep` (the backoff clock), `langs`, `limiter`, and `max_parallel` (moments at once).
 - **Saving:** each step saves as it goes (insights, live lines, texts, recap), and the window's agent runs are logged at its end.
+- **Recap translations** (`translate_recaps(match_id, deps)`, TASK-25.2): after the English recap, each missing language is translated (agent recap) or templated (template recap). `scripts/translate_recaps.py` runs only this step: 2026-10-27 it made 19 agent translations and 5 templates (r36's "seven goals" and r01's Arabic) for 6 agent recaps × 4 languages.
 - **Resumable:** a moment that already has an insight, a live line, and texts in every language, or that the Analyst passed on, is skipped (`WindowReport.skipped`). A partly done moment continues where it stopped. A re-run of a finished match makes 0 model calls.
 - **Copying:** the workflow deep-copies messages between steps. The shared window state (`_Window`: store, facts with the DB engine, run log) returns itself from `__deepcopy__`. No checkpoints are used.
 

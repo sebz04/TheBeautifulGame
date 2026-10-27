@@ -28,6 +28,7 @@ from pydantic import BaseModel
 from matchmind.agents.context import match_names
 from matchmind.agents.explainer import ExplainerError, explain
 from matchmind.agents.numbers import check_text
+from matchmind.agents.owners import owner_failures
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
 from matchmind.agents.scoreline import lead_failures, team_variants
 from matchmind.clock import match_minute, minute_label
@@ -205,6 +206,7 @@ async def verify(
     """Verify ``text`` (``insight`` or its translation into ``lang``) against ``facts``."""
     failures, fixed = _numbers(insight, lang, text, facts)
     failures += _leads(insight, lang, text, facts)
+    failures += _teams(insight, lang, text, facts)
     if not failures:
         failures = await _wording(insight, lang, text, facts, client, tracer)
     return Verdict(ok=not failures, failures=failures, fixed_claims=fixed)
@@ -216,6 +218,13 @@ def _leads(insight: Insight, lang: Lang, text: str, facts: Facts) -> list[str]:
     context = getattr(facts, "lead_context", None)
     found = context(insight.moment_id) if context else None
     return lead_failures(text, lang, *found) if found else []
+
+
+def _teams(insight: Insight, lang: Lang, text: str, facts: Facts) -> list[str]:
+    """Each team number given to its own team (``owners``): "Chapinero allow 8.7 passes per
+    defensive action" quoting Laureles' PPDA fails here (planted error e19)."""
+    clubs: Mapping[str, str] = getattr(facts, "clubs", {})
+    return owner_failures(text, lang, insight.claims, team_variants(clubs)) if clubs else []
 
 
 async def verify_loop(
@@ -265,6 +274,10 @@ class DictFacts:
         self._events = {k: Event(**v) for k, v in facts["events"].items()}
         self._thirds: Mapping[str, str] = facts["thirds"]
         self._before: Mapping[str, list[dict[str, Any]]] = facts.get("before", {})
+        # Club ids have no dash; player ids do ("ach-02"). Older recordings don't list clubs.
+        self.clubs: Mapping[str, str] = facts.get(
+            "clubs", {k: v for k, v in self.names.items() if "-" not in k}
+        )
 
     def lookup(self, claim: Claim) -> float | None:
         return self._lookups.get(f"{claim.ref}|{claim.metric}|{claim.unit}")
@@ -294,6 +307,7 @@ class StatsFacts:
             raise KeyError(f"unknown match {match_id!r}")
         self.meta = meta
         self.names: Mapping[str, str] = match_names(meta)
+        self.clubs = {meta.home.club_id: meta.home.name, meta.away.club_id: meta.away.name}
         events = repo.get_events(match_id)
         self._events = {e.event_id: e for e in events}
         self._order = sorted(events, key=lambda e: (e.period, e.t))

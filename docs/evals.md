@@ -32,6 +32,6 @@ Golden set: `evals/verifier_golden.jsonl`, 40 insights written by code from thre
 ### Known gaps
 Deferred to TASK-25.2 (after deployment) on 2026-10-25. The metric-meaning part of the second gap was fixed in the Explainer prompt at the start of TASK-19.
 
-- **Numbers are matched by value, not meaning.** A number passes if any verified claim has that value. `e19` gives one team's PPDA to the other side; the number is right, so only the agent can catch it, and it doesn't (3/3 runs). The same gap let "ten players" pass once because a "10 shots" claim was present. Fix to try: tie each number to the claim whose `text` it sits in, or check that the claim's team or player is named in the same sentence.
+- **Numbers are matched by value, not meaning. Fixed for team numbers in TASK-25.2** (`agents/owners.py`): a number is tied to the team named before it in its clause, so `e19` (one team's PPDA given to the other side) and `e18` ("leaving Chapinero with 10 players") are now caught by code before the model is asked. Player numbers are still matched by value.
 - **Interpretation slips pass.** Live insights have read PPDA as pressure faced rather than pressing done, and stretched a stat at one moment into "since". The events don't contradict these, so the Verifier lets them through; prompt guidance on reading each metric would help.
 - The golden set is written by code from templates, so its sentences are simpler than the Explainer's.

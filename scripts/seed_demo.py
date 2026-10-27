@@ -56,7 +56,9 @@ def seed(db_url: str, data_dir: Path, scenario: str) -> str:
                 [render(insight, v, lang, names) for v in variants_for(insight, meta)]
             )
         insights.append(insight)
-    repo.save_recap(template_recap(recap_context(repo, match_id), insights))
+    ctx = recap_context(repo, match_id)
+    for lang in ALL_LANGS:
+        repo.save_recap(template_recap(ctx, insights, lang))
     return match_id
 
 

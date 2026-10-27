@@ -164,3 +164,70 @@ async def test_recap_fallback_logs_why(caplog: pytest.LogCaptureFixture) -> None
     bad = _recap_reply(["They won 3-0 with 99 shots."], [])
     await recap(_ctx(), [_insight()], _replies(bad, bad))
     assert "template recap for x1" in caplog.text and "99" in caplog.text
+
+
+# --- recaps in every language (TASK-25.2) ----------------------------------------------
+
+LANGS = ["en", "es", "pt", "fr", "ar"]
+
+
+@pytest.mark.parametrize("lang", LANGS)
+def test_template_recap_in_every_language_passes_the_number_check(lang: str) -> None:
+    from matchmind.agents.narrative import template_recap
+    from matchmind.agents.numbers import check_text
+
+    ctx = _ctx()
+    r = template_recap(ctx, [_insight()], lang)  # type: ignore[arg-type]
+    assert r.lang == lang and r.source == "template" and r.key_numbers == [PPDA]
+    text = "\n".join([r.title, *r.paragraphs])
+    check = check_text(text, lang, r.key_numbers, lambda c: c.value,  # type: ignore[arg-type]
+                       minutes=ctx.minutes, scores=ctx.scores)  # fmt: skip
+    assert check.ok, check.failures
+    assert "Harold Morejo" in text and "Atlético Chapinero" in text
+
+
+def test_template_recap_wording_per_language() -> None:
+    from matchmind.agents.narrative import template_recap
+
+    def text(lang: str) -> str:
+        r = template_recap(_ctx(), [_insight()], lang)  # type: ignore[arg-type]
+        return "\n".join([r.title, *r.paragraphs])
+
+    assert text("en").startswith("Full time: Atlético Chapinero 2-1 Atlético Laureles")
+    assert text("es").startswith("Final: Atlético Chapinero 2-1") and "Goles:" in text("es")
+    assert "Buts :" in text("fr") and "Chiffres clés :" in text("fr")
+    assert "٢-١" in text("ar") and "٩" in text("ar")
+
+
+async def test_translated_recap_is_checked_in_its_language() -> None:
+    from matchmind.agents.narrative import translate_recap
+    from matchmind.schemas import Recap
+
+    english = Recap(match_id="x1", title="Chapinero turn it around",
+                    paragraphs=["Chapinero won 2-1; Laureles allowed 9.0 passes per action."],
+                    key_numbers=[PPDA], verified=True, source="agent")  # fmt: skip
+    good = json.dumps(
+        {
+            "title": "Chapinero le da la vuelta",
+            "paragraphs": ["Chapinero ganó 2-1; Laureles permitió 9,0 pases."],
+        }
+    )
+    client = _replies(good)
+    r = await translate_recap(english, "es", _ctx(), [_insight()], client)
+    assert r.lang == "es" and r.source == "agent" and r.title == "Chapinero le da la vuelta"
+    assert r.key_numbers == [PPDA]
+    sent = client.calls[0].text
+    assert "translate_recap" in sent and "Spanish" in sent and english.title in sent
+
+
+async def test_a_translated_recap_with_a_wrong_number_falls_back_to_its_template() -> None:
+    from matchmind.agents.narrative import translate_recap
+    from matchmind.schemas import Recap
+
+    english = Recap(match_id="x1", title="T", paragraphs=["Chapinero won 2-1."],
+                    key_numbers=[PPDA], verified=True, source="agent")  # fmt: skip
+    bad = json.dumps({"title": "T", "paragraphs": ["Chapinero gagne 3-0 avec 99 tirs."]})
+    client = _replies(bad, bad)
+    r = await translate_recap(english, "fr", _ctx(), [_insight()], client)
+    assert r.lang == "fr" and r.source == "template" and r.title.startswith("Fin du match")
+    assert "99" in client.calls[1].text
