@@ -7,35 +7,83 @@ Usage (values from `azd env get-values`):
         --sql-url "$(azd env get-value MATCHMIND_SQL_URL)" \\
         --blob-url "$(azd env get-value MATCHMIND_BLOB_ACCOUNT_URL)" \\
         --app-name "$(azd env get-value AZURE_IDENTITY_NAME)"
+
+Add ``--resume`` to finish a copy that stopped (a dropped connection): tables already
+complete are skipped and only missing rows are copied.
 """
 
 from __future__ import annotations
 
 import argparse
+import time
 from pathlib import Path
+from typing import Any
 
-from sqlalchemy import insert, select, text
+from sqlalchemy import Engine, Table, insert, select, text
+from sqlalchemy.exc import OperationalError
 
 from matchmind.config import get_settings
 from matchmind.store.blob import CONTAINER, Backend
 from matchmind.store.db import Repo, make_engine, md
 
+RETRIES = 5
+RETRY_WAIT_S = 10.0
 
-def copy_tables(src_url: str, dst_url: str, chunk: int = 5000) -> dict[str, int]:
+
+def _insert_chunk(engine: Engine, table: Table, rows: list[dict[str, Any]]) -> None:
+    with engine.begin() as out:
+        out.execute(insert(table), rows)
+
+
+def _insert_with_retry(engine: Engine, table: Table, rows: list[dict[str, Any]]) -> None:
+    """One chunk in its own transaction, retried after a dropped connection (a home network
+    to Azure SQL drops now and then: "TCP Provider: Error code 0x274C")."""
+    for attempt in range(1, RETRIES + 1):
+        try:
+            _insert_chunk(engine, table, rows)
+            return
+        except OperationalError as exc:
+            if attempt == RETRIES:
+                raise
+            print(f"  {table.name}: connection dropped ({exc.orig}); retry {attempt}")
+            engine.dispose()
+            time.sleep(RETRY_WAIT_S * attempt)
+
+
+def _keys(engine: Engine, table: Table) -> set[tuple[Any, ...]]:
+    cols = list(table.primary_key.columns)
+    with engine.connect() as c:
+        return {tuple(r) for r in c.execute(select(*cols))}
+
+
+def copy_tables(
+    src_url: str, dst_url: str, chunk: int = 5000, *, resume: bool = False
+) -> dict[str, int]:
     """Replace ``dst_url``'s tables with ``src_url``'s schema and rows; returns the counts.
-    The target's tables are dropped first, so a schema change (a wider column) applies."""
+    The target's tables are dropped first, so a schema change (a wider column) applies.
+    Each chunk commits on its own and is retried after a dropped connection. ``resume``
+    keeps the target and copies only the rows it lacks, to finish a copy that stopped."""
     src = Repo(src_url)
-    target = make_engine(dst_url)
-    md.drop_all(target)
-    target.dispose()
-    dst = Repo(dst_url)  # creates the current schema
+    if not resume:
+        target = make_engine(dst_url)
+        md.drop_all(target)
+        target.dispose()
+    dst = Repo(dst_url)  # creates the current schema (missing tables only, on a resume)
     counts: dict[str, int] = {}
     for table in md.sorted_tables:
-        with src.engine.connect() as inp, dst.engine.begin() as out:
+        with src.engine.connect() as inp:
             rows = [dict(r) for r in inp.execute(select(table)).mappings()]
-            for i in range(0, len(rows), chunk):
-                out.execute(insert(table), rows[i : i + chunk])
         counts[table.name] = len(rows)
+        if resume:
+            have = _keys(dst.engine, table)
+            if len(have) == len(rows):
+                print(f"  {table.name}: {len(rows)} rows already there")
+                continue
+            pk = [c.name for c in table.primary_key.columns]
+            rows = [r for r in rows if tuple(r[k] for k in pk) not in have]
+        for i in range(0, len(rows), chunk):
+            _insert_with_retry(dst.engine, table, rows[i : i + chunk])
+        print(f"  {table.name}: {len(rows)} rows copied")
     return counts
 
 
@@ -63,6 +111,9 @@ def main() -> None:
     parser.add_argument("--sql-url", required=True)
     parser.add_argument("--blob-url", required=True)
     parser.add_argument("--app-name", required=True, help="the app's managed identity name")
+    parser.add_argument(
+        "--resume", action="store_true", help="finish a stopped copy: add only missing rows"
+    )
     args = parser.parse_args()
     settings = get_settings()
 
@@ -71,7 +122,7 @@ def main() -> None:
 
     from matchmind.store.blob import AzureBackend  # noqa: PLC0415
 
-    counts = copy_tables(settings.db_url, args.sql_url)
+    counts = copy_tables(settings.db_url, args.sql_url, resume=args.resume)
     print("rows copied:", counts)
     with Repo(args.sql_url).engine.begin() as c:
         for statement in grant_sql(args.app_name):
