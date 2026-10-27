@@ -51,3 +51,15 @@ Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty
 ## Costs
 - **Precompute (TASK-20.2):** $9.53 for all 8 matches, $0.79–1.45 per match (`docs/costs.md`), on `gpt-4.1-mini` list prices. Runs once; serving replays costs no tokens.
 - **Hosting (estimate):** Container App (0.5 vCPU, 1 GiB, always on; idle-rate when quiet) about $10–20 through Nov 10; Azure SQL Basic about $5/month; Container Registry Basic about $5/month (unused; can be deleted); Storage, Log Analytics, App Insights cents. Budget alerts at $25 and $50.
+
+## Deployment roadblocks (2026-10-27)
+| Problem | Fix |
+|---|---|
+| North Central US refused new SQL servers | `SQL_LOCATION=canadacentral` |
+| ACR builds paused on Azure for Students; azd remote build never started | GitHub Actions builds the image (`image.yml`) to GitHub Container Registry |
+| Docker Desktop froze (local build hung; `azd up` blocked at `docker ps`) | No local Docker needed (see above) |
+| App couldn't pull from ACR (`registries: null`) | App pulls the public GHCR image; template parameter `apiImage` |
+| Seed: ODBC driver missing on the Mac | `HOMEBREW_ACCEPT_EULA=Y brew install microsoft/mssql-release/msodbcsql18` |
+| Seed: `FA005` token + `Trusted_Connection` | Token hook removes `Trusted_Connection` |
+| Seed: driver loaded OpenSSL 4 | Point `/opt/homebrew/opt/openssl` at OpenSSL 3 |
+| Seed: `agent_runs.moment_id` too narrow (231 > 96) | Widened to 512; seed rebuilds the target schema |

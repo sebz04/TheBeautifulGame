@@ -561,6 +561,8 @@ The workflow is an Agent Framework graph (`WorkflowBuilder` from `agent-framewor
 - [ ] **Step 2:** **User checkpoint:** the user picks a direction (or a mix). Write the choice into `docs/design.md` and `tokens.css`.
 - [ ] **Step 3: Commit** `TASK-22: visual direction and design tokens`.
 
+> **As built (2026-10-26):** executed through the detailed plan `docs/superpowers/plans/2026-10-26-frontend.md` (design: `docs/superpowers/specs/2026-10-26-frontend-visual-direction-design.md`). The user chose broadcast-dark and asked for two switches (Team ⇄ Player, Fan ⇄ Scout) instead of persona pills; the welcome page (TASK-23.7), Best Plays tab (23.8), live re-ask, and a model-free seeded demo match for browser tests were added. A final review found accent colors unreadable for 5 clubs, among 8 fixed issues.
+
 ### Task 23: Frontend app
 
 **Files:** Create `web/src/` (`api/client.ts`, `state/store.ts` (Zustand), `components/Pitch.tsx` (canvas, 60 fps interpolation between 5 Hz frames), `Overlays.tsx`, `Timeline.tsx`, `InsightCard.tsx`, `AskWhyPanel.tsx`, `PersonaBar.tsx`, `MatchPicker.tsx`, `RealismPanel.tsx`, `i18n/*.json` for 5 languages, `pages/Match.tsx`), `web/tests/*.test.tsx`, `web/e2e/smoke.spec.ts`.
@@ -588,6 +590,16 @@ The workflow is an Agent Framework graph (`WorkflowBuilder` from `agent-framewor
 - [ ] **Step 2:** Deploy. Seed the cloud DB and blobs with the precomputed replays (`matchmind build --all --target cloud`, `precompute --all --target cloud`).
 - [ ] **Step 3: Verify** that `curl https://<api>/api/health` returns `ok`, the Static Web App URL loads, a replay plays, and App Insights shows agent spans from a `regenerate` call.
 - [ ] **Step 4: Commit** `TASK-24: Azure infra and deploy pipeline`.
+
+**As built (2026-10-27), and why it differs:**
+- **No Static Web App:** Azure for Students allows five regions and Static Web Apps is offered in none of them, so the API container also serves the website (one URL, no CORS).
+- **Azure SQL on Basic in Canada Central**, not serverless free in North Central US: the free tier auto-pauses (a minute's wait for the first judge after an idle hour; keeping it awake costs about $190 a month), and North Central US then refused new SQL servers (`RegionDoesNotAllowProvisioning`).
+- **One user-assigned managed identity** instead of the system-assigned one: it must exist before the app to pull images and sign in to SQL (an Entra token per connection; `store/db.py` `make_engine`).
+- **Images built by GitHub Actions and pulled from GitHub Container Registry (public)**, not built in Azure: ACR Tasks (`az acr build`, azd remote build) are paused on free-credit subscriptions, and local Docker Desktop froze. `azd deploy` is not used; the template takes the image as a parameter (`apiImage`).
+- **Seeding** is `scripts/seed_cloud.py` (copy the local database to Azure SQL, grant the identity, upload tracking files), not `--target cloud` flags.
+- **Deploy workflow** updates the app's image after each image build, signing in with GitHub OIDC; it waits for a one-time Entra app registration (TASK-24.2 left open).
+
+**Roadblocks, in order:** the App Insights connection string was first entered as a bare key; Docker Desktop's engine froze (a local build hung for 41 minutes and later blocked `azd up` at `docker ps`); SQL capacity in North Central US; the container app lost its registry setting and couldn't pull from ACR; ACR builds unavailable; on the Mac seeding side, the ODBC driver install, `Trusted_Connection` conflicting with token sign-in (FA005), the driver finding OpenSSL 4 instead of 3, and a 96-character column too narrow for batched Analyst runs (231). Each fix is in the changelog and `wiki/infra-ops.md`.
 
 ### Task 25: Local run, docs, architecture
 

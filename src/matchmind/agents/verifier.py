@@ -29,6 +29,7 @@ from matchmind.agents.context import match_names
 from matchmind.agents.explainer import ExplainerError, explain
 from matchmind.agents.numbers import check_text
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
+from matchmind.agents.scoreline import lead_failures, team_variants
 from matchmind.clock import match_minute, minute_label
 from matchmind.engine.pitch import PITCH_LENGTH, attacks_right
 from matchmind.schemas import AnalystDecision, Claim, Event, Insight, Lang, Moment, Verdict
@@ -203,9 +204,18 @@ async def verify(
 ) -> Verdict:
     """Verify ``text`` (``insight`` or its translation into ``lang``) against ``facts``."""
     failures, fixed = _numbers(insight, lang, text, facts)
+    failures += _leads(insight, lang, text, facts)
     if not failures:
         failures = await _wording(insight, lang, text, facts, client, tracer)
     return Verdict(ok=not failures, failures=failures, fixed_claims=fixed)
+
+
+def _leads(insight: Insight, lang: Lang, text: str, facts: Facts) -> list[str]:
+    """Lead wording against the score at the moment (``Facts.lead_context`` when the facts
+    know it): "gives Chapinero the lead" at 1–1 fails here, before the model is asked."""
+    context = getattr(facts, "lead_context", None)
+    found = context(insight.moment_id) if context else None
+    return lead_failures(text, lang, *found) if found else []
 
 
 async def verify_loop(
@@ -299,6 +309,17 @@ class StatsFacts:
 
     def events(self, event_ids: list[str]) -> list[Event]:
         return [self._events[e] for e in event_ids if e in self._events]
+
+    def lead_context(self, moment_id: str) -> tuple[dict[str, list[str]], dict[str, int]] | None:
+        """Club name variants and the score at the moment's end (for lead wording)."""
+        moment = self.stats.repo.get_moment(moment_id)
+        if moment is None:
+            return None
+        home, away = self.meta.home.club_id, self.meta.away.club_id
+        goals = [e.team_id for e in self._order if e.type == "goal"
+                 and (e.period, e.t) <= (moment.period, moment.t_end)]  # fmt: skip
+        teams = team_variants({home: self.meta.home.name, away: self.meta.away.name})
+        return teams, {home: goals.count(home), away: goals.count(away)}
 
     def before(self, event: Event) -> list[Event]:
         i = self._index.get(event.event_id, 0)

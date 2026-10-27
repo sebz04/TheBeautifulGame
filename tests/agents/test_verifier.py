@@ -249,3 +249,23 @@ async def test_a_half_named_for_the_future_is_not_flagged_by_code() -> None:
     text = "They allow 14.2 passes. Hold this shape until the end of the first half."
     judge = _judge(True)
     assert (await verify(insight, "en", text, FakeFacts(), judge)).ok and judge.calls
+
+
+@dataclass
+class LeadFacts(FakeFacts):
+    """Facts that know the score at the insight's moment (TASK-24.4)."""
+
+    score: dict[str, int] = field(default_factory=lambda: {"home": 1, "away": 1})
+
+    def lead_context(self, moment_id: str) -> tuple[dict[str, list[str]], dict[str, int]] | None:
+        return {"home": ["chapinero"], "away": ["laureles"]}, self.score
+
+
+async def test_a_lead_claim_the_score_contradicts_fails_before_the_model() -> None:
+    insight = _insight(headline="Morejo gives Chapinero the lead")
+    judge = _judge(True)
+    verdict = await verify(insight, "en", insight_text(insight), LeadFacts(), judge)
+    assert not verdict.ok and "1–1" in verdict.failures[0]
+    assert judge.calls == []  # deterministic, like the numbers
+    ahead = LeadFacts(score={"home": 2, "away": 1})
+    assert (await verify(insight, "en", insight_text(insight), ahead, _judge(True))).ok
