@@ -226,6 +226,13 @@ def _token_hook(credential: Any) -> Any:
     """A ``do_connect`` listener that adds a fresh token to every new connection."""
 
     def hook(dialect: Any, conn_rec: Any, cargs: Any, cparams: dict[str, Any]) -> None:
+        # A URL without a username makes SQLAlchemy add Trusted_Connection (Windows sign-in),
+        # which the driver refuses alongside a token.
+        if cargs and isinstance(cargs[0], str):
+            parts = [
+                p for p in cargs[0].split(";") if not p.lower().startswith("trusted_connection=")
+            ]
+            cargs[0] = ";".join(parts)
         token = credential.get_token(AZURE_SQL_SCOPE).token
         cparams["attrs_before"] = {SQL_COPT_SS_ACCESS_TOKEN: _token_struct(token)}
 

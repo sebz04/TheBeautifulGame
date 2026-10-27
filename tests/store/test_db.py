@@ -328,3 +328,19 @@ def test_azure_sql_urls_sign_in_with_a_token() -> None:
     _token_hook(cred)(None, None, [], cparams)
     assert cred.scopes == ["https://database.windows.net/.default"]
     assert cparams["attrs_before"] == {1256: (6).to_bytes(4, "little") + "xyz".encode("utf-16-le")}
+
+
+def test_token_sign_in_drops_windows_sign_in() -> None:
+    """With no username in the URL, SQLAlchemy asks for Trusted_Connection (Windows sign-in),
+    which the ODBC driver refuses to combine with an access token (FA005)."""
+    from matchmind.store.db import _token_hook
+
+    class FakeCredential:
+        def get_token(self, scope: str) -> object:
+            return type("T", (), {"token": "xyz"})()
+
+    cargs = [
+        "DRIVER={ODBC Driver 18 for SQL Server};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"
+    ]
+    _token_hook(FakeCredential())(None, None, cargs, {})
+    assert "Trusted_Connection" not in cargs[0] and "Encrypt=yes" in cargs[0]

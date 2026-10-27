@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-24.3 · Azure SQL token sign-in drops Trusted_Connection (FA005 on the first cloud seed) · data-model
 - 2026-10-27 · TASK-24.2 · image built by GitHub Actions and published to GitHub Container Registry (ACR Tasks are paused on Azure for Students) · infra-ops
 - 2026-10-26 · TASK-24.1 · Azure SQL in its own region (Canada Central): North Central US refused new SQL servers on the first `azd up` · infra-ops
 - 2026-10-26 · TASK-24.2 · Dockerfile (website + API, ODBC Driver 18, non-root), .dockerignore, deploy workflow (azd up with GitHub OIDC, health check), scripts/seed_cloud.py (Azure SQL copy, identity grants, blob upload) · infra-ops

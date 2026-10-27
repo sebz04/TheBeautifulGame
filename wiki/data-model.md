@@ -44,7 +44,7 @@ Type aliases: `EventType`, `Period`, `Persona`, `Lang`, `Level`, `MomentKind`, `
 Zstd compression, no embedded schema metadata: the same data gives byte-identical files. Reading builds frames with `schemas.trusted` (no validation; they come from our own writer) with the GC paused, and fully validates events. One match: frames about 7.4 MB, events about 40 KB; write about 1 s, read about 3 s.
 
 ## Tables (`store/db.py`, TASK-14.1)
-SQLAlchemy Core with portable types only (JSON stored as text), so the same schema runs on SQLite (`MATCHMIND_DB_URL`, default `sqlite:///data/matchmind.db`) and Azure SQL (`pyodbc`, `azure` extra). `make_engine(url)`: an `mssql+…` URL signs in with an Entra ID token added to every new connection (`DefaultAzureCredential`, scope `https://database.windows.net/.default`), with pooled connections recycled every 30 min and `fast_executemany` for bulk loads.
+SQLAlchemy Core with portable types only (JSON stored as text), so the same schema runs on SQLite (`MATCHMIND_DB_URL`, default `sqlite:///data/matchmind.db`) and Azure SQL (`pyodbc`, `azure` extra). `make_engine(url)`: an `mssql+…` URL signs in with an Entra ID token added to every new connection (dropping the `Trusted_Connection` that SQLAlchemy adds for a URL without a username, which the driver refuses next to a token: FA005) (`DefaultAzureCredential`, scope `https://database.windows.net/.default`), with pooled connections recycled every 30 min and `fast_executemany` for bulk loads.
 - `matches` (meta JSON); `events` (columns + `extras_json`).
 - `metrics` (`match_id, period, t, scope, scope_id, name, value, kind`), indexed for latest-before-t lookups.
 - `moments` (+ `event_ids_json`, `details_json` for a deviation's expected, baseline per 90, and p-value).
