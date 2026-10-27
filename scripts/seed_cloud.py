@@ -4,8 +4,9 @@ signs in as you (`az login`), so run it as the SQL server's Entra admin (azd set
 
 Usage (values from `azd env get-values`):
     uv run --extra azure python scripts/seed_cloud.py \\
-        --sql-url "mssql+pyodbc://@<server>.database.windows.net/<db>?driver=ODBC+Driver+18+for+SQL+Server" \\
-        --blob-url https://<account>.blob.core.windows.net --app-name <container app name>
+        --sql-url "$(azd env get-value MATCHMIND_SQL_URL)" \\
+        --blob-url "$(azd env get-value MATCHMIND_BLOB_ACCOUNT_URL)" \\
+        --app-name "$(azd env get-value AZURE_IDENTITY_NAME)"
 """
 
 from __future__ import annotations
@@ -59,7 +60,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--sql-url", required=True)
     parser.add_argument("--blob-url", required=True)
-    parser.add_argument("--app-name", required=True, help="the container app (its identity name)")
+    parser.add_argument("--app-name", required=True, help="the app's managed identity name")
     args = parser.parse_args()
     settings = get_settings()
 
