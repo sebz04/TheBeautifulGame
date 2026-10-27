@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-25.4 · live site verified after the reseed: Arabic intact in all 8 matches, recaps in 5 languages · infra-ops
 - 2026-10-27 · TASK-25.4 · text columns are NVARCHAR(max) on Azure SQL (Arabic was stored as "?"); seed_cloud `--tables` rebuilds only named tables · data-model, infra-ops
 - 2026-10-27 · TASK-25.3 · seed_cloud commits per chunk, retries dropped connections, and `--resume` finishes a stopped copy · infra-ops
 - 2026-10-27 · TASK-25.2 · recaps in all 5 languages: localized template recaps, `translate_recap` checked in each language, `translate_recaps` step and script, store and API by `lang`, RecapPanel uses the recap's language · agents, orchestrator, api-frontend, data-model, decisions
