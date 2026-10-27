@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 
 import { ApiError, api } from "../api/client";
 import type { AgentRun, Counterfactual, InsightRow, Lang, Persona, Regenerated, Why } from "../api/types";
-import { useT, type Key } from "../i18n/i18n";
+import { useT } from "../i18n/i18n";
+import { optionLine, type T } from "../lib/options";
 import { useAsync } from "../lib/useAsync";
 import { minuteLabel } from "../live/minute";
 import { LoadError, Loading } from "./Status";
@@ -39,15 +40,6 @@ export function CounterfactualPitch({ cf, from, label }: { cf: Counterfactual; f
       <circle cx={ox} cy={oy} r="6" fill="var(--mm-home)" stroke="#fff" strokeWidth="2" />
     </svg>
   );
-}
-
-type T = (key: Key, vars?: Record<string, string | number>) => string;
-
-function optionText(o: Counterfactual["chosen"], names: Record<string, string>, t: T): string {
-  const kind = t(`opt.${o.kind}` as Key);
-  const what = o.target_player_id ? t("opt.to", { kind, player: names[o.target_player_id] ?? t("opt.teammate") }) : kind;
-  const danger = Math.abs(o.xt_gain) < 0.005 ? t("opt.noDanger") : t("opt.danger", { value: `${o.xt_gain > 0 ? "+" : ""}${o.xt_gain.toFixed(2)}` });
-  return t("opt.line", { what, chance: Math.round(o.pc_prob * 100), danger });
 }
 
 /** Agent runs grouped by agent: "explainer: 3 runs, 38.1 s" (fallbacks to templates counted). */
@@ -156,8 +148,8 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
               <>
                 <h3 className="mb-2 mt-0 text-sm font-bold text-muted">{t("why.else")}</h3>
                 <CounterfactualPitch cf={why.data.counterfactual} from={decisionOf(why.data)!} label={t("why.pitch")} />
-                <p className="mb-1 mt-2 text-sm text-muted">{t("why.happened", { option: optionText(why.data.counterfactual.chosen, names, t) })}</p>
-                <p className="m-0 text-sm">{t("why.best", { option: optionText(why.data.counterfactual.best, names, t) })}</p>
+                <p className="mb-1 mt-2 text-sm text-muted">{t("why.happened", { option: optionLine(why.data.counterfactual.chosen, names, t) })}</p>
+                <p className="m-0 text-sm">{t("why.best", { option: optionLine(why.data.counterfactual.best, names, t) })}</p>
               </>
             )}
             <div className="mt-6 border-t border-[color:var(--mm-rule)] pt-4">

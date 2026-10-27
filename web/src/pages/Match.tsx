@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import type { InsightRow, MatchDetail, PitchControl } from "../api/types";
@@ -18,12 +18,11 @@ import StatsStrip from "../components/StatsStrip";
 import { LoadError, Loading } from "../components/Status";
 import TeamTab from "../components/TeamTab";
 import Timeline from "../components/Timeline";
-import { NEUTRAL_THEME, applyTheme, clubTheme } from "../design/theme";
 import { useT } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
+import { useFanMatch } from "../lib/useFanMatch";
 import { minuteLabel } from "../live/minute";
 import { scoreAt } from "../live/score";
-import { personaFor, themeClubFor, type MatchSides, type Voice } from "../persona";
 import { useStore } from "../state/store";
 
 const HALF_S = 45 * 60;
@@ -73,8 +72,13 @@ function Monogram({ club, solid }: { club: MatchDetail["home"]; solid?: boolean 
  * switches 23.5). */
 export default function Match() {
   const { id = "" } = useParams();
-  const state = useAsync(() => api.match(id), [id]);
-  const timeline = useAsync(() => api.timeline(id), [id]);
+  const fan = useFanMatch(id);
+  const state = fan.match;
+  const timeline = fan.timeline;
+  const rows = fan.rows;
+  const ready = fan.voice;
+  const themeClub = fan.themeClub;
+  const navigate = useNavigate();
   const [about, setAbout] = useState(false);
   const [showHeat, setShowHeat] = useState(false);
   const [tab, setTab] = useState<Tab>("game");
@@ -84,31 +88,8 @@ export default function Match() {
   const setPrefs = useStore((s) => s.setPrefs);
   const lang = prefs.lang;
   const league = useAsync(() => api.league(), []);
-  const sides: MatchSides | null = useMemo(
-    () =>
-      state.status === "ready"
-        ? { match_id: id, home: state.data.home, away: state.data.away,
-            players: [...state.data.home_squad, ...state.data.away_squad].map((p) => p.player_id) } // prettier-ignore
-        : null,
-    [state, id],
-  );
-  const voice = sides ? personaFor(prefs, sides) : null;
-  const ready: Voice | null = voice && !("needsSide" in voice) ? voice : null;
-  const voiceKey = ready ? `${ready.persona}:${ready.club_id ?? ""}:${ready.player_id ?? ""}` : "";
-  const rows = useAsync(
-    () => (ready ? api.insights(id, { ...ready, lang }) : new Promise<never>(() => undefined)),
-    [id, lang, voiceKey],
-  );
-  const themeClub = sides ? themeClubFor(prefs, sides) : null;
-  useEffect(() => {
-    const club = state.status === "ready" ? [state.data.home, state.data.away].find((c) => c.club_id === themeClub) : undefined;
-    applyTheme(club ? clubTheme(club, "dark") : NEUTRAL_THEME);
-  }, [state, themeClub]);
-  useEffect(() => () => applyTheme(NEUTRAL_THEME), []);
   const heat = useHeat(id, showHeat);
   const live = useStore();
-  const openMatch = useStore((x) => x.openMatch);
-  useEffect(() => openMatch(id), [id, openMatch]);
   const colors = useMemo(
     () =>
       state.status === "ready"
@@ -137,7 +118,7 @@ export default function Match() {
 
   return (
     <main className="mx-auto max-w-[1280px] px-4 pb-10 pt-5 md:px-7" style={teamColors}>
-      {voice && "needsSide" in voice && (
+      {fan.needsSide && (
         <SidePicker home={m.home} away={m.away} onPick={(club) => setPrefs({ sides: { ...prefs.sides, [id]: club } })} />
       )}
       <header aria-label={t("match.score")} className="grid grid-cols-[1fr_auto_1fr] items-center gap-6">
@@ -159,6 +140,7 @@ export default function Match() {
       <div className="my-4 flex flex-wrap items-center justify-between gap-3">
         <PersonaBar clubName={clubName} playerName={playerName} />
         <div className="flex gap-4 text-sm">
+          <Link to={`/match/${id}/best-plays`} className="font-bold text-text-on-bg">{t("best.tab")}</Link>
           <Link to="/matches" className="text-text-on-bg">{t("match.all")}</Link>
           <button type="button" onClick={() => setAbout(true)} className="border-0 bg-transparent p-0 text-sm text-text-on-bg underline">
             {t("match.about")}
@@ -236,7 +218,7 @@ export default function Match() {
               t={live.t}
               addedS={m.added_time_s}
               onAskWhy={setAsking}
-              onBestPlay={(row) => setAsking(row) /* the Best Plays tab arrives in TASK-23.8 */}
+              onBestPlay={(row) => navigate(`/match/${id}/best-plays?insight=${row.insight.insight_id}`)}
             />
           ) : rows.status === "error" ? (
             <LoadError what="what.insights" retry={rows.retry} />

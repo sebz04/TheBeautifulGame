@@ -161,6 +161,7 @@
   "best.real": "Ce qui s'est passé",
   "best.bestPlay": "Meilleure option",
   "best.chance": "{chance} % de chances de réussir",
+  "best.sameAsBest": "Le joueur a choisi la meilleure option.",
   "best.others": "Autres options",
   "best.pundit": "Votre consultant"
 }

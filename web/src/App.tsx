@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { setLang } from "./i18n/i18n";
+import BestPlays from "./pages/BestPlays";
 import Match from "./pages/Match";
 import MatchPicker from "./pages/MatchPicker";
 import Welcome from "./pages/Welcome";
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/welcome" element={<Welcome forceSetup />} />
         <Route path="/matches" element={<MatchPicker />} />
         <Route path="/match/:id" element={<Match />} />
+        <Route path="/match/:id/best-plays" element={<BestPlays />} />
         <Route path="*" element={<Navigate to="/matches" replace />} />
       </Routes>
     </BrowserRouter>

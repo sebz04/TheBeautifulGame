@@ -161,6 +161,7 @@
   "best.real": "What happened",
   "best.bestPlay": "Best play",
   "best.chance": "{chance}% chance to work",
+  "best.sameAsBest": "The player picked the best option.",
   "best.others": "Other options",
   "best.pundit": "Your pundit"
 }
