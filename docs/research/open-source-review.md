@@ -33,7 +33,7 @@ Test applied to every candidate: (1) a permissive license, (2) it contains no re
 | [vitest-dev/vitest](https://github.com/vitest-dev/vitest) | MIT | active | Frontend unit tests (Constitution: CI runs Vitest) | 22, 23 |
 | [testing-library/react-testing-library](https://github.com/testing-library/react-testing-library), [jsdom/jsdom](https://github.com/jsdom/jsdom) | MIT | active | Component tests in a simulated browser (dev-only) | 23 |
 | [pmndrs/zustand](https://github.com/pmndrs/zustand) | MIT | active | Frontend state | 23 |
-| [airbnb/visx](https://github.com/airbnb/visx) | MIT | active | Momentum chart and small stat charts | 23 |
+| [airbnb/visx](https://github.com/airbnb/visx) | MIT | active | Momentum chart and small stat charts (`@visx/shape`, `scale`, `curve`) | 23 |
 | [microsoft/playwright](https://github.com/microsoft/playwright) | Apache-2.0 | active | End-to-end smoke tests and repeatable demo-video capture | 23, 31 |
 | [dequelabs/axe-core](https://github.com/dequelabs/axe-core) | MPL-2.0 | active | Accessibility checks (dev-only, unmodified) | 22, 23 |
 | [andrewRowlinson/mplsoccer](https://github.com/andrewRowlinson/mplsoccer) | MIT | active | Dev-only: pitch figures for the realism report, wiki, and README | 5, 25 |

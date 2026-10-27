@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { api } from "../src/api/client";
 import { frameAt } from "../src/components/Pitch";
 import { useStore, type ArrivedFrame } from "../src/state/store";
 
@@ -55,6 +56,18 @@ describe("live replay in the store", () => {
     useStore.getState().pause();
     expect(FakeEventSource.all[1].closed).toBe(true);
     expect(useStore.getState().playing).toBe(false);
+  });
+});
+
+describe("still frame while paused", () => {
+  it("seeking while paused fetches the frame at that time", async () => {
+    const still = { frame: 3000, period: 1 as const, t: 300, ball: [1, 2, 0] as [number, number, number], players: [] };
+    const spy = vi.spyOn(api, "tracking").mockResolvedValue({ frames: [still, { ...still, frame: 3001, t: 300.1 }] });
+    useStore.getState().seek(1, 300);
+    await vi.waitFor(() => expect(useStore.getState().frames).toHaveLength(1));
+    expect(spy).toHaveBeenCalledWith("m1", 1, 300, 300.2);
+    expect(useStore.getState().frames[0].t).toBe(300);
+    spy.mockRestore();
   });
 });
 

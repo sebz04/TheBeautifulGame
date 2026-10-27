@@ -2,6 +2,7 @@
 // not in a page, so it keeps playing when the viewer switches to the Best Plays tab.
 import { create } from "zustand";
 
+import { api } from "../api/client";
 import type { Cue, Frame, LiveInsight, MatchEvent, Period } from "../api/types";
 import { openLive, type LiveHandle, type LiveStatus } from "../live/stream";
 import { loadPrefs, savePrefs, type Prefs } from "./prefs";
@@ -45,6 +46,8 @@ export interface AppState {
 
 let handle: LiveHandle | null = null;
 let seenInsights = new Set<string>();
+let stillRequest = 0;
+const STILL_WINDOW_S = 0.2;
 
 export const useStore = create<AppState>((set, get) => {
   const stop = () => {
@@ -52,9 +55,25 @@ export const useStore = create<AppState>((set, get) => {
     handle = null;
   };
 
+  /** While paused, show the frame at (period, t): one small tracking request. */
+  const still = (period: Period, t: number) => {
+    const { matchId } = get();
+    if (!matchId) return;
+    const mine = ++stillRequest;
+    const from = Math.round(t * 10) / 10;
+    api.tracking(matchId, period, from, Math.round((from + STILL_WINDOW_S) * 10) / 10).then(
+      ({ frames }) => {
+        if (mine !== stillRequest || get().playing || !frames.length) return; // a newer seek or play won
+        set({ frames: [{ ...frames[0], arrived: performance.now() }] });
+      },
+      () => undefined, // the pitch stays as it was
+    );
+  };
+
   const start = () => {
     const { matchId, period, t, speed } = get();
     if (!matchId) return;
+    stillRequest++; // any still frame still on its way is now stale
     stop();
     set({ frames: [], playing: true, ended: false });
     handle = openLive(
@@ -108,6 +127,7 @@ export const useStore = create<AppState>((set, get) => {
       seenInsights = new Set();
       set({ matchId, period: 1, t: 0, playing: false, ended: false, connection: "idle",
             frames: [], cues: [], events: [], liveInsights: [] }); // prettier-ignore
+      still(1, 0);
     },
     play: () => {
       if (get().ended) set({ period: 1, t: 0 });
@@ -120,6 +140,7 @@ export const useStore = create<AppState>((set, get) => {
     seek: (period, t) => {
       set({ period, t, cues: [], ended: false });
       if (get().playing) start();
+      else still(period, t);
     },
     setSpeed: (speed) => {
       set({ speed });

@@ -1,9 +1,9 @@
 // The live pitch: a canvas redrawn every animation frame. It renders slightly behind the
 // newest 5 Hz frame and interpolates, so motion is smooth at 60 fps. The pitch is physical
 // space, so it never mirrors for right-to-left languages.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
-import type { Frame } from "../api/types";
+import type { Frame, PitchControl } from "../api/types";
 import { interpolate } from "../live/interpolate";
 import { useStore, type ArrivedFrame } from "../state/store";
 
@@ -51,9 +51,36 @@ function drawLines(ctx: CanvasRenderingContext2D, s: number): void {
   r(LENGTH - 5.5, (WIDTH - 18.3) / 2, 5.5, 18.3);
 }
 
-function draw(ctx: CanvasRenderingContext2D, f: Frame | null, colors: PitchColors, s: number): void {
+/** The attacking team's control surface (rows: y from 0 up; columns: x), under the players:
+ * one pixel per cell on a small canvas, scaled up smoothly. */
+function drawHeat(ctx: CanvasRenderingContext2D, heat: PitchControl, color: string, s: number): void {
+  const rows = heat.grid.length;
+  const cols = heat.grid[0]?.length ?? 0;
+  if (!rows || !cols) return;
+  const n = parseInt(color.replace("#", ""), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const small = document.createElement("canvas");
+  small.width = cols;
+  small.height = rows;
+  const sctx = small.getContext("2d");
+  if (!sctx) return;
+  const img = sctx.createImageData(cols, rows);
+  heat.grid.forEach((row, ry) =>
+    row.forEach((v, cx) => {
+      const i = ((rows - 1 - ry) * cols + cx) * 4; // row 0 is the bottom touchline
+      img.data.set([r, g, b, Math.round(255 * 0.5 * v)], i);
+    }),
+  );
+  sctx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(small, 0, 0, LENGTH * s, WIDTH * s);
+}
+
+function draw(ctx: CanvasRenderingContext2D, f: Frame | null, colors: PitchColors, s: number, heat: PitchControl | null): void {
   ctx.fillStyle = cssVar("--mm-pitch") || "#0f1f17";
   ctx.fillRect(0, 0, LENGTH * s, WIDTH * s);
+  if (heat) drawHeat(ctx, heat, heat.attacking_team === colors.homeId ? colors.home : colors.away, s);
   drawLines(ctx, s);
   if (!f) return;
   for (const p of f.players) {
@@ -75,8 +102,20 @@ function draw(ctx: CanvasRenderingContext2D, f: Frame | null, colors: PitchColor
   ctx.shadowBlur = 0;
 }
 
-export default function Pitch({ colors, label }: { colors: PitchColors; label: string }) {
+export default function Pitch({
+  colors,
+  label,
+  heat = null,
+  children,
+}: {
+  colors: PitchColors;
+  label: string;
+  heat?: PitchControl | null;
+  children?: ReactNode;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const heatRef = useRef(heat);
+  heatRef.current = heat;
 
   useEffect(() => {
     const canvas = ref.current;
@@ -92,7 +131,8 @@ export default function Pitch({ colors, label }: { colors: PitchColors; label: s
         canvas.height = Math.round((w * WIDTH) / LENGTH);
       }
       const { frames, speed, playing } = useStore.getState();
-      draw(ctx, frameAt(frames, playing ? performance.now() : frames.at(-1)?.arrived ?? 0, speed), colors, w / LENGTH);
+      const f = frameAt(frames, playing ? performance.now() : (frames.at(-1)?.arrived ?? 0), speed);
+      draw(ctx, f, colors, w / LENGTH, heatRef.current);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -102,6 +142,7 @@ export default function Pitch({ colors, label }: { colors: PitchColors; label: s
   return (
     <div dir="ltr" className="relative">
       <canvas ref={ref} role="img" aria-label={label} className="block aspect-[105/68] w-full" />
+      {children}
     </div>
   );
 }
