@@ -8,14 +8,16 @@ Usage (values from `azd env get-values`):
         --blob-url "$(azd env get-value MATCHMIND_BLOB_ACCOUNT_URL)" \\
         --app-name "$(azd env get-value AZURE_IDENTITY_NAME)"
 
-Add ``--resume`` to finish a copy that stopped (a dropped connection): tables already
-complete are skipped and only missing rows are copied.
+Add ``--tables personalized,narratives`` to rebuild and copy just those tables (after a
+column type change). Add ``--resume`` to finish a copy that stopped (a dropped
+connection): tables already complete are skipped and only missing rows are copied.
 """
 
 from __future__ import annotations
 
 import argparse
 import time
+from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
@@ -57,20 +59,32 @@ def _keys(engine: Engine, table: Table) -> set[tuple[Any, ...]]:
 
 
 def copy_tables(
-    src_url: str, dst_url: str, chunk: int = 5000, *, resume: bool = False
+    src_url: str,
+    dst_url: str,
+    chunk: int = 5000,
+    *,
+    resume: bool = False,
+    only: Collection[str] | None = None,
 ) -> dict[str, int]:
     """Replace ``dst_url``'s tables with ``src_url``'s schema and rows; returns the counts.
     The target's tables are dropped first, so a schema change (a wider column) applies.
     Each chunk commits on its own and is retried after a dropped connection. ``resume``
-    keeps the target and copies only the rows it lacks, to finish a copy that stopped."""
+    keeps the target and copies only the rows it lacks, to finish a copy that stopped.
+    ``only`` drops, rebuilds, and copies just those tables (a column type change)."""
     src = Repo(src_url)
-    if not resume:
+    if only is not None:
+        target = make_engine(dst_url)
+        md.drop_all(target, tables=[t for t in md.sorted_tables if t.name in only])
+        target.dispose()
+    elif not resume:
         target = make_engine(dst_url)
         md.drop_all(target)
         target.dispose()
     dst = Repo(dst_url)  # creates the current schema (missing tables only, on a resume)
     counts: dict[str, int] = {}
     for table in md.sorted_tables:
+        if only is not None and table.name not in only:
+            continue
         with src.engine.connect() as inp:
             rows = [dict(r) for r in inp.execute(select(table)).mappings()]
         counts[table.name] = len(rows)
@@ -114,6 +128,7 @@ def main() -> None:
     parser.add_argument(
         "--resume", action="store_true", help="finish a stopped copy: add only missing rows"
     )
+    parser.add_argument("--tables", help="rebuild and copy only these tables (comma-separated)")
     args = parser.parse_args()
     settings = get_settings()
 
@@ -122,7 +137,8 @@ def main() -> None:
 
     from matchmind.store.blob import AzureBackend  # noqa: PLC0415
 
-    counts = copy_tables(settings.db_url, args.sql_url, resume=args.resume)
+    only = set(args.tables.split(",")) if args.tables else None
+    counts = copy_tables(settings.db_url, args.sql_url, resume=args.resume, only=only)
     print("rows copied:", counts)
     with Repo(args.sql_url).engine.begin() as c:
         for statement in grant_sql(args.app_name):

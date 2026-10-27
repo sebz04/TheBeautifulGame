@@ -95,3 +95,12 @@ def test_a_chunk_is_retried_after_a_dropped_connection(tmp_path: Path, monkeypat
     monkeypatch.setattr(seed_cloud, "RETRY_WAIT_S", 0.0)
     src, dst = _source(tmp_path), f"sqlite:///{tmp_path}/dst.db"
     assert copy_tables(src, dst)["narratives"] == 6
+
+
+def test_only_named_tables_are_rebuilt(tmp_path: Path) -> None:
+    src, dst = _source(tmp_path), f"sqlite:///{tmp_path}/dst.db"
+    copy_tables(src, dst)
+    Repo(src).save_live_line("m1", "m1-m002-ins", "new line")
+    counts = copy_tables(src, dst, only={"narratives"})
+    assert set(counts) == {"narratives"} and counts["narratives"] == 7
+    assert Repo(dst).list_live_lines("m1")["m1-m002-ins"] == "new line"
