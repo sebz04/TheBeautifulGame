@@ -354,3 +354,18 @@ def test_agent_run_moment_ids_fit_a_batched_analyst_run() -> None:
     from matchmind.store.db import agent_runs
 
     assert agent_runs.c.moment_id.type.length >= 512
+
+
+def test_text_columns_hold_any_language_on_azure_sql() -> None:
+    """Azure SQL stores Text as VARCHAR, which turns Arabic into "?" (seen live 2026-10-27);
+    every free-text column must be NVARCHAR there."""
+    from sqlalchemy import Text
+    from sqlalchemy.dialects import mssql
+
+    from matchmind.store.db import md
+
+    for table in md.sorted_tables:
+        for col in table.columns:
+            if isinstance(col.type, Text):
+                compiled = col.type.compile(dialect=mssql.dialect())
+                assert compiled.startswith("NVARCHAR"), f"{table.name}.{col.name}: {compiled}"

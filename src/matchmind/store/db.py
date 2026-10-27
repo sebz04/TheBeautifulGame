@@ -19,7 +19,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
-    Text,
+    UnicodeText,
     and_,
     create_engine,
     delete,
@@ -30,6 +30,7 @@ from sqlalchemy import (
     select,
     text,
 )
+from sqlalchemy.dialects.mssql import NVARCHAR
 from sqlalchemy.pool import StaticPool
 
 from matchmind.league.season import MatchResult, Season, StandingRow
@@ -52,6 +53,9 @@ __all__ = ["AgentRun", "MetricRow", "Repo"]
 
 MatchTime = tuple[int, float]
 ID = 96  # id column width (portable VARCHAR)
+# Free text and JSON: NVARCHAR(max) on Azure SQL, where plain Text is VARCHAR and turns Arabic
+# into "?" (seen live 2026-10-27); TEXT elsewhere.
+TEXT = UnicodeText().with_variant(NVARCHAR(), "mssql")
 
 md = MetaData()
 matches = Table(
@@ -63,7 +67,7 @@ matches = Table(
     Column("home_id", String(ID)),
     Column("away_id", String(ID)),
     Column("engine_version", String(32)),
-    Column("meta_json", Text),
+    Column("meta_json", TEXT),
 )
 events = Table(
     "events",
@@ -82,7 +86,7 @@ events = Table(
     Column("outcome", Boolean),
     Column("receiver_id", String(ID)),
     Column("ball_speed_ms", Float),
-    Column("extras_json", Text),
+    Column("extras_json", TEXT),
 )
 metrics = Table(
     "metrics",
@@ -112,8 +116,8 @@ moments = Table(
     Column("player_id", String(ID)),
     Column("trigger_metric", String(64)),
     Column("trigger_value", Float),
-    Column("event_ids_json", Text),
-    Column("details_json", Text),  # e.g. a deviation's expected, baseline_per90, p_value
+    Column("event_ids_json", TEXT),
+    Column("details_json", TEXT),  # e.g. a deviation's expected, baseline_per90, p_value
 )
 insights = Table(
     "insights",
@@ -121,7 +125,7 @@ insights = Table(
     Column("insight_id", String(ID), primary_key=True),
     Column("match_id", String(ID), index=True),
     Column("moment_id", String(ID)),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 personalized = Table(
     "personalized",
@@ -132,7 +136,7 @@ personalized = Table(
     Column("lang", String(8)),
     Column("club_id", String(ID)),
     Column("player_id", String(ID)),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 overlay_cues = Table(
     "overlay_cues",
@@ -141,7 +145,7 @@ overlay_cues = Table(
     Column("match_id", String(ID), index=True),
     Column("period", Integer),
     Column("t_in", Float),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 agent_runs = Table(
     "agent_runs",
@@ -154,7 +158,7 @@ agent_runs = Table(
     Column("attempts", Integer),
     Column("latency_ms", Integer),
     Column("trace_id", String(ID)),
-    Column("error", Text),
+    Column("error", TEXT),
     Column("tokens_in", Integer, default=0),
     Column("tokens_out", Integer, default=0),
 )
@@ -165,21 +169,21 @@ narratives = Table(
     Column("key", String(ID + 8), primary_key=True),
     Column("match_id", String(ID), index=True),
     Column("kind", String(8)),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 season_results = Table(
     "season_results",
     md,
     Column("match_id", String(ID), primary_key=True),
     Column("round", Integer),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 season_standings = Table(
     "season_standings",
     md,
     Column("position", Integer, primary_key=True),
     Column("club_id", String(ID)),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 season_player_lines = Table(
     "season_player_lines",
@@ -188,13 +192,13 @@ season_player_lines = Table(
     Column("player_id", String(ID), primary_key=True),
     Column("round", Integer),
     Column("club_id", String(ID)),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 season_meta = Table(
     "season_meta",
     md,
     Column("key", String(32), primary_key=True),
-    Column("body_json", Text),
+    Column("body_json", TEXT),
 )
 
 

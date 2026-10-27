@@ -70,3 +70,4 @@ SQLAlchemy Core with portable types only (JSON stored as text), so the same sche
 - `tracking_store(settings)`:
   - local `<data_dir>/tracking/<match_id>/frames.parquet`, written atomically (`LocalBackend`);
   - or, when `MATCHMIND_BLOB_ACCOUNT_URL` is set, the Azure Blob container `tracking` (`AzureBackend`, with `DefaultAzureCredential` and no keys; needs the `azure` extra).
+- **Text columns are `TEXT` = `UnicodeText` with an `NVARCHAR(max)` variant on Azure SQL** (TASK-25.4). Plain `Text` became `VARCHAR(max)` there and stored every Arabic letter as "?" (fan texts and recaps on the live site since TASK-24); SQLite never showed it. `tests/store/test_db.py` compiles every text column for SQL Server.

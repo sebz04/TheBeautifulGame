@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-25.4 · text columns are NVARCHAR(max) on Azure SQL (Arabic was stored as "?"); seed_cloud `--tables` rebuilds only named tables · data-model, infra-ops
 - 2026-10-27 · TASK-25.3 · seed_cloud commits per chunk, retries dropped connections, and `--resume` finishes a stopped copy · infra-ops
 - 2026-10-27 · TASK-25.2 · recaps in all 5 languages: localized template recaps, `translate_recap` checked in each language, `translate_recaps` step and script, store and API by `lang`, RecapPanel uses the recap's language · agents, orchestrator, api-frontend, data-model, decisions
 - 2026-10-27 · TASK-25.2 · team numbers tied to the team named (agents/owners.py; golden e18 and e19 now caught by code, 18 real errors found in stored texts); French templates elide "de" and space colons; headlines without a subject read "What just happened"; fix_scoreline.py also sweeps team numbers and re-renders templates (local: 1 insight, 16 texts, 655 templates) · verifier, personalization
