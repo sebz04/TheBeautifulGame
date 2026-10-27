@@ -1,10 +1,10 @@
-// A few key numbers for both teams at the replay's time, refreshed every few seconds.
-import { useEffect, useRef, useState } from "react";
+// A few key numbers for both teams at the replay's time, refreshed every 5 s of match time.
+import { useEffect, useState } from "react";
 
 import { api } from "../api/client";
 import type { Period, Stats } from "../api/types";
 
-const EVERY_MS = 5000;
+const STEP_S = 5;
 
 const ROWS: { key: string; label: string; show: (v: number) => string }[] = [
   { key: "xg", label: "Expected goals", show: (v) => v.toFixed(2) },
@@ -16,26 +16,17 @@ const ROWS: { key: string; label: string; show: (v: number) => string }[] = [
 
 export default function StatsStrip({ matchId, homeId, awayId, period, t }: { matchId: string; homeId: string; awayId: string; period: Period; t: number }) {
   const [stats, setStats] = useState<[Stats, Stats] | null>(null);
-  const last = useRef(0);
-  const clock = useRef({ period, t });
-  clock.current = { period, t };
+  const step = Math.floor(t / STEP_S); // refetch whenever the match clock crosses a step (seeks too)
 
   useEffect(() => {
     let live = true;
-    const load = () => {
-      last.current = Date.now();
-      const { period: p, t: now } = clock.current;
-      Promise.all([homeId, awayId].map((id) => api.stats(matchId, { scope: "team", scope_id: id, period: p, t: Math.floor(now) })))
-        .then(([h, a]) => live && setStats([h, a]))
-        .catch(() => undefined); // keep the last numbers; the next tick tries again
-    };
-    load();
-    const timer = setInterval(() => Date.now() - last.current >= EVERY_MS && load(), 1000);
+    Promise.all([homeId, awayId].map((id) => api.stats(matchId, { scope: "team", scope_id: id, period, t: step * STEP_S })))
+      .then(([h, a]) => live && setStats([h, a]))
+      .catch(() => undefined); // keep the last numbers; the next step tries again
     return () => {
       live = false;
-      clearInterval(timer);
     };
-  }, [matchId, homeId, awayId]);
+  }, [matchId, homeId, awayId, period, step]);
 
   return (
     <section aria-label="Key stats, home then away" className="grid grid-cols-2 bg-surface text-text md:grid-cols-5">

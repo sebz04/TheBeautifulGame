@@ -117,3 +117,14 @@ def test_cors_allows_only_the_web_app_and_localhost(api: TestClient) -> None:
     assert preflight("https://evil.example") is None
     got = api.get("/api/health", headers={"Origin": "https://evil.example"})
     assert "access-control-allow-origin" not in got.headers
+
+
+def test_served_app_turns_tracing_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    import matchmind.api.app as app_module
+
+    calls: list[object] = []
+    monkeypatch.setattr(app_module, "configure_tracing", lambda s: calls.append(s) or True)
+    monkeypatch.setattr(app_module, "create_app", lambda **kw: "the app")
+    monkeypatch.delitem(app_module.__dict__, "app", raising=False)
+    assert app_module.app == "the app"
+    assert len(calls) == 1  # only the served app (tests build theirs with create_app)

@@ -2,14 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
-import type { MatchDetail, PitchControl } from "../api/types";
+import type { InsightRow, MatchDetail, PitchControl } from "../api/types";
+import AskWhyPanel from "../components/AskWhyPanel";
+import InsightPanel from "../components/InsightPanel";
 import MomentumChart from "../components/MomentumChart";
 import Overlays from "../components/Overlays";
 import Pitch from "../components/Pitch";
 import PlaybackBar from "../components/PlaybackBar";
+import PlayerTab from "../components/PlayerTab";
 import RealismPanel from "../components/RealismPanel";
+import RecapPanel from "../components/RecapPanel";
 import StatsStrip from "../components/StatsStrip";
 import { LoadError, Loading } from "../components/Status";
+import TeamTab from "../components/TeamTab";
 import Timeline from "../components/Timeline";
 import { useAsync } from "../lib/useAsync";
 import { minuteLabel } from "../live/minute";
@@ -17,6 +22,8 @@ import { scoreAt } from "../live/score";
 import { useStore } from "../state/store";
 
 const HALF_S = 45 * 60;
+const TABS = ["Game", "Team", "Player"] as const;
+type Tab = (typeof TABS)[number];
 const HEAT_EVERY_MS = 1000;
 
 /** The pitch-control heatmap for the replay's time while ``on`` (at most once a second). */
@@ -65,6 +72,12 @@ export default function Match() {
   const timeline = useAsync(() => api.timeline(id), [id]);
   const [about, setAbout] = useState(false);
   const [showHeat, setShowHeat] = useState(false);
+  const [tab, setTab] = useState<Tab>("Game");
+  const [asking, setAsking] = useState<InsightRow | null>(null);
+  const lang = useStore((s) => s.prefs.lang);
+  // The fan's voice comes from the switches (TASK-23.5); until then, the casual voice.
+  const query = { persona: "casual" as const, lang };
+  const rows = useAsync(() => api.insights(id, query), [id, lang]);
   const heat = useHeat(id, showHeat);
   const live = useStore();
   const openMatch = useStore((x) => x.openMatch);
@@ -88,6 +101,8 @@ export default function Match() {
   const names = Object.fromEntries([...m.home_squad, ...m.away_squad].map((p) => [p.player_id, p.name]));
   const latest = live.frames.at(-1);
   const positions = Object.fromEntries((latest?.players ?? []).map((p) => [p.player_id, { x: p.x, y: p.y }]));
+  const momentById = Object.fromEntries(moments.map((x) => [x.moment_id, x]));
+  const squad = [...m.home_squad, ...m.away_squad].map((p) => ({ player_id: p.player_id, name: p.name }));
   const teamColors = { "--mm-home": m.home.primary_color, "--mm-away": m.away.primary_color } as React.CSSProperties;
 
   return (
@@ -124,7 +139,34 @@ export default function Match() {
       )}
 
       <div className="grid items-start gap-5 md:grid-cols-[7fr_5fr]">
-        <section aria-label="Match" className="bg-surface p-3.5 text-text">
+        <section aria-label="Match">
+          <div role="tablist" aria-label="View" className="flex gap-0.5">
+            {TABS.map((name) => (
+              <button
+                key={name}
+                role="tab"
+                id={`tab-${name}`}
+                aria-selected={tab === name}
+                aria-controls="tab-panel"
+                tabIndex={tab === name ? 0 : -1}
+                onClick={() => setTab(name)}
+                onKeyDown={(e) => {
+                  const i = TABS.indexOf(tab);
+                  if (e.key === "ArrowRight") setTab(TABS[(i + 1) % TABS.length]);
+                  if (e.key === "ArrowLeft") setTab(TABS[(i + TABS.length - 1) % TABS.length]);
+                }}
+                className={`border-0 px-4 py-3 text-sm font-bold ${tab === name ? "bg-surface text-text" : "bg-black/30 text-text-on-bg"}`}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+          <div id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="bg-surface p-3.5 text-text">
+          {tab === "Team" && <TeamTab matchId={id} home={m.home} away={m.away} period={live.period} t={live.t} />}
+          {tab === "Player" && (
+            <PlayerTab matchId={id} players={squad} playerId={useStore.getState().prefs.favorite_player_id ?? m.home_squad[9]?.player_id ?? squad[0].player_id} period={live.period} t={live.t} />
+          )}
+          <div hidden={tab !== "Game"}>
           <Pitch colors={colors} label={`Live pitch at ${minute}`} heat={heat}>
             <Overlays cues={live.cues} period={live.period} t={live.t} names={names} positions={positions} />
           </Pitch>
@@ -143,10 +185,36 @@ export default function Match() {
             <input type="checkbox" checked={showHeat} onChange={(e) => setShowHeat(e.target.checked)} className="h-4 w-4 accent-[color:var(--mm-accent)]" />
             Show which team controls each area of the pitch
           </label>
+          </div>
           {live.connection === "reconnecting" && <p role="status" className="mt-2 text-sm text-warn">Reconnecting to the match…</p>}
+          </div>
         </section>
-        <aside aria-label="Your pundit" className="order-first bg-surface p-6 text-text md:order-none" data-slot="pundit" />
+        <aside aria-label="Your pundit" className="order-first md:order-none">
+          {live.ended ? (
+            <RecapPanel matchId={id} lang={lang} />
+          ) : rows.status === "ready" ? (
+            <InsightPanel
+              rows={rows.data}
+              moments={momentById}
+              period={live.period}
+              t={live.t}
+              addedS={m.added_time_s}
+              onAskWhy={setAsking}
+              onBestPlay={(row) => setAsking(row) /* the Best Plays tab arrives in TASK-23.8 */}
+            />
+          ) : rows.status === "error" ? (
+            <LoadError what="your pundit's insights" retry={rows.retry} />
+          ) : (
+            <div className="bg-surface p-6 text-text"><Loading what="your pundit" /></div>
+          )}
+        </aside>
       </div>
+
+      {asking && (
+        <div className="mt-5">
+          <AskWhyPanel row={asking} matchId={id} variant={query} lang={lang} addedS={m.added_time_s} names={names} onClose={() => setAsking(null)} />
+        </div>
+      )}
 
       <div className="mt-5">
         <StatsStrip matchId={id} homeId={m.home.club_id} awayId={m.away.club_id} period={live.period} t={live.t} />

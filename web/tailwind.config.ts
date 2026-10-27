@@ -18,6 +18,10 @@ export default {
         good: "var(--mm-good)",
         warn: "var(--mm-warn)",
       },
+      keyframes: {
+        rise: { from: { transform: "translateY(14px)", opacity: "0" }, to: { transform: "none", opacity: "1" } },
+      },
+      animation: { rise: "rise var(--mm-dur-slow) var(--mm-ease) both" },
       fontFamily: {
         display: "var(--mm-font-display)",
         body: "var(--mm-font-body)",
