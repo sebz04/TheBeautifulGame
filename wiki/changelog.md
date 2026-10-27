@@ -2,6 +2,15 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-26 · TASK-23 · final review fixes: accent readable on cards for every club, deep shade for tabs and switches, card-colored loading text, readable monograms, Player tab only opens on a favorite in the match, Ask why resets per insight and scrolls into view, a failed stream stops playing and says so · api-frontend
+- 2026-10-26 · TASK-23.6 · Playwright smoke and accessibility tests (axe at 1280/375 px, keyboard) in CI against a seeded model-free match (scripts/seed_demo.py); tabs move focus with arrow keys · api-frontend, conventions, README
+- 2026-10-26 · TASK-23.8 · Best Plays tab (live strip, moments so far, freeze-frame with heat, real vs best scorecard, other options, pundit text, "picked the best option"), shared useFanMatch hook and option wording · api-frontend
+- 2026-10-26 · TASK-23.7 · welcome page (club tiles, favorite player, language, Fan/Scout; previews language and colors; returning visitors skip it; Change my setup), match list in the fan's colors · api-frontend
+- 2026-10-26 · TASK-23.5 · Team ⇄ Player and Fan ⇄ Scout switches, persona mapping, side picker, club color takeover on the match page, 5-language interface text, RTL with physical views and numbers kept left to right · api-frontend
+- 2026-10-26 · TASK-23.4 · insights list gains best_play_event_id; served API turns tracing on; insight panel and cards, Ask why with counterfactual and grouped agent runs, Ask the pundit live (429/504 messages, one request at a time), full-time recap, Game/Team/Player tabs · api-frontend
+- 2026-10-26 · TASK-23.3 · cue overlays (max 3), moment timeline with plain names and seek, visx momentum chart, stats strip, smooth pitch-control heatmap, still frame when paused · api-frontend
+- 2026-10-26 · TASK-23.2 · live stream client (resume, seq and insight dedupe), store-driven playback (play, pause, seek, speed), 60 fps interpolated pitch canvas, playback bar, live minute and score in the score bar · api-frontend
+- 2026-10-26 · TASK-23.1 · app shell and routes, typed API client with ApiError, guarded localStorage prefs, Zustand store, match picker (fan's club first, loading/error/retry), match page shell, realism panel with plain check names · api-frontend
 - 2026-10-26 · TASK-22.2 · two mockups (broadcast-dark, editorial-light; contrast 16/16 AA, axe clean at 1280 and 375 px); user chose broadcast-dark; Team ⇄ Player and Fan ⇄ Scout switches replace the pills; tokens (fonts, square panels, motion, pitch); docs/design.md; Playwright and axe added · api-frontend
 - 2026-10-26 · TASK-22.1 · web scaffold (React, Vite, TypeScript, Tailwind, Vitest), design tokens, club theme with AA checks for all 20 clubs on dark and light cards; CI web job (types, tests, build); frontend tools on the Adopt list · README, api-frontend
 - 2026-10-25 · TASK-21.3 · CI fix: the API test fixture cites a real decision event instead of assuming the built match has a moment that cites one (moments differ slightly between macOS and the Linux runner) · changelog

@@ -47,9 +47,10 @@ def insights(
     club_id: str | None = None,
     player_id: str | None = None,
 ) -> list[Json]:
-    """Every verified insight in time order, with its text for (persona, lang). A
-    ``club_fan`` text is for ``club_id`` (default: the home club); ``player_focus`` needs
-    ``player_id``. A variant the precompute did not write gets its template."""
+    """Every verified insight in time order, with its text for (persona, lang) and its
+    ``best_play_event_id`` (the first cited decision event, for "Show best play"; null if
+    none). A ``club_fan`` text is for ``club_id`` (default: the home club); ``player_focus``
+    needs ``player_id``. A variant the precompute did not write gets its template."""
     meta = svc.meta(match_id)
     variant = _variant(meta, persona, club_id, player_id)
     stored = {
@@ -60,12 +61,16 @@ def insights(
     found = [i for i in svc.repo.list_insights(match_id) if i.verified]
     found.sort(key=lambda i: order.get(i.moment_id, (3, 0.0)))
     names = svc.names(meta)
+    decisions = {e.event_id for e in svc.events(match_id) if "best_score" in e.extras}
     rows = []
     for ins in found:
         text = stored.get((ins.insight_id, variant.club_id, variant.player_id))
         if text is None:
             text = render(ins, variant, lang, names)
-        rows.append({"insight": ins.model_dump(), "text": text.model_dump()})
+        best = next((e for e in ins.event_ids if e in decisions), None)
+        rows.append(
+            {"insight": ins.model_dump(), "text": text.model_dump(), "best_play_event_id": best}
+        )
     return rows
 
 

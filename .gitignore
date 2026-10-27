@@ -23,3 +23,5 @@ web/dist/
 .superpowers/
 .DS_Store
 web/*.tsbuildinfo
+web/test-results/
+web/playwright-report/

@@ -7,7 +7,7 @@ A short, current map of the codebase. **Read this page first, then only the page
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
 - Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the MCP stats server (`mcp_server/`), agent runtime and number checking (`agents/runtime.py`, `numbers.py`), the Tactical Analyst, Explainer, Verifier, Narrative, and Personalizer with fallback templates (`agents/`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks), the orchestrator and live precompute of all 8 matches (`agents/orchestrator.py`, `scripts/precompute.py`, `docs/costs.md`), the API (`api/`: REST, SSE live replay, live regenerate, `/mcp`).
-- Next: TASK-22 (visual direction), then TASK-23 (frontend).
+- Next: TASK-24 (Azure deployment).
 - Blockers: none. Foundry `gpt-4.1-mini` is live (North Central US); Application Insights tracing is on.
 
 ## Pages
@@ -82,7 +82,8 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/agents/orchestrator.py` | Workflow graph per window, fallbacks, resumable runs | done | 20.1 |
 | `scripts/precompute.py`, `scripts/devui.py`, `docs/costs.md` | Live precompute (resumable, throttled), replay manifests, cost table; DevUI launcher | done | 20.2 |
 | `src/matchmind/api/` | FastAPI REST, SSE live replay, rate-limited live regenerate, `/mcp`, CORS | done | 21 |
-| `web/` | React frontend: scaffold and club theme (more in TASK-23) | wip | 22–23 |
+| `web/` | React frontend: welcome, match picker, live match (pitch, pundit, Ask why, live re-ask), Best Plays, 5 languages | done | 22–23 |
+| `scripts/seed_demo.py` | Model-free demo match (template insights with checked numbers) for browser tests and local demos | done | 23.6 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |
 | `scripts/check_licenses.py` | Runtime license allowlist gate | done | 1 |
 | `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |

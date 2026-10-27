@@ -1,6 +1,26 @@
-// The routes and pages arrive in TASK-23.1 (docs/superpowers/plans/2026-10-26-frontend.md).
+import { useEffect } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import { setLang } from "./i18n/i18n";
+import BestPlays from "./pages/BestPlays";
+import Match from "./pages/Match";
+import MatchPicker from "./pages/MatchPicker";
+import Welcome from "./pages/Welcome";
+import { useStore } from "./state/store";
+
 export default function App() {
+  const lang = useStore((s) => s.prefs.lang);
+  useEffect(() => setLang(lang), [lang]);
   return (
-    <main className="min-h-screen p-6 font-display text-4xl uppercase">MatchMind</main>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+        <Route path="/welcome" element={<Welcome forceSetup />} />
+        <Route path="/matches" element={<MatchPicker />} />
+        <Route path="/match/:id" element={<Match />} />
+        <Route path="/match/:id/best-plays" element={<BestPlays />} />
+        <Route path="*" element={<Navigate to="/matches" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

@@ -9,6 +9,10 @@ function passesAA(vars: Record<string, string>): void {
   expect(contrast(vars["--mm-text"], vars["--mm-surface"])).toBeGreaterThanOrEqual(AA);
   expect(contrast(vars["--mm-text-on-bg"], vars["--mm-bg"])).toBeGreaterThanOrEqual(AA);
   expect(contrast(vars["--mm-on-accent"], vars["--mm-accent"])).toBeGreaterThanOrEqual(AA);
+  // The accent is drawn on cards (large minutes, borders, markers): 3:1 is AA for those.
+  expect(contrast(vars["--mm-accent"], vars["--mm-surface"])).toBeGreaterThanOrEqual(3);
+  // Tabs and switch tracks sit on a deeper shade of the club color.
+  expect(contrast(vars["--mm-text-on-deep"], vars["--mm-bg-deep"])).toBeGreaterThanOrEqual(AA);
 }
 
 describe("contrast", () => {

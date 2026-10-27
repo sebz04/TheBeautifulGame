@@ -155,3 +155,23 @@ def test_realism_is_read_from_the_store(built: Built) -> None:
             assert c.get(f"/api/matches/{built.meta.match_id}").json()["realism"] == fake
     finally:
         built.repo.save_realism(built.meta.match_id, stored)
+
+
+def test_insights_have_best_play_event_id(client: TestClient, built: Built) -> None:
+    url = f"/api/matches/{built.meta.match_id}/insights"
+    row = client.get(url, params={"persona": "analyst", "lang": "en"}).json()[0]
+    assert row["best_play_event_id"] == built.insight.event_ids[0]  # the cited decision
+    # An insight that cites no decision event gets null.
+    plain = built.insight.model_copy(update={"insight_id": "no-decision-ins", "event_ids": []})
+    built.repo.save_insight(plain)
+    try:
+        rows = client.get(url, params={"persona": "analyst", "lang": "en"}).json()
+        by_id = {r["insight"]["insight_id"]: r for r in rows}
+        assert by_id["no-decision-ins"]["best_play_event_id"] is None
+    finally:
+        from sqlalchemy import delete
+
+        from matchmind.store.db import insights
+
+        with built.repo.engine.begin() as c:
+            c.execute(delete(insights).where(insights.c.insight_id == "no-decision-ins"))

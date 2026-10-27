@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mcp.server.transport_security import TransportSecuritySettings
 
 from matchmind.agents.orchestrator import ALL_LANGS, Deps, Regenerated, regenerate
+from matchmind.agents.runtime import configure_tracing
 from matchmind.api import routes_insights, routes_live, routes_matches
 from matchmind.api.ratelimit import RateLimiter
 from matchmind.api.routes_insights import Regenerator
@@ -108,8 +109,10 @@ def create_app(
 
 
 def __getattr__(name: str) -> Any:
-    """``app`` is built on first use, so importing this module touches no database."""
+    """``app`` is built on first use, so importing this module touches no database. The
+    served app sends traces to Application Insights (live agent runs get trace ids)."""
     if name == "app":
+        configure_tracing(get_settings())
         globals()["app"] = create_app(warm=True)
         return globals()["app"]
     raise AttributeError(name)
