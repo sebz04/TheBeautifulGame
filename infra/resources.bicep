@@ -3,6 +3,7 @@
 param location string
 param tags object
 param principalId string
+param sqlLocation string
 param foundryProjectEndpoint string
 param foundryModelDeployment string
 
@@ -103,8 +104,8 @@ resource deployerWritesBlobs 'Microsoft.Authorization/roleAssignments@2022-04-01
 // Azure SQL: Entra ID sign-in only; the deployer is the admin and grants the app's identity
 // read/write (scripts/seed_cloud.py). Basic tier: always on (no cold start), about $5/month.
 resource sql 'Microsoft.Sql/servers@2023-08-01-preview' = {
-  name: 'sql-matchmind-${token}'
-  location: location
+  name: 'sql-matchmind-${token}-${sqlLocation}'
+  location: sqlLocation
   tags: tags
   properties: {
     minimalTlsVersion: '1.2'
@@ -129,7 +130,7 @@ resource allowAzure 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
 resource db 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
   parent: sql
   name: 'matchmind'
-  location: location
+  location: sqlLocation
   tags: tags
   sku: { name: 'Basic', tier: 'Basic', capacity: 5 }
   properties: { maxSizeBytes: 2147483648 }

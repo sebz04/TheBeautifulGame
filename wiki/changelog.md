@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-26 · TASK-24.1 · Azure SQL in its own region (Canada Central): North Central US refused new SQL servers on the first `azd up` · infra-ops
 - 2026-10-26 · TASK-24.2 · Dockerfile (website + API, ODBC Driver 18, non-root), .dockerignore, deploy workflow (azd up with GitHub OIDC, health check), scripts/seed_cloud.py (Azure SQL copy, identity grants, blob upload) · infra-ops
 - 2026-10-26 · TASK-24.1 · azd + Bicep infrastructure (Container Apps, ACR remote build, Azure SQL Basic with Entra-only sign-in, Blob, App Insights, one managed identity, Foundry role grants, budget); Azure SQL token sign-in in make_engine; the API serves the built website with deep links and an explicit /mcp route · infra-ops, api-frontend, data-model
 - 2026-10-26 · TASK-23 · final review fixes: accent readable on cards for every club, deep shade for tabs and switches, card-colored loading text, readable monograms, Player tab only opens on a favorite in the match, Ask why resets per insight and scrolls into view, a failed stream stops playing and says so · api-frontend

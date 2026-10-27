@@ -21,6 +21,9 @@ param foundryProjectEndpoint string
 
 param foundryModelDeployment string = 'gpt-4.1-mini'
 
+@description('Azure SQL region. North Central US stopped accepting new SQL servers, so the database may sit in another allowed region (Canada Central is nearest).')
+param sqlLocation string = location
+
 @description('Where budget alerts go.')
 param alertEmail string
 
@@ -44,6 +47,7 @@ module app 'resources.bicep' = {
     location: location
     tags: tags
     principalId: principalId
+    sqlLocation: sqlLocation
     foundryProjectEndpoint: foundryProjectEndpoint
     foundryModelDeployment: foundryModelDeployment
   }
