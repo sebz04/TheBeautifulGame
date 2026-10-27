@@ -2,13 +2,14 @@
 
 A short, current map of the codebase. **Read this page first, then only the pages you need.** Pages describe what exists in the code *now*. Plans live in `docs/superpowers/plans/2026-10-21-matchmind.md`, and work tracking lives in `TASKS.md`.
 
-**Last updated:** 2026-10-22 · **Latest task:** TASK-19 · **Code status:** league, profiles, level-3 engine passing all realism checks
+**Last updated:** 2026-10-27 · **Latest task:** TASK-25 · **Code status:** all 8 matches precomputed, live on Azure, runs locally with `docker compose up`
 
 ## Current state
 - Done: constitution, implementation plan, task breakdown, open-source review, this wiki.
 - Built: uv project, settings (`src/matchmind/config.py`), CI, license gate (`scripts/check_licenses.py`), wiki check (`scripts/check_wiki.py` + `.githooks/pre-commit`), shared schemas and pitch geometry, 20-club Colombian barrio league with squads and fixtures, player and club profiles, chemistry, origins, transfers, legends; match file I/O (`engine/match_io.py`), level-1 engine (`engine/baseline.py`, `simulate.py`, `lineup.py`, `formations.py`), realism validator and report (`engine/validate.py`, `scripts/realism_report.py`, `docs/realism.md`), pitch control with offside filter (`stats/pitch_control.py`), xT (`stats/xt.py`, grid in `data/models/`), level-2 building blocks (`engine/kinematics.py`, `roles.py`, `modifiers.py`), ball physics (`engine/ball.py`), decisions (`engine/decisions.py`), stats metrics and moments (`stats/`), SQL and tracking stores (`store/`), `matchmind build` (`pipeline/`, `cli.py`), the MCP stats server (`mcp_server/`), agent runtime and number checking (`agents/runtime.py`, `numbers.py`), the Tactical Analyst, Explainer, Verifier, Narrative, and Personalizer with fallback templates (`agents/`), the level-3 coupled engine (`engine/coupled.py`, `constants.py`; 16/16 realism checks), the orchestrator and live precompute of all 8 matches (`agents/orchestrator.py`, `scripts/precompute.py`, `docs/costs.md`), the API (`api/`: REST, SSE live replay, live regenerate, `/mcp`).
 - **Live:** https://ca-matchmind-api.wonderfulocean-49523812.northcentralus.azurecontainerapps.io (TASK-24).
-- Next: TASK-25 (local run and docs: README mapped to the hackathon requirements, architecture), then the demo video.
+- Local run: `docker compose up` (TASK-25); architecture: `docs/architecture.md`.
+- Next: the demo video and submission, then TASK-25.2 (Verifier polish).
 - Blockers: none. Foundry `gpt-4.1-mini` is live (North Central US); Application Insights tracing is on.
 
 ## Pages

@@ -1,0 +1,30 @@
+# The whole app on your machine, no Azure needed: `docker compose up`, then open
+# http://localhost:5173. The first run builds all 8 showcase matches with template insights
+# (a few minutes, once); later runs start right away. The live re-ask ("Ask the pundit
+# live") needs Foundry and says so; everything else works offline.
+services:
+  seed:
+    build: .
+    image: matchmind:local
+    command: ["python", "scripts/seed_demo.py", "--all", "--if-missing",
+              "--db", "sqlite:////data/matchmind.db", "--data-dir", "/data"]
+    volumes:
+      - matchmind-data:/data
+
+  app:
+    image: matchmind:local
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "5173:8000"
+    environment:
+      MATCHMIND_DB_URL: sqlite:////data/matchmind.db
+      MATCHMIND_DATA_DIR: /data
+      MATCHMIND_APPINSIGHTS_CONNECTION_STRING: "off"
+      MATCHMIND_API_HOST: localhost
+    volumes:
+      - matchmind-data:/data
+
+volumes:
+  matchmind-data:

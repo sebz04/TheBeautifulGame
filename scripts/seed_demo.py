@@ -1,12 +1,13 @@
-"""Build one match with template insights, offline: no model, no Azure.
+"""Build matches with template insights, offline: no model, no Azure.
 
 The insights are the deterministic templates (Constitution II), each given one real number
 (the team's possession at the moment's end, read through the stats service the Verifier
 uses), so the cards, "Ask why", and every language have content. Used by the Playwright
-smoke test in CI and for a local demo without Foundry.
+smoke test in CI (one match) and by `docker compose up` (all 8, `--all --if-missing`).
 
 Usage:
     uv run python scripts/seed_demo.py --db sqlite:///data/demo.db --data-dir data/demo
+    uv run python scripts/seed_demo.py --all --if-missing --db ... --data-dir ...
 """
 
 from __future__ import annotations
@@ -59,13 +60,37 @@ def seed(db_url: str, data_dir: Path, scenario: str) -> str:
     return match_id
 
 
-def main() -> None:
+def all_scenarios() -> list[str]:
+    """The showcase storylines in `scenarios/` (one match each)."""
+    return sorted(p.stem for p in SCENARIO_DIR.glob("*.toml"))
+
+
+def main_args(argv: list[str] | None = None) -> list[str]:
+    """Seed as the command line asks; returns the match ids built (none if skipped)."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--db", required=True, help="database URL, e.g. sqlite:///data/demo.db")
     parser.add_argument("--data-dir", type=Path, required=True, help="where tracking files go")
-    parser.add_argument("--scenario", default="comeback_red_card")
-    args = parser.parse_args()
-    print(seed(args.db, args.data_dir, args.scenario))
+    which = parser.add_mutually_exclusive_group()
+    which.add_argument("--scenario", default="comeback_red_card")
+    which.add_argument("--all", action="store_true", help="all 8 showcase matches")
+    parser.add_argument("--if-missing", action="store_true",
+                        help="do nothing if the database already has matches")  # fmt: skip
+    args = parser.parse_args(argv)
+    if args.db.startswith("sqlite:///"):
+        Path(args.db.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)
+    if args.if_missing and Repo(args.db).list_matches():
+        print("matches already built: nothing to do")
+        return []
+    built = [
+        seed(args.db, args.data_dir, s) for s in (all_scenarios() if args.all else [args.scenario])
+    ]
+    for match_id in built:
+        print(match_id)
+    return built
+
+
+def main() -> None:
+    main_args()
 
 
 if __name__ == "__main__":

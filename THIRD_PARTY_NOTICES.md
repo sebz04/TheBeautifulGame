@@ -20,9 +20,31 @@ checked in CI by `scripts/check_licenses.py`.
 | azure-identity, azure-ai-projects, azure-core | MIT | Keyless Azure sign-in and the Foundry project client |
 | azure-monitor-opentelemetry-exporter, opentelemetry-api, opentelemetry-sdk | MIT, Apache-2.0 | Traces to Application Insights |
 | regex | Apache-2.0 AND CNRI-Python | Text handling (via Agent Framework) |
+| FastAPI, Starlette | MIT, BSD-3-Clause | The API and the site server |
+| uvicorn | BSD-3-Clause | ASGI server |
+| sse-starlette | BSD-3-Clause | Server-sent events for the live replay |
+| azure-storage-blob (extra `azure`) | MIT | Tracking Parquet in Blob Storage |
+| pyodbc (extra `azure`) | MIT | Azure SQL connections |
+
+The container image also installs the Microsoft ODBC Driver 18 for SQL Server (`msodbcsql18`) from
+Microsoft's package repository, under Microsoft's own license terms (accepted at build time with
+`ACCEPT_EULA=Y`). It is not redistributed in this repository.
+
+## Website (shipped in the browser bundle)
+| Package | License | Use |
+|---|---|---|
+| React, React DOM | MIT | The site |
+| react-router-dom | MIT | Pages |
+| Zustand | MIT | App state, including the live stream |
+| visx (`@visx/curve`, `@visx/scale`, `@visx/shape`) | MIT | Momentum chart |
+| Big Shoulders Display, Schibsted Grotesk (Google Fonts) | SIL OFL 1.1 | Typefaces, loaded from Google Fonts |
 
 ## Development-only tools (not shipped)
-pytest (MIT), pytest-asyncio (Apache-2.0), hypothesis (MPL-2.0), ruff (MIT), mypy (MIT), pip-licenses (MIT).
+- Python: pytest (MIT), pytest-asyncio (Apache-2.0), hypothesis (MPL-2.0), ruff (MIT), mypy (MIT),
+  pip-licenses (MIT), floodlight (MIT; realism cross-check), agent-framework-devui (MIT; local agent UI).
+- Website build and tests: Vite and @vitejs/plugin-react (MIT), TypeScript (Apache-2.0), Tailwind CSS,
+  PostCSS and Autoprefixer (MIT), Vitest (MIT), Testing Library (`dom`, `react`, `jest-dom`,
+  `user-event`; MIT), jsdom (MIT), Playwright (Apache-2.0), @axe-core/playwright (MPL-2.0).
 
 ## Vendored or adapted code
 Vendored code keeps its original license header.
