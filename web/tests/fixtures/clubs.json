@@ -1,0 +1,142 @@
+[
+  {
+    "club_id": "chapinero",
+    "name": "Atlético Chapinero",
+    "short": "ACH",
+    "primary_color": "#6A1B9A",
+    "secondary_color": "#FFFFFF"
+  },
+  {
+    "club_id": "usaquen",
+    "name": "Club Deportivo Usaquén",
+    "short": "CDU",
+    "primary_color": "#00843D",
+    "secondary_color": "#FFD100"
+  },
+  {
+    "club_id": "la-candelaria",
+    "name": "Sporting La Candelaria",
+    "short": "SLC",
+    "primary_color": "#8B0000",
+    "secondary_color": "#F5E6C8"
+  },
+  {
+    "club_id": "teusaquillo",
+    "name": "Unión Teusaquillo",
+    "short": "UTE",
+    "primary_color": "#1F2A44",
+    "secondary_color": "#C0C0C0"
+  },
+  {
+    "club_id": "suba",
+    "name": "Deportivo Suba",
+    "short": "DSU",
+    "primary_color": "#4B9CD3",
+    "secondary_color": "#FFFFFF"
+  },
+  {
+    "club_id": "laureles",
+    "name": "Atlético Laureles",
+    "short": "ALA",
+    "primary_color": "#E4002B",
+    "secondary_color": "#FFFFFF"
+  },
+  {
+    "club_id": "el-poblado",
+    "name": "Sporting El Poblado",
+    "short": "SEP",
+    "primary_color": "#002D72",
+    "secondary_color": "#F2A900"
+  },
+  {
+    "club_id": "belen",
+    "name": "Deportivo Belén",
+    "short": "DBE",
+    "primary_color": "#FF8200",
+    "secondary_color": "#1B1B1B"
+  },
+  {
+    "club_id": "manrique",
+    "name": "Unión Manrique",
+    "short": "UMA",
+    "primary_color": "#5B6770",
+    "secondary_color": "#E35205"
+  },
+  {
+    "club_id": "san-antonio",
+    "name": "San Antonio Fútbol Club",
+    "short": "SAF",
+    "primary_color": "#7A1F3D",
+    "secondary_color": "#F2C14E"
+  },
+  {
+    "club_id": "san-fernando",
+    "name": "Deportivo San Fernando",
+    "short": "DSF",
+    "primary_color": "#00B2A9",
+    "secondary_color": "#002147"
+  },
+  {
+    "club_id": "siloe",
+    "name": "Atlético Siloé",
+    "short": "ASI",
+    "primary_color": "#2C5F2D",
+    "secondary_color": "#FFE77A"
+  },
+  {
+    "club_id": "el-prado",
+    "name": "Atlético El Prado",
+    "short": "AEP",
+    "primary_color": "#FFD700",
+    "secondary_color": "#000000"
+  },
+  {
+    "club_id": "barrio-abajo",
+    "name": "Unión Barrio Abajo",
+    "short": "UBA",
+    "primary_color": "#C8102E",
+    "secondary_color": "#1D428A"
+  },
+  {
+    "club_id": "rebolo",
+    "name": "Deportivo Rebolo",
+    "short": "DRE",
+    "primary_color": "#8A9BA8",
+    "secondary_color": "#0B3D2E"
+  },
+  {
+    "club_id": "getsemani",
+    "name": "Sporting Getsemaní",
+    "short": "SGE",
+    "primary_color": "#D35400",
+    "secondary_color": "#FFFFFF"
+  },
+  {
+    "club_id": "manga",
+    "name": "Manga Fútbol Club",
+    "short": "MFC",
+    "primary_color": "#0072CE",
+    "secondary_color": "#FFFFFF"
+  },
+  {
+    "club_id": "cabecera",
+    "name": "Atlético Cabecera",
+    "short": "ACA",
+    "primary_color": "#4B2E83",
+    "secondary_color": "#B9975B"
+  },
+  {
+    "club_id": "el-rodadero",
+    "name": "Club El Rodadero",
+    "short": "CER",
+    "primary_color": "#00A3E0",
+    "secondary_color": "#F4D35E"
+  },
+  {
+    "club_id": "chipre",
+    "name": "Deportivo Chipre",
+    "short": "DCH",
+    "primary_color": "#000000",
+    "secondary_color": "#FFFFFF"
+  }
+]

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MatchMind mockup: editorial-light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<!-- Text/background pairs checked by web/scripts/contrast.mjs (min ratio). -->
+<script type="application/json" id="contrast-pairs">
+[["--text-on-bg","--bg",4.5],["--muted-on-bg","--bg",4.5],["--text","--surface",4.5],["--muted","--surface",4.5],
+ ["--on-accent","--accent",4.5],["--home-text","--surface",4.5],["--away-text","--surface",4.5],["--text","--pitch",4.5]]
+</script>
+<style>
+  /* Chapinero theme, as computed by src/design/theme.ts clubTheme(chapinero, "light") */
+  :root {
+    --bg: #6A1B9A; --text-on-bg: #FFFFFF; --muted-on-bg: #E9DDF2;
+    --surface: #FFFFFF; --text: #16161C; --muted: #5C5C6B; --rule: #E2E0E8;
+    --accent: #FFFFFF; --on-accent: #0E0E12;
+    --home: #6A1B9A; --home-text: #6A1B9A; --away: #E4002B; --away-text: #C40024;
+    --pitch: #E9EFE9; --line: #9DB3A2;
+    --serif: "Newsreader", Georgia, serif;
+    --sans: "Schibsted Grotesk", system-ui, sans-serif;
+    --ease: cubic-bezier(.2,.7,.2,1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text-on-bg); font: 400 15px/1.5 var(--sans); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 32px 48px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .card :focus-visible { outline-color: var(--home); }
+
+  /* Masthead-like score line on the club field */
+  .scorebar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+              padding-bottom: 18px; border-bottom: 2px solid rgba(255,255,255,.6); }
+  .fixture { font: 800 40px/1 var(--sans); letter-spacing: -.02em; }
+  .fixture .score { font-variant-numeric: tabular-nums; margin: 0 .3em; }
+  .meta { font-size: 14px; color: var(--muted-on-bg); margin-top: 8px; }
+  .clock { font: 800 40px/1 var(--sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+
+  .switches { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 26px; }
+  .switch { font: 500 14px/1 var(--sans); color: var(--text-on-bg); background: transparent; border: 1.5px solid rgba(255,255,255,.6);
+            padding: 9px 14px; border-radius: 999px; cursor: pointer; }
+  .switch[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+  .main { display: grid; grid-template-columns: 7fr 5fr; gap: 24px; align-items: start; }
+  .card { background: var(--surface); color: var(--text); }
+  .tabs { display: flex; gap: 22px; padding: 14px 20px 0; border-bottom: 1px solid var(--rule); }
+  .tab { font: 700 15px/1 var(--sans); background: none; border: 0; padding: 0 0 12px; color: var(--muted); cursor: pointer;
+         border-bottom: 3px solid transparent; }
+  .tab[aria-selected="true"] { color: var(--text); border-color: var(--home); }
+  .pitchwrap { padding: 18px 20px 16px; }
+  .pitch { display: block; width: 100%; height: auto; background: var(--pitch); }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 12px; color: var(--muted); font-size: 13px; }
+  .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--home); color: #fff; cursor: pointer; }
+  .speed { display: flex; gap: 4px; }
+  .speed button { background: none; border: 1px solid var(--rule); color: var(--muted); padding: 5px 8px; font: 500 12px var(--sans); cursor: pointer; }
+  .speed button[aria-pressed="true"] { color: var(--text); border-color: var(--text); }
+
+  /* The pundit, written like the lead of a match report addressed to you */
+  .pundit { padding: 28px 30px 24px; animation: rise .5s var(--ease) both; }
+  @keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pundit { animation: none; } }
+  .byline { display: flex; align-items: baseline; gap: 12px; font-size: 13px; color: var(--muted); padding-bottom: 14px;
+            border-bottom: 1px solid var(--rule); margin-bottom: 18px; }
+  .byline strong { font: 800 26px/1 var(--sans); color: var(--home-text); letter-spacing: -.02em; }
+  .pundit h1 { font: 700 40px/1.06 var(--serif); margin: 0 0 14px; letter-spacing: -.01em; }
+  .pundit p { font: 500 18px/1.55 var(--serif); margin: 0 0 20px; max-width: 44ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { font: 700 14px/1 var(--sans); padding: 11px 16px; border: 1.5px solid var(--text); background: none; color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--home); border-color: var(--home); color: #fff; }
+  .confidence { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .earlier { border-top: 1px solid var(--rule); padding: 4px 30px 12px; }
+  .earlier ul { margin: 0; padding: 0; }
+  .earlier li { list-style: none; display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 12px 0;
+                border-top: 1px solid var(--rule); font: 500 16px/1.35 var(--serif); }
+  .earlier li:first-child { border-top: 0; }
+  .earlier time { font: 800 15px/1.4 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .lower { display: grid; grid-template-columns: 5fr 7fr; gap: 24px; margin-top: 24px; }
+  .stats { padding: 6px 22px; }
+  .row { display: grid; grid-template-columns: 1fr auto auto; gap: 18px; align-items: baseline; padding: 11px 0;
+         border-top: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+  .row:first-child { border-top: 0; }
+  .row .k { color: var(--muted); font-size: 14px; }
+  .row .h { font: 800 22px/1 var(--sans); color: var(--home-text); min-width: 3.2ch; text-align: right; }
+  .row .a { font: 800 22px/1 var(--sans); color: var(--away-text); min-width: 3.2ch; text-align: right; }
+  .flow { padding: 18px 22px; }
+  .flow h2 { font: 700 20px/1.2 var(--serif); margin: 0 0 10px; }
+  .flow svg { display: block; width: 100%; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+
+  @media (max-width: 860px) {
+    .wrap { padding: 16px 16px 32px; }
+    .main, .lower { grid-template-columns: 1fr; }
+    .side { order: -1; }
+    .fixture, .clock { font-size: 28px; }
+    .pundit { padding: 22px 20px; }
+    .pundit h1 { font-size: 32px; }
+    .earlier { padding: 4px 20px 10px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="scorebar">
+    <div>
+      <div class="fixture">Chapinero <span class="score">3–2</span> Laureles</div>
+      <div class="meta">Estadio Los Cerros. Chapinero down to 10 men since 56'.</div>
+    </div>
+    <div class="clock" aria-label="84 minutes">84'</div>
+  </header>
+
+  <nav class="switches" aria-label="Your view">
+    <button class="switch" aria-pressed="true">Chapinero</button>
+    <button class="switch" aria-pressed="false">Harold Morejo</button>
+    <button class="switch" aria-pressed="true">Fan</button>
+    <button class="switch" aria-pressed="false">Scout</button>
+    <button class="switch" aria-pressed="false">English</button>
+  </nav>
+
+  <div class="main">
+    <section class="card" aria-label="Match">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true">Game</button>
+        <button class="tab" role="tab" aria-selected="false">Team</button>
+        <button class="tab" role="tab" aria-selected="false">Player</button>
+      </div>
+      <div class="pitchwrap">
+        <svg class="pitch" viewBox="0 0 1050 680" role="img" aria-label="Live pitch at 84 minutes">
+          <g fill="none" stroke="var(--line)" stroke-width="3">
+            <rect x="10" y="10" width="1030" height="660"/><line x1="525" y1="10" x2="525" y2="670"/>
+            <circle cx="525" cy="340" r="91"/><rect x="10" y="138" width="165" height="404"/><rect x="875" y="138" width="165" height="404"/>
+            <rect x="10" y="248" width="55" height="184"/><rect x="985" y="248" width="55" height="184"/>
+          </g>
+          <g fill="var(--home)" stroke="#fff" stroke-width="3">
+            <circle cx="80" cy="340" r="13"/><circle cx="360" cy="190" r="13"/><circle cx="380" cy="470" r="13"/><circle cx="430" cy="330" r="13"/>
+            <circle cx="560" cy="250" r="13"/><circle cx="600" cy="430" r="13"/><circle cx="690" cy="330" r="13"/><circle cx="790" cy="160" r="13"/>
+            <circle cx="830" cy="500" r="13"/><circle cx="905" cy="300" r="15"/>
+          </g>
+          <g fill="var(--away)" stroke="#fff" stroke-width="2">
+            <circle cx="985" cy="340" r="13"/><circle cx="900" cy="230" r="13"/><circle cx="910" cy="420" r="13"/><circle cx="870" cy="330" r="13"/>
+            <circle cx="820" cy="250" r="13"/><circle cx="760" cy="410" r="13"/><circle cx="720" cy="240" r="13"/><circle cx="650" cy="520" r="13"/>
+            <circle cx="620" cy="160" r="13"/><circle cx="540" cy="360" r="13"/><circle cx="470" cy="520" r="13"/>
+          </g>
+          <circle cx="925" cy="296" r="8" fill="#16161C"/>
+          <g font-family="Schibsted Grotesk, sans-serif" font-size="22" font-weight="700">
+            <rect x="840" y="244" width="132" height="32" fill="var(--home)"/><text x="852" y="267" fill="#fff">Morejo</text>
+          </g>
+        </svg>
+        <div class="controls">
+          <button class="play" aria-label="Pause">❚❚</button>
+          <div class="speed" role="group" aria-label="Speed"><button aria-pressed="false">0.5×</button><button aria-pressed="true">1×</button><button aria-pressed="false">2×</button><button aria-pressed="false">4×</button></div>
+          <span>Second half, 39:12</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card side" aria-label="Your pundit">
+      <article class="pundit">
+        <div class="byline"><strong>84'</strong><span>Your pundit, writing for a Chapinero fan</span></div>
+        <h1>Morejo shines with a hat-trick for Chapinero</h1>
+        <p>Harold Morejo's third goal at 84 minutes shows his sharpness with 3 shots and an xG of 0.777. Atlético Chapinero's momentum is strong at 0.761, and we're in a great position to win!</p>
+        <div class="actions">
+          <button class="btn primary">Ask why</button>
+          <button class="btn">Show best play</button>
+        </div>
+        <div class="confidence">Confidence high. Every number is checked against the match data.</div>
+      </article>
+      <div class="earlier">
+        <ul>
+          <li><time>70'</time><span>Down to 10, but still fighting</span></li>
+          <li><time>56'</time><span>Loancia's red card puts us at a disadvantage</span></li>
+          <li><time>47'</time><span>Chapinero struggles as Balero scores</span></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <div class="lower">
+    <section class="card stats" aria-label="Key stats, Chapinero then Laureles">
+      <div class="row"><span class="k">Expected goals</span><span class="h">1.66</span><span class="a">1.43</span></div>
+      <div class="row"><span class="k">Possession</span><span class="h">46%</span><span class="a">54%</span></div>
+      <div class="row"><span class="k">Shots</span><span class="h">14</span><span class="a">15</span></div>
+      <div class="row"><span class="k">On target</span><span class="h">7</span><span class="a">5</span></div>
+      <div class="row"><span class="k">Passes per defensive action</span><span class="h">7.3</span><span class="a">12.6</span></div>
+    </section>
+    <section class="card flow" aria-label="Momentum and key moments">
+      <h2>How the match has swung</h2>
+      <svg viewBox="0 0 1000 110" role="img" aria-label="Momentum through the match, with goals and the red card marked">
+        <line x1="0" y1="55" x2="1000" y2="55" stroke="var(--rule)"/>
+        <path d="M0 55 L60 36 L120 40 L180 31 L240 35 L300 27 L360 46 L420 50 L480 80 L520 76 L560 36 L600 66 L640 70 L700 40 L760 68 L820 33 L880 22 L933 17 L933 55 Z" fill="var(--home)" opacity=".9"/>
+        <path d="M480 80 L520 76 L600 66 L640 70 L760 68" fill="none" stroke="var(--away)" stroke-width="3"/>
+        <line x1="933" y1="0" x2="933" y2="110" stroke="var(--text)" stroke-width="2"/>
+        <g fill="var(--home)"><circle cx="700" cy="101" r="6"/><circle cx="712" cy="101" r="6"/><circle cx="933" cy="101" r="6"/></g>
+        <g fill="var(--away)"><circle cx="500" cy="101" r="6"/><circle cx="752" cy="101" r="6"/></g>
+        <rect x="617" y="94" width="9" height="14" fill="var(--away)"/>
+      </svg>
+      <div class="legend"><span><i style="background:var(--home)"></i>Chapinero on top</span><span><i style="background:var(--away)"></i>Laureles on top</span><span>Dots are goals, the bar is the red card</span></div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

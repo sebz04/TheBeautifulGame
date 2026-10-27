@@ -46,5 +46,9 @@
 - **Pacing:** on the match clock at `speed` (0 to 32; 0 = no pacing). Cues are the fast lane: precomputed, sent at `t_in`, independent of the agents (tested: within 1 s at speed 1).
 - **Index:** `build_index` lists every message's time once per match (cached; frame times from 3 Parquet columns via `TrackingStore.frame_times`). Frame bodies are read from the store 20 s at a time while streaming.
 
-## Frontend
-_Design direction: not chosen yet (TASK-22)._ Components are listed here as they land, with their path and what they consume.
+## Frontend (`web/`)
+Design: `docs/superpowers/specs/2026-10-26-frontend-visual-direction-design.md`; plan: `docs/superpowers/plans/2026-10-26-frontend.md`. Direction: **broadcast-dark** (`docs/design.md`): near-black square panels on the club field, *Big Shoulders Display* + *Schibsted Grotesk*, a night pitch; the view is set by two switches (Team ⇄ Player, Fan ⇄ Scout) and a language menu. Mockups: `web/mockups/` (`node web/scripts/contrast.mjs web/mockups/*.html` checks their contrast).
+- **Stack:** React 18.3, Vite 5, TypeScript 5.6, Tailwind 3.4; Vitest + Testing Library (jsdom). Versions pinned exactly in `web/package.json`.
+- **Commands** (in `web/`): `npm run dev` (port 5173; proxies `/api` and `/mcp` to `localhost:8000`), `npm test`, `npm run lint` (type check), `npm run build`.
+- **Tokens** (`src/design/tokens.css`): `--mm-bg` (page field), `--mm-text-on-bg`, `--mm-surface` (cards), `--mm-text`, `--mm-muted`, `--mm-accent`, `--mm-on-accent`, `--mm-home`, `--mm-away`, `--mm-good`, `--mm-warn`, fonts, `--mm-space-1..8`. Tailwind maps them to colors (`bg-bg`, `text-accent`, …).
+- **Club takeover** (`src/design/theme.ts`): `clubTheme(club, surface)` keeps the club's primary exactly as the page field, puts near-black or white text on it, and nudges the secondary's lightness until text on it passes. `applyTheme` sets the variables on `<html>`. Tested: all 20 clubs on both surfaces pass AA (4.5:1) for text on page, on cards, and on the accent; so does `NEUTRAL_THEME`.

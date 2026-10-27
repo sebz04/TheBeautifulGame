@@ -82,7 +82,7 @@ Status: `planned` · `wip` · `done`
 | `src/matchmind/agents/orchestrator.py` | Workflow graph per window, fallbacks, resumable runs | done | 20.1 |
 | `scripts/precompute.py`, `scripts/devui.py`, `docs/costs.md` | Live precompute (resumable, throttled), replay manifests, cost table; DevUI launcher | done | 20.2 |
 | `src/matchmind/api/` | FastAPI REST, SSE live replay, rate-limited live regenerate, `/mcp`, CORS | done | 21 |
-| `web/` | React frontend | planned | 22–23 |
+| `web/` | React frontend: scaffold and club theme (more in TASK-23) | wip | 22–23 |
 | `infra/`, `azure.yaml` | azd + Bicep | planned | 24 |
 | `scripts/check_licenses.py` | Runtime license allowlist gate | done | 1 |
 | `scripts/check_wiki.py`, `.githooks/` | Wiki rule enforcement (TASK-0) | done | 1 |

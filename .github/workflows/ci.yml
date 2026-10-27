@@ -47,11 +47,21 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - name: Web checks
-        run: |
-          if [ -f web/package.json ]; then
-            echo "web/ exists: add npm ci, test and build steps (TASK-23)." && exit 1
-          fi
-          echo "No web/ app yet; skipping until TASK-23."
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Types
+        run: npm run lint
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build

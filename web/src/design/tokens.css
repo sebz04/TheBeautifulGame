@@ -1,0 +1,52 @@
+/* MatchMind design tokens. Colors are set per club at runtime by src/design/theme.ts
+   (clubTheme + applyTheme); these defaults are the neutral theme. Fonts, radii, shadows,
+   and motion are fixed by the visual direction chosen in TASK-22.2 (docs/design.md). */
+:root {
+  --mm-bg: #1c1c22;
+  --mm-text-on-bg: #ffffff;
+  --mm-surface: #121216;
+  --mm-text: #f4f4f6;
+  --mm-muted: #a9a9b6;
+  --mm-accent: #e8e8ee;
+  --mm-on-accent: #0e0e12;
+  --mm-home: #e8e8ee;
+  --mm-away: #a9a9b6;
+  --mm-good: #4ade80;
+  --mm-warn: #fbbf24;
+
+  /* Broadcast-dark (chosen at TASK-22.2, docs/design.md) */
+  --mm-font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --mm-font-body: "Schibsted Grotesk", system-ui, sans-serif;
+  --mm-radius: 0; /* panels are square; only switches and round buttons are pills */
+  --mm-pill: 999px;
+  --mm-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --mm-dur-fast: 180ms;
+  --mm-dur-slow: 500ms;
+  --mm-pitch: #0f1f17;
+  --mm-pitch-line: rgba(255, 255, 255, 0.28);
+  --mm-rule: #26262e;
+
+  --mm-space-1: 4px;
+  --mm-space-2: 8px;
+  --mm-space-3: 12px;
+  --mm-space-4: 16px;
+  --mm-space-5: 24px;
+  --mm-space-6: 32px;
+  --mm-space-7: 48px;
+  --mm-space-8: 64px;
+}
+
+body {
+  margin: 0;
+  background: var(--mm-bg);
+  color: var(--mm-text-on-bg);
+  font-family: var(--mm-font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mm-dur-fast: 0ms;
+    --mm-dur-slow: 0ms;
+  }
+}

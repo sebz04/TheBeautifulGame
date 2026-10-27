@@ -27,6 +27,11 @@ Test applied to every candidate: (1) a permissive license, (2) it contains no re
 | [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) | MIT | active | FastMCP stats server | 15 |
 | [PySport/kloppy](https://github.com/PySport/kloppy) | BSD-3 | active | Export our synthetic data to the standard PySport data model | 32 |
 | [Azure/azure-dev](https://github.com/Azure/azure-dev) (azd) | MIT | active | `azd up` provisioning and `azd pipeline config` GitHub OIDC | 24 |
+| [facebook/react](https://github.com/facebook/react) | MIT | active | Frontend UI (Constitution stack) | 22, 23 |
+| [vitejs/vite](https://github.com/vitejs/vite) | MIT | active | Frontend build and dev server (Constitution stack) | 22, 23 |
+| [tailwindlabs/tailwindcss](https://github.com/tailwindlabs/tailwindcss) | MIT | active | Styling, driven by the CSS-variable design tokens (Constitution stack) | 22, 23 |
+| [vitest-dev/vitest](https://github.com/vitest-dev/vitest) | MIT | active | Frontend unit tests (Constitution: CI runs Vitest) | 22, 23 |
+| [testing-library/react-testing-library](https://github.com/testing-library/react-testing-library), [jsdom/jsdom](https://github.com/jsdom/jsdom) | MIT | active | Component tests in a simulated browser (dev-only) | 23 |
 | [pmndrs/zustand](https://github.com/pmndrs/zustand) | MIT | active | Frontend state | 23 |
 | [airbnb/visx](https://github.com/airbnb/visx) | MIT | active | Momentum chart and small stat charts | 23 |
 | [microsoft/playwright](https://github.com/microsoft/playwright) | Apache-2.0 | active | End-to-end smoke tests and repeatable demo-video capture | 23, 31 |
