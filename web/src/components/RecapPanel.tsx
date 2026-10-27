@@ -8,7 +8,7 @@ import { LoadError, Loading } from "./Status";
 export default function RecapPanel({ matchId, lang }: { matchId: string; lang: Lang }) {
   const t = useT();
   const state = useAsync(() => api.recap(matchId, lang), [matchId, lang]);
-  if (state.status === "loading") return <div className="bg-surface p-6 text-text"><Loading what="what.recap" /></div>;
+  if (state.status === "loading") return <div className="bg-surface p-6 text-text"><Loading what="what.recap"  onCard /></div>;
   if (state.status === "error") return <LoadError what="what.recap" retry={state.retry} />;
   const r = state.data;
   return (

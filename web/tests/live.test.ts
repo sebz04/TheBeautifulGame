@@ -82,13 +82,22 @@ describe("openLive", () => {
     expect(FakeEventSource.last.closed).toBe(true);
   });
 
-  it("reports reconnecting, then closes when told", () => {
+  it("reports reconnecting; closing it ourselves is not reported as a failure", () => {
     const h = handlers();
     const live = openLive("m1", { period: 1, from_t: 0, speed: 1 }, h);
     FakeEventSource.last.onerror?.();
-    expect(h.calls.status).toContain("reconnecting");
+    expect(h.calls.status).toEqual(["reconnecting"]);
     live.close();
     expect(FakeEventSource.last.closed).toBe(true);
-    expect(h.calls.status.at(-1)).toBe("closed");
+    expect(h.calls.status).toEqual(["reconnecting"]);
+  });
+
+  it("reports closed once when the browser gives up", () => {
+    const h = handlers();
+    openLive("m1", { period: 1, from_t: 0, speed: 1 }, h);
+    FakeEventSource.last.readyState = 2;
+    FakeEventSource.last.onerror?.();
+    FakeEventSource.last.onerror?.();
+    expect(h.calls.status).toEqual(["closed"]);
   });
 });

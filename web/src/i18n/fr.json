@@ -22,6 +22,7 @@
   "match.pitch": "Terrain en direct, {minute}",
   "match.heat": "Montrer quelle équipe contrôle chaque zone du terrain",
   "match.reconnecting": "Reconnexion au match…",
+  "match.failed": "Le flux du match s'est arrêté. Lancez la lecture pour réessayer.",
   "match.flow": "Comment le match a basculé",
   "match.moments": "Moments clés",
   "match.view": "Vue",

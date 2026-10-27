@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { MatchRow } from "../api/types";
 import { LoadError, Loading } from "../components/Status";
-import { NEUTRAL_THEME, applyTheme, clubTheme } from "../design/theme";
+import { NEUTRAL_THEME, applyTheme, clubTheme, textOn } from "../design/theme";
 import { useT } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { useStore } from "../state/store";
@@ -20,7 +20,7 @@ function Monogram({ club }: { club: MatchRow["home"] }) {
     <span
       aria-hidden="true"
       className="grid h-11 w-11 shrink-0 place-items-center font-display text-lg font-black"
-      style={{ background: club.primary_color, color: "#fff", outline: "2px solid rgba(255,255,255,.6)" }}
+      style={{ background: club.primary_color, color: textOn(club.primary_color), outline: "2px solid rgba(255,255,255,.6)" }}
     >
       {club.short}
     </span>

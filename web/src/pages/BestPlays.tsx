@@ -41,7 +41,7 @@ function Frozen({ matchId, row, names, colors, addedS }: { matchId: string; row:
     return { why, event, frame: tracking.frames.at(-1) ?? null, heat };
   }, [matchId, row.insight.insight_id]);
 
-  if (data.status === "loading") return <Loading what="what.evidence" />;
+  if (data.status === "loading") return <Loading what="what.evidence"  onCard />;
   if (data.status === "error") return <LoadError what="what.evidence" retry={data.retry} />;
   const { why, event, frame, heat } = data.data;
   if (!why.counterfactual || !event) return <p className="text-muted">{t("best.empty")}</p>;
@@ -82,7 +82,7 @@ export default function BestPlays() {
       <div className="my-4 flex flex-wrap items-baseline gap-4">
         <h1 className="m-0 font-display text-5xl font-black">{t("best.title")}</h1>
         <nav className="flex gap-0.5 text-sm font-bold">
-          <Link to={`/match/${id}`} className="bg-black/30 px-4 py-2.5 text-text-on-bg">{t("best.live")}</Link>
+          <Link to={`/match/${id}`} className="bg-deep px-4 py-2.5 text-text-on-deep">{t("best.live")}</Link>
           <span aria-current="page" className="bg-surface px-4 py-2.5 text-text">{t("best.tab")}</span>
         </nav>
       </div>

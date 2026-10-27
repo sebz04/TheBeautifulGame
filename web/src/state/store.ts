@@ -26,7 +26,7 @@ export interface AppState {
   t: number;
   playing: boolean;
   speed: Speed;
-  connection: LiveStatus | "idle";
+  connection: LiveStatus | "idle" | "failed";
   ended: boolean;
   frames: ArrivedFrame[];
   cues: Cue[];
@@ -90,7 +90,9 @@ export const useStore = create<AppState>((set, get) => {
         cue: (c) => set((s) => ({ cues: [...s.cues.filter((x) => x.t_out > c.t_in - 1 || x.period !== c.period), c] })),
         insight: (i) => set((s) => ({ liveInsights: [...s.liveInsights, i] })),
         end: () => set({ playing: false, ended: true }),
-        status: (connection) => set({ connection }),
+        // Closed while still playing means the stream gave up (the server refused or vanished).
+        status: (connection) =>
+          set((st) => (connection === "closed" && st.playing && !st.ended ? { connection: "failed", playing: false } : { connection })),
       },
       seenInsights,
     );

@@ -90,12 +90,30 @@ function readableAccent(color: string): string {
   return color;
 }
 
+/** The first candidate that has readable text on it and stands out on the cards (3:1, AA
+ * for large text and UI): the club's secondary, then its primary, then plain white or ink. */
+function pickAccent(candidates: string[], cardColor: string): string {
+  for (const c of candidates) {
+    const a = readableAccent(c);
+    if (contrast(a, cardColor) >= 3) return a;
+  }
+  return contrast(PAPER, cardColor) >= contrast(INK, cardColor) ? PAPER : INK;
+}
+
+/** The club color mixed toward black: the backdrop for tabs and switch tracks. */
+function deepen(hex: string, amount = 0.3): string {
+  return rgbToHex(hexToRgb(hex).map((v) => v * (1 - amount)) as Rgb);
+}
+
 function build(field: string, accentBase: string, surface: Surface): ThemeVars {
   const s = SURFACES[surface];
-  const accent = readableAccent(accentBase);
+  const accent = pickAccent([accentBase, field], s.surface);
+  const deep = deepen(field);
   return {
     "--mm-bg": field,
     "--mm-text-on-bg": textOn(field),
+    "--mm-bg-deep": deep,
+    "--mm-text-on-deep": textOn(deep),
     "--mm-surface": s.surface,
     "--mm-text": s.text,
     "--mm-muted": s.muted,

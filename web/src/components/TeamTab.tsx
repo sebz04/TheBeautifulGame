@@ -29,7 +29,7 @@ export default function TeamTab({ matchId, home, away, period, t }: TeamTabProps
     () => Promise.all([home, away].map((c) => api.stats(matchId, { scope: "team", scope_id: c.club_id, period, t: at }))),
     [matchId, home.club_id, away.club_id, period, at],
   );
-  if (state.status === "loading") return <Loading what="what.teamStats" />;
+  if (state.status === "loading") return <Loading what="what.teamStats"  onCard />;
   if (state.status === "error") return <LoadError what="what.teamStats" retry={state.retry} />;
   const [h, a] = state.data.map((s) => s.metrics);
   return (

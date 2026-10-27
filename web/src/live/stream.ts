@@ -42,7 +42,6 @@ export function openLive(
     if (closed) return;
     closed = true;
     es.close();
-    handlers.status("closed");
   };
 
   const on = <T>(type: string, deliver: (data: T) => void) =>
@@ -67,7 +66,11 @@ export function openLive(
   });
   es.onopen = () => handlers.status("open");
   es.onerror = () => {
-    if (!closed) handlers.status(es.readyState === 2 ? "closed" : "reconnecting");
+    if (closed) return;
+    if (es.readyState === 2) {
+      closed = true; // the browser gave up: report it once
+      handlers.status("closed");
+    } else handlers.status("reconnecting");
   };
   return { close };
 }

@@ -1,6 +1,6 @@
 // "Ask why": the evidence behind an insight (claims, cited events, the agents' runs and
 // trace), the best alternative to the cited decision, and a live re-ask of the pundit.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ApiError, api } from "../api/client";
 import type { AgentRun, Counterfactual, InsightRow, Lang, Persona, Regenerated, Why } from "../api/types";
@@ -85,25 +85,37 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
   const t = useT();
   const why = useAsync(() => api.why(row.insight.insight_id), [row.insight.insight_id]);
   const [live, setLive] = useState<{ state: "idle" | "running" } | { state: "done"; result: Regenerated } | { state: "error"; message: string }>({ state: "idle" });
-  const running = useRef(false);
+  const running = useRef<string | null>(null); // the insight a live request is for
+  const heading = useRef<HTMLHeadingElement>(null);
+  const id = row.insight.insight_id;
+
+  // A different insight starts fresh; a late answer for the previous one is dropped.
+  useEffect(() => {
+    setLive({ state: "idle" });
+    running.current = null;
+    heading.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+    heading.current?.focus();
+  }, [id]);
 
   const askLive = () => {
-    if (running.current) return;
-    running.current = true;
+    if (running.current === id) return;
+    running.current = id;
     setLive({ state: "running" });
     api
       .regenerate(matchId, { moment_id: row.insight.moment_id, persona: variant.persona, lang, ...(variant.club_id ? { club_id: variant.club_id } : {}), ...(variant.player_id ? { player_id: variant.player_id } : {}) })
       .then(
-        (result) => setLive({ state: "done", result }),
-        (e: unknown) => setLive({ state: "error", message: liveError(e, t) }),
+        (result) => running.current === id && setLive({ state: "done", result }),
+        (e: unknown) => running.current === id && setLive({ state: "error", message: liveError(e, t) }),
       )
-      .finally(() => (running.current = false));
+      .finally(() => {
+        if (running.current === id) running.current = null;
+      });
   };
 
   return (
     <section aria-labelledby="why-title" className="bg-surface p-6 text-text" onKeyDown={(e) => e.key === "Escape" && onClose()}>
       <div className="flex items-start justify-between gap-4">
-        <h2 id="why-title" className="m-0 font-display text-3xl font-extrabold">
+        <h2 id="why-title" ref={heading} tabIndex={-1} className="m-0 scroll-mt-4 font-display text-3xl font-extrabold outline-none">
           {t("why.title")}
         </h2>
         <button type="button" onClick={onClose} className="border border-text bg-transparent px-3 py-2 text-text">
@@ -111,7 +123,7 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
         </button>
       </div>
 
-      {why.status === "loading" && <Loading what="what.evidence" />}
+      {why.status === "loading" && <Loading what="what.evidence"  onCard />}
       {why.status === "error" && <LoadError what="what.evidence" retry={why.retry} />}
       {why.status === "ready" && (
         <div className="mt-4 grid gap-6 md:grid-cols-2">

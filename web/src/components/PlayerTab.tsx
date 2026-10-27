@@ -12,6 +12,11 @@ export const PLAYER_STATS = ["passes", "completed", "forward_passes", "progressi
 
 const show = (v: number | null | undefined) => (v == null ? "–" : Number.isInteger(v) ? String(v) : v.toFixed(1));
 
+/** The player the tab opens on: the favorite if they're in this match, else ``fallback``. */
+export function defaultPlayer(squad: { player_id: string }[], favorite: string | null, fallback: string): string {
+  return favorite && squad.some((p) => p.player_id === favorite) ? favorite : fallback;
+}
+
 export interface PlayerTabProps {
   matchId: string;
   players: { player_id: string; name: string }[];
@@ -37,7 +42,7 @@ export default function PlayerTab({ matchId, players, playerId, period, t }: Pla
           ))}
         </select>
       </label>
-      {state.status === "loading" && <Loading what="what.playerStats" />}
+      {state.status === "loading" && <Loading what="what.playerStats"  onCard />}
       {state.status === "error" && <LoadError what="what.playerStats" retry={state.retry} />}
       {state.status === "ready" && (
         <>

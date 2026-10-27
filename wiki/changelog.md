@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-26 · TASK-23 · final review fixes: accent readable on cards for every club, deep shade for tabs and switches, card-colored loading text, readable monograms, Player tab only opens on a favorite in the match, Ask why resets per insight and scrolls into view, a failed stream stops playing and says so · api-frontend
 - 2026-10-26 · TASK-23.6 · Playwright smoke and accessibility tests (axe at 1280/375 px, keyboard) in CI against a seeded model-free match (scripts/seed_demo.py); tabs move focus with arrow keys · api-frontend, conventions, README
 - 2026-10-26 · TASK-23.8 · Best Plays tab (live strip, moments so far, freeze-frame with heat, real vs best scorecard, other options, pundit text, "picked the best option"), shared useFanMatch hook and option wording · api-frontend
 - 2026-10-26 · TASK-23.7 · welcome page (club tiles, favorite player, language, Fan/Scout; previews language and colors; returning visitors skip it; Change my setup), match list in the fan's colors · api-frontend

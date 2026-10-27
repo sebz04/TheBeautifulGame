@@ -18,7 +18,7 @@ function Switch<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex rounded-full border-[1.5px] border-white/55 bg-black/30 p-[3px]">
+    <div role="group" aria-label={label} className="inline-flex rounded-full border-[1.5px] border-white/55 bg-deep p-[3px]">
       {options.map((o) => (
         <button
           key={o.value}
@@ -27,7 +27,7 @@ function Switch<T extends string>({
           disabled={o.disabled}
           onClick={() => onChange(o.value)}
           className={`rounded-full border-0 px-4 py-2 text-sm font-bold transition-colors duration-[var(--mm-dur-fast)] disabled:cursor-not-allowed disabled:opacity-50 ${
-            value === o.value ? "bg-accent text-on-accent" : "bg-transparent text-text-on-bg"
+            value === o.value ? "bg-accent text-on-accent" : "bg-transparent text-text-on-deep"
           }`}
         >
           {o.text}

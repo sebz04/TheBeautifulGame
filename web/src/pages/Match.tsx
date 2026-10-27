@@ -10,7 +10,7 @@ import Overlays from "../components/Overlays";
 import Pitch from "../components/Pitch";
 import PlaybackBar from "../components/PlaybackBar";
 import PersonaBar from "../components/PersonaBar";
-import PlayerTab from "../components/PlayerTab";
+import PlayerTab, { defaultPlayer } from "../components/PlayerTab";
 import RealismPanel from "../components/RealismPanel";
 import RecapPanel from "../components/RecapPanel";
 import SidePicker from "../components/SidePicker";
@@ -18,6 +18,7 @@ import StatsStrip from "../components/StatsStrip";
 import { LoadError, Loading } from "../components/Status";
 import TeamTab from "../components/TeamTab";
 import Timeline from "../components/Timeline";
+import { textOn } from "../design/theme";
 import { useT } from "../i18n/i18n";
 import { useAsync } from "../lib/useAsync";
 import { useFanMatch } from "../lib/useFanMatch";
@@ -60,7 +61,7 @@ function Monogram({ club, solid }: { club: MatchDetail["home"]; solid?: boolean 
     <span
       aria-hidden="true"
       className="grid h-11 w-11 place-items-center border-2 font-display text-xl font-black"
-      style={solid ? { background: club.primary_color, borderColor: club.primary_color, color: "#fff" } : {}}
+      style={solid ? { background: club.primary_color, borderColor: club.primary_color, color: textOn(club.primary_color) } : {}}
     >
       {club.short}
     </span>
@@ -176,7 +177,7 @@ export default function Match() {
                   setTab(next);
                   requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
                 }}
-                className={`border-0 px-4 py-3 text-sm font-bold ${tab === name ? "bg-surface text-text" : "bg-black/30 text-text-on-bg"}`}
+                className={`border-0 px-4 py-3 text-sm font-bold ${tab === name ? "bg-surface text-text" : "bg-deep text-text-on-deep"}`}
               >
                 {t(`tab.${name}`)}
               </button>
@@ -185,7 +186,7 @@ export default function Match() {
           <div id="tab-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="bg-surface p-3.5 text-text">
           {tab === "team" && <TeamTab matchId={id} home={m.home} away={m.away} period={live.period} t={live.t} />}
           {tab === "player" && (
-            <PlayerTab matchId={id} players={squad} playerId={useStore.getState().prefs.favorite_player_id ?? m.home_squad[9]?.player_id ?? squad[0].player_id} period={live.period} t={live.t} />
+            <PlayerTab matchId={id} players={squad} playerId={defaultPlayer(squad, prefs.favorite_player_id, m.home_squad[9]?.player_id ?? squad[0].player_id)} period={live.period} t={live.t} />
           )}
           <div hidden={tab !== "game"}>
           <Pitch colors={colors} label={t("match.pitch", { minute })} heat={heat}>
@@ -208,6 +209,7 @@ export default function Match() {
           </label>
           </div>
           {live.connection === "reconnecting" && <p role="status" className="mt-2 text-sm text-warn">{t("match.reconnecting")}</p>}
+          {live.connection === "failed" && <p role="alert" className="mt-2 text-sm text-warn">{t("match.failed")}</p>}
           </div>
         </section>
         <aside aria-label={t("what.pundit")} className="order-first md:order-none">
@@ -226,7 +228,7 @@ export default function Match() {
           ) : rows.status === "error" ? (
             <LoadError what="what.insights" retry={rows.retry} />
           ) : (
-            <div className="bg-surface p-6 text-text"><Loading what="what.pundit" /></div>
+            <div className="bg-surface p-6 text-text"><Loading what="what.pundit"  onCard /></div>
           )}
         </aside>
       </div>

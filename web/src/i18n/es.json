@@ -22,6 +22,7 @@
   "match.pitch": "Cancha en vivo, {minute}",
   "match.heat": "Mostrar qué equipo controla cada zona de la cancha",
   "match.reconnecting": "Reconectando con el partido…",
+  "match.failed": "La transmisión del partido se detuvo. Dale a reproducir para intentarlo de nuevo.",
   "match.flow": "Cómo ha cambiado el partido",
   "match.moments": "Momentos clave",
   "match.view": "Vista",

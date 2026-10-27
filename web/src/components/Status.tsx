@@ -1,10 +1,11 @@
 // Shared loading and error states: say what is happening and how to fix it.
 import { useT, type Key } from "../i18n/i18n";
 
-export function Loading({ what }: { what: Key }) {
+/** ``onCard`` when shown inside a card (its text color differs from the page's). */
+export function Loading({ what, onCard = false }: { what: Key; onCard?: boolean }) {
   const t = useT();
   return (
-    <p role="status" className="py-8 text-text-on-bg">
+    <p role="status" className={`py-8 ${onCard ? "text-text " : "text-text-on-bg "}`}>
       {t("loading", { what: t(what) })}
     </p>
   );

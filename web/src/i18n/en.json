@@ -22,6 +22,7 @@
   "match.pitch": "Live pitch at {minute}",
   "match.heat": "Show which team controls each area of the pitch",
   "match.reconnecting": "Reconnecting to the match…",
+  "match.failed": "The match stream stopped. Press play to try again.",
   "match.flow": "How the match has swung",
   "match.moments": "Key moments",
   "match.view": "View",

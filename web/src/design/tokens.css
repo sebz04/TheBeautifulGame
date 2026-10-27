@@ -4,6 +4,8 @@
 :root {
   --mm-bg: #1c1c22;
   --mm-text-on-bg: #ffffff;
+  --mm-bg-deep: #141418;
+  --mm-text-on-deep: #ffffff;
   --mm-surface: #121216;
   --mm-text: #f4f4f6;
   --mm-muted: #a9a9b6;
