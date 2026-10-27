@@ -1,0 +1,42 @@
+# Deploy to Azure on every push to main, signing in with GitHub OIDC (no stored secrets).
+# `azd pipeline config` creates the federated credential and sets these repository variables:
+# AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_ENV_NAME, AZURE_LOCATION
+# (plus FOUNDRY_RESOURCE_ID, FOUNDRY_PROJECT_ENDPOINT, ALERT_EMAIL from the azd environment).
+# Until then the job is skipped.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    if: vars.AZURE_CLIENT_ID != ''
+    runs-on: ubuntu-latest
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      FOUNDRY_RESOURCE_ID: ${{ vars.FOUNDRY_RESOURCE_ID }}
+      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+      ALERT_EMAIL: ${{ vars.ALERT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Azure/setup-azd@v2
+      - name: Sign in with OIDC
+        run: |
+          azd auth login --client-id "$AZURE_CLIENT_ID" --federated-credential-provider github \
+            --tenant-id "$AZURE_TENANT_ID"
+      - name: Provision and deploy (image built in Azure Container Registry)
+        run: azd up --no-prompt
+      - name: Health check
+        run: |
+          url=$(azd env get-value SERVICE_API_URI)
+          for i in $(seq 1 30); do curl -fsS "$url/api/health" && exit 0; sleep 10; done; exit 1
