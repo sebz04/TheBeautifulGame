@@ -23,6 +23,7 @@ from sqlalchemy import (
     and_,
     create_engine,
     delete,
+    event,
     insert,
     inspect,
     or_,
@@ -206,12 +207,49 @@ def _from(table: Table, col_t: str, t: MatchTime) -> Any:
     return or_(table.c.period > period, and_(table.c.period == period, table.c[col_t] >= tt))
 
 
+SQL_COPT_SS_ACCESS_TOKEN = 1256  # pyodbc connection attribute for an Entra ID token
+AZURE_SQL_SCOPE = "https://database.windows.net/.default"
+
+
+def _wants_token(url: str) -> bool:
+    """Azure SQL (``mssql+...``) signs in with an Entra ID token: no passwords anywhere."""
+    return url.startswith("mssql")
+
+
+def _token_struct(token: str) -> bytes:
+    """The token as the ODBC driver wants it: length-prefixed UTF-16-LE."""
+    raw = token.encode("utf-16-le")
+    return len(raw).to_bytes(4, "little") + raw
+
+
+def _token_hook(credential: Any) -> Any:
+    """A ``do_connect`` listener that adds a fresh token to every new connection."""
+
+    def hook(dialect: Any, conn_rec: Any, cargs: Any, cparams: dict[str, Any]) -> None:
+        token = credential.get_token(AZURE_SQL_SCOPE).token
+        cparams["attrs_before"] = {SQL_COPT_SS_ACCESS_TOKEN: _token_struct(token)}
+
+    return hook
+
+
+def make_engine(url: str, credential: Any = None) -> Engine:
+    if url in ("sqlite://", "sqlite:///:memory:"):
+        return create_engine(url, poolclass=StaticPool, connect_args={"check_same_thread": False})
+    if not _wants_token(url):
+        return create_engine(url)
+    if credential is None:
+        from azure.identity import DefaultAzureCredential  # noqa: PLC0415
+
+        credential = DefaultAzureCredential()
+    # Tokens last about an hour: recycle pooled connections well before that.
+    engine = create_engine(url, pool_pre_ping=True, pool_recycle=1800, fast_executemany=True)
+    event.listen(engine, "do_connect", _token_hook(credential))
+    return engine
+
+
 class Repo:
     def __init__(self, url: str) -> None:
-        kw: dict[str, Any] = {}
-        if url in ("sqlite://", "sqlite:///:memory:"):
-            kw = {"poolclass": StaticPool, "connect_args": {"check_same_thread": False}}
-        self.engine: Engine = create_engine(url, **kw)
+        self.engine: Engine = make_engine(url)
         md.create_all(self.engine)
         self._add_missing_columns()
 

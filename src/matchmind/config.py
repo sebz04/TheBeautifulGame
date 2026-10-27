@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     # check). Localhost is always allowed.
     web_origin: str | None = None
     api_host: str | None = None
+    # The built website (`npm run build` in web/), served by the API when present.
+    web_dist: Path | None = Path("web/dist")
 
     # Foundry variables are read unprefixed, matching Azure tooling conventions.
     foundry_project_endpoint: str | None = Field(

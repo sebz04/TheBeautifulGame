@@ -1,0 +1,12 @@
+# Azure Developer CLI: `azd up` provisions infra/ and deploys the API + website image,
+# built in Azure Container Registry (no local Docker needed).
+name: matchmind
+services:
+  api:
+    project: .
+    host: containerapp
+    language: python
+    docker:
+      path: ./Dockerfile
+      context: .
+      remoteBuild: true

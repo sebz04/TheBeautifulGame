@@ -1,12 +1,19 @@
 # Infrastructure and Operations
 
-**Status:** Azure for Students and Foundry set up (TASK-16.1); deployment is TASK-24.
+**Status:** Azure for Students and Foundry set up (TASK-16.1); infrastructure as code with azd + Bicep (TASK-24.1).
 
 ## Accounts
 - Azure for Students ($100 credit). Budget alerts at $25 and $50.
 - Foundry: the subscription's default project and resource (not renamed), with a `gpt-4.1-mini` deployment (Global Standard). **TPM quota: 200,000 tokens per minute.** The precompute throttle (`--tpm`, TASK-20) uses this.
 - **Region: North Central US.** Azure for Students only allows a few regions (policy "Allowed resource deployment regions"). Create every resource there, including Application Insights and its Log Analytics workspace. Central US is blocked: `RequestDisallowedByAzure`.
 - Sign-in is keyless (`DefaultAzureCredential`): `az login` locally, managed identity in Azure. Your account needs the **Azure AI User** role on the Foundry resource. There are no API keys.
+
+## Azure deployment (`azure.yaml`, `infra/`)
+- **`azd up`** provisions `infra/main.bicep` (subscription scope) and deploys the `api` service: one image with the API, the website, and `/mcp`, **built in Azure Container Registry** (`remoteBuild: true`; no local Docker).
+- **Resources** (`rg-<env>`, North Central US): Container Apps environment + `ca-matchmind-api` (0.5 vCPU, 1 GiB, exactly 1 replica: always on, and the live-run limits are per replica); Container Registry (Basic); Storage (`tracking` container, shared keys off); Azure SQL server (Entra ID sign-in only, the deployer is admin) with database `matchmind` on **Basic** (about $5/month, always on: the free serverless tier pauses, and its first request after an idle hour waits about a minute); Log Analytics + Application Insights; a user-assigned managed identity.
+- **Identity:** the one managed identity pulls images (AcrPull), reads blobs (Storage Blob Data Reader), reads/writes SQL (a database user, granted by `scripts/seed_cloud.py`), and calls Foundry (Azure AI User and Cognitive Services OpenAI User on the existing Foundry account, `modules/foundry-access.bicep`). The container gets `AZURE_CLIENT_ID` so `DefaultAzureCredential` uses it. Azure SQL connections add an Entra token per connection (`store/db.py` `make_engine`; pyodbc + ODBC Driver 18 in the image).
+- **Budget:** `modules/budget.bicep`, $50 a month with email alerts at 50% and 100% ($25, $50).
+- **azd environment** (`.azure/`, git-ignored): `FOUNDRY_RESOURCE_ID`, `FOUNDRY_PROJECT_ENDPOINT`, `ALERT_EMAIL`, optional `CREATE_BUDGET=false`. The Foundry id stays out of the repo.
 
 ## Environment variables
 Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are unprefixed.
@@ -22,6 +29,7 @@ Read by `src/matchmind/config.py`; template in `.env.example`. Foundry vars are 
 | `MATCHMIND_MCP_URL` | Where agents reach the MCP stats server (default `http://localhost:8000/mcp`) |
 | `MATCHMIND_WEB_ORIGIN` | The Static Web App origin allowed by CORS (localhost:5173 is always allowed) |
 | `MATCHMIND_API_HOST` | The API's public host name, allowed by the `/mcp` DNS-rebinding check |
+| `MATCHMIND_WEB_DIST` | The built website the API serves (default `web/dist`; skipped if missing) |
 
 Blank lines (as copied from `.env.example`) keep the defaults (`env_ignore_empty`).
 

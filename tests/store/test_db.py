@@ -301,3 +301,30 @@ def test_realism_survives_clearing_agent_outputs(tmp_path) -> None:
     repo.save_realism("x1", {"checks": [], "ok": True})
     repo.clear_agent_outputs("x1")
     assert repo.get_realism("x1") == {"checks": [], "ok": True}
+
+
+def test_azure_sql_token_struct() -> None:
+    from matchmind.store.db import _token_struct
+
+    raw = _token_struct("ab")
+    assert raw == (4).to_bytes(4, "little") + "ab".encode("utf-16-le")
+
+
+def test_azure_sql_urls_sign_in_with_a_token() -> None:
+    from matchmind.store.db import _token_hook, _wants_token
+
+    assert _wants_token("mssql+pyodbc://@srv.database.windows.net/db?driver=x")
+    assert not _wants_token("sqlite:///data/x.db") and not _wants_token("sqlite://")
+
+    class FakeCredential:
+        scopes: list[str] = []
+
+        def get_token(self, scope: str) -> object:
+            self.scopes.append(scope)
+            return type("T", (), {"token": "xyz"})()
+
+    cred = FakeCredential()
+    cparams: dict = {}
+    _token_hook(cred)(None, None, [], cparams)
+    assert cred.scopes == ["https://database.windows.net/.default"]
+    assert cparams["attrs_before"] == {1256: (6).to_bytes(4, "little") + "xyz".encode("utf-16-le")}
