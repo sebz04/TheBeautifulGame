@@ -41,8 +41,8 @@ body {
   background: var(--mm-bg);
   color: var(--mm-text-on-bg);
   font-family: var(--mm-font-body);
-  font-variant-numeric: tabular-nums;
 }
+/* Tabular figures only where numbers line up (scores, stats); on body text they widen punctuation. */
 
 @media (prefers-reduced-motion: reduce) {
   :root {

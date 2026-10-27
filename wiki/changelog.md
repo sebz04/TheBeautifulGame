@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-26 · TASK-23.1 · app shell and routes, typed API client with ApiError, guarded localStorage prefs, Zustand store, match picker (fan's club first, loading/error/retry), match page shell, realism panel with plain check names · api-frontend
 - 2026-10-26 · TASK-22.2 · two mockups (broadcast-dark, editorial-light; contrast 16/16 AA, axe clean at 1280 and 375 px); user chose broadcast-dark; Team ⇄ Player and Fan ⇄ Scout switches replace the pills; tokens (fonts, square panels, motion, pitch); docs/design.md; Playwright and axe added · api-frontend
 - 2026-10-26 · TASK-22.1 · web scaffold (React, Vite, TypeScript, Tailwind, Vitest), design tokens, club theme with AA checks for all 20 clubs on dark and light cards; CI web job (types, tests, build); frontend tools on the Adopt list · README, api-frontend
 - 2026-10-25 · TASK-21.3 · CI fix: the API test fixture cites a real decision event instead of assuming the built match has a moment that cites one (moments differ slightly between macOS and the Linux runner) · changelog

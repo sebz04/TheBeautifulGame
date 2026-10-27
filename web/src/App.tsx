@@ -1,6 +1,18 @@
-// The routes and pages arrive in TASK-23.1 (docs/superpowers/plans/2026-10-26-frontend.md).
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import Match from "./pages/Match";
+import MatchPicker from "./pages/MatchPicker";
+
 export default function App() {
   return (
-    <main className="min-h-screen p-6 font-display text-4xl uppercase">MatchMind</main>
+    <BrowserRouter>
+      <Routes>
+        {/* The welcome page arrives in TASK-23.7; until then the start is the match list. */}
+        <Route path="/" element={<Navigate to="/matches" replace />} />
+        <Route path="/matches" element={<MatchPicker />} />
+        <Route path="/match/:id" element={<Match />} />
+        <Route path="*" element={<Navigate to="/matches" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
