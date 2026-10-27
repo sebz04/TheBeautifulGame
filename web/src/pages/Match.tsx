@@ -170,8 +170,11 @@ export default function Match() {
                 onClick={() => setTab(name)}
                 onKeyDown={(e) => {
                   const i = TABS.indexOf(tab);
-                  if (e.key === "ArrowRight") setTab(TABS[(i + 1) % TABS.length]);
-                  if (e.key === "ArrowLeft") setTab(TABS[(i + TABS.length - 1) % TABS.length]);
+                  const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+                  if (!step) return;
+                  const next = TABS[(i + step + TABS.length) % TABS.length];
+                  setTab(next);
+                  requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
                 }}
                 className={`border-0 px-4 py-3 text-sm font-bold ${tab === name ? "bg-surface text-text" : "bg-black/30 text-text-on-bg"}`}
               >

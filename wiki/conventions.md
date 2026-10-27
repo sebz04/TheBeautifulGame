@@ -24,8 +24,10 @@
 | Types | `uv run mypy src` (strict) |
 | License gate | `uv run python scripts/check_licenses.py` |
 | Wiki check | `uv run python scripts/check_wiki.py` (staged) · `--range main..HEAD` (per commit) |
+| Web (in `web/`) | `npm test` (Vitest) · `npm run lint` (types) · `npm run build` · `npm run dev` (needs the API on :8000) |
+| Browser tests | `uv run python scripts/seed_demo.py --db sqlite:///$PWD/data/e2e/e2e.db --data-dir data/e2e`, then in `web/`: `npx playwright test` (starts its own API on :8100 and `vite preview` on :4173) |
 
-CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests, the license gate and the per-commit wiki check on every push and PR. The `web` job is a placeholder until TASK-23.
+CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests, the license gate and the per-commit wiki check on every push and PR. The `web` job runs the frontend's types, Vitest, the build, then seeds a model-free match and runs Playwright (smoke flow, axe at 1280 and 375 px, keyboard).
 
 ## Testing
 - No live model calls in tests (`FakeChatClient`, recorded fixtures in `tests/fixtures/llm/`).
