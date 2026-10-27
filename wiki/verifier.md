@@ -34,6 +34,12 @@
   - Numbers are matched to claims by value, not meaning, so a stat given to the wrong team passes when the value is right.
   - Interpretation slips pass, such as PPDA read as pressure faced.
 
+## Lead wording (`agents/scoreline.py`, TASK-24.4)
+- **Why:** the Verifier checked numbers, not who was winning, so "Morejo gives Chapinero the lead" passed at 1–1 and reached the live site.
+- **Check:** `lead_failures(text, lang, teams, score)` finds phrases that tie a lead to a named club in all 5 languages ("gives X the lead", "puts X ahead", "da ventaja a X", "garante vantagem para X", "X prend l'avantage", "يمنح X التقدم") and fails them unless that club is strictly ahead at the moment's end. Other meanings ("leads the press", "ventaja numérica") don't match. `team_variants` gives each club's full name and the words no other club shares.
+- **In the Verifier:** deterministic, before the model; `StatsFacts.lead_context(moment_id)` supplies the names and the score at the moment's end (facts without it skip the check).
+- **Sweep:** `scripts/fix_scoreline.py [--apply] [--db URL]` replaces stored insights (and all their texts and live line) and fan texts that fail with their templates. Found 1 insight and 26 fan texts (most French "prend l'avantage" at a level score).
+
 ## Golden set and evaluation (TASK-18.2)
 - **`scripts/build_verifier_golden.py`** writes `evals/verifier_golden.jsonl`, and the output is deterministic. It holds 40 insights written by code from the stats and events of 3 built matches:
   - **20 correct:** team pressing, goals, red cards, missed chances, and ball regains by third, in all 5 languages (es, pt, fr, and ar with Arabic-Indic digits).
