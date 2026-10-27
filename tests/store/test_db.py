@@ -340,7 +340,7 @@ def test_token_sign_in_drops_windows_sign_in() -> None:
             return type("T", (), {"token": "xyz"})()
 
     cargs = [
-        "DRIVER={ODBC Driver 18 for SQL Server};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"
+        "DRIVER={ODBC Driver 18};Server=s;Database=d;Trusted_Connection=Yes;Encrypt=yes"
     ]
     _token_hook(FakeCredential())(None, None, cargs, {})
     assert "Trusted_Connection" not in cargs[0] and "Encrypt=yes" in cargs[0]
