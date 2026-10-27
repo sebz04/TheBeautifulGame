@@ -14,8 +14,17 @@
   --mm-good: #4ade80;
   --mm-warn: #fbbf24;
 
-  --mm-font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
-  --mm-font-body: "Inter", system-ui, sans-serif;
+  /* Broadcast-dark (chosen at TASK-22.2, docs/design.md) */
+  --mm-font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --mm-font-body: "Schibsted Grotesk", system-ui, sans-serif;
+  --mm-radius: 0; /* panels are square; only switches and round buttons are pills */
+  --mm-pill: 999px;
+  --mm-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --mm-dur-fast: 180ms;
+  --mm-dur-slow: 500ms;
+  --mm-pitch: #0f1f17;
+  --mm-pitch-line: rgba(255, 255, 255, 0.28);
+  --mm-rule: #26262e;
 
   --mm-space-1: 4px;
   --mm-space-2: 8px;
@@ -32,4 +41,12 @@ body {
   background: var(--mm-bg);
   color: var(--mm-text-on-bg);
   font-family: var(--mm-font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mm-dur-fast: 0ms;
+    --mm-dur-slow: 0ms;
+  }
 }

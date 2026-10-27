@@ -47,7 +47,7 @@
 - **Index:** `build_index` lists every message's time once per match (cached; frame times from 3 Parquet columns via `TrackingStore.frame_times`). Frame bodies are read from the store 20 s at a time while streaming.
 
 ## Frontend (`web/`)
-Design: `docs/superpowers/specs/2026-10-26-frontend-visual-direction-design.md`; plan: `docs/superpowers/plans/2026-10-26-frontend.md`. Direction (dark or light cards) is chosen at TASK-22.2.
+Design: `docs/superpowers/specs/2026-10-26-frontend-visual-direction-design.md`; plan: `docs/superpowers/plans/2026-10-26-frontend.md`. Direction: **broadcast-dark** (`docs/design.md`): near-black square panels on the club field, *Big Shoulders Display* + *Schibsted Grotesk*, a night pitch; the view is set by two switches (Team ⇄ Player, Fan ⇄ Scout) and a language menu. Mockups: `web/mockups/` (`node web/scripts/contrast.mjs web/mockups/*.html` checks their contrast).
 - **Stack:** React 18.3, Vite 5, TypeScript 5.6, Tailwind 3.4; Vitest + Testing Library (jsdom). Versions pinned exactly in `web/package.json`.
 - **Commands** (in `web/`): `npm run dev` (port 5173; proxies `/api` and `/mcp` to `localhost:8000`), `npm test`, `npm run lint` (type check), `npm run build`.
 - **Tokens** (`src/design/tokens.css`): `--mm-bg` (page field), `--mm-text-on-bg`, `--mm-surface` (cards), `--mm-text`, `--mm-muted`, `--mm-accent`, `--mm-on-accent`, `--mm-home`, `--mm-away`, `--mm-good`, `--mm-warn`, fonts, `--mm-space-1..8`. Tailwind maps them to colors (`bg-bg`, `text-accent`, …).

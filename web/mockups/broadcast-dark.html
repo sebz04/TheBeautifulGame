@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MatchMind mockup: broadcast-dark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Text/background pairs checked by web/scripts/contrast.mjs (min ratio). -->
+<script type="application/json" id="contrast-pairs">
+[["--text-on-bg","--bg",4.5],["--muted-on-bg","--bg",4.5],["--text","--surface",4.5],["--muted","--surface",4.5],
+ ["--on-accent","--accent",4.5],["--accent","--surface",4.5],["--away-text","--surface",4.5],["--text","--pitch",4.5]]
+</script>
+<style>
+  /* Chapinero theme, as computed by src/design/theme.ts clubTheme(chapinero, "dark") */
+  :root {
+    --bg: #6A1B9A; --text-on-bg: #FFFFFF; --muted-on-bg: #E9DDF2;
+    --surface: #121216; --text: #F4F4F6; --muted: #A9A9B6;
+    --accent: #FFFFFF; --on-accent: #0E0E12;
+    --home: #6A1B9A; --away: #E4002B; --away-text: #FF5C77;
+    --pitch: #0F1F17; --line: rgba(255,255,255,.28);
+    --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body: "Schibsted Grotesk", system-ui, sans-serif;
+    --ease: cubic-bezier(.2,.7,.2,1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text-on-bg); font: 400 15px/1.45 var(--body); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 28px 40px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* Score bar: the broadcast lower-third, lifted to the top */
+  .scorebar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+  .team { display: flex; align-items: center; gap: 14px; font: 700 18px/1 var(--body); }
+  .team.away { justify-content: flex-end; }
+  .mono { width: 46px; height: 46px; display: grid; place-items: center; font: 900 20px/1 var(--display);
+          letter-spacing: .02em; border: 2px solid var(--text-on-bg); }
+  .mono.away { background: var(--away); border-color: var(--away); color: #fff; }
+  .score { font: 900 76px/.9 var(--display); letter-spacing: -.01em; display: flex; align-items: baseline; gap: 18px;
+           font-variant-numeric: tabular-nums; }
+  .clock { font: 800 22px/1 var(--display); background: var(--accent); color: var(--on-accent); padding: 6px 10px; }
+  .ten { font-size: 13px; color: var(--muted-on-bg); }
+
+  /* Switches */
+  .switches { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 18px 0 22px; }
+  /* Two-position switches: the white thumb marks the current choice */
+  .toggle { display: inline-flex; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.32);
+            border: 1.5px solid rgba(255,255,255,.55); }
+  .toggle button { font: 700 14px/1 var(--body); color: var(--text-on-bg); background: transparent; border: 0;
+                   padding: 9px 16px; border-radius: 999px; cursor: pointer; transition: background .18s var(--ease), color .18s var(--ease); }
+  .toggle button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+  @media (prefers-reduced-motion: reduce) { .toggle button { transition: none; } }
+  .lang select { font: 500 14px/1 var(--body); color: var(--text-on-bg); background: transparent; border: 1.5px solid rgba(255,255,255,.55);
+                 border-radius: 999px; padding: 10px 14px; cursor: pointer; }
+  .lang option { color: #16161C; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Main grid */
+  .main { display: grid; grid-template-columns: 7fr 5fr; gap: 20px; align-items: start; }
+  .tabs { display: flex; gap: 2px; }
+  .tab { font: 700 15px/1 var(--body); padding: 12px 18px; background: rgba(0,0,0,.28); color: var(--muted-on-bg);
+         border: 0; cursor: pointer; }
+  .tab[aria-selected="true"] { background: var(--surface); color: var(--text); }
+  .pitchbox { background: var(--surface); padding: 14px; }
+  .pitch { display: block; width: 100%; height: auto; background: var(--pitch); }
+  .controls { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: var(--muted); font-size: 13px; }
+  .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent);
+          font-size: 14px; cursor: pointer; }
+  .speed { display: flex; gap: 4px; }
+  .speed button { background: none; border: 1px solid #3a3a44; color: var(--muted); padding: 5px 8px; cursor: pointer; font: 500 12px var(--body); }
+  .speed button[aria-pressed="true"] { color: var(--text); border-color: var(--text); }
+
+  /* The pundit: the one loud thing */
+  .pundit { background: var(--surface); color: var(--text); padding: 26px 26px 20px; position: relative;
+            border-top: 6px solid var(--accent); animation: rise .5s var(--ease) both; }
+  @keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pundit { animation: none; } }
+  .minute { font: 900 54px/.9 var(--display); color: var(--accent); }
+  .for { font-size: 13px; color: var(--muted); margin: 6px 0 14px; }
+  .pundit h1 { font: 800 44px/.98 var(--display); margin: 0 0 14px; letter-spacing: -.005em; }
+  .pundit p { margin: 0 0 18px; font-size: 16px; max-width: 46ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn { font: 700 14px/1 var(--body); padding: 11px 14px; border: 1.5px solid var(--text); background: none; color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .confidence { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .confidence b { color: var(--text); font-weight: 500; }
+  .earlier { background: var(--surface); color: var(--text); margin-top: 2px; padding: 6px 26px 10px; }
+  .earlier li { list-style: none; display: grid; grid-template-columns: 46px 1fr; gap: 10px; padding: 11px 0;
+                border-top: 1px solid #26262e; font-size: 14px; }
+  .earlier li:first-child { border-top: 0; }
+  .earlier time { font: 800 20px/1 var(--display); color: var(--muted); }
+  .earlier ul { margin: 0; padding: 0; }
+
+  /* Stats strip: numbers set like a scoreboard */
+  .stats { margin-top: 20px; background: var(--surface); color: var(--text); display: grid; grid-template-columns: repeat(5, 1fr); }
+  .stat { padding: 14px 18px; border-left: 1px solid #26262e; }
+  .stat:first-child { border-left: 0; }
+  .stat .name { font-size: 12px; color: var(--muted); }
+  .stat .vals { display: flex; justify-content: space-between; align-items: baseline; font: 800 30px/1.05 var(--display);
+                font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stat .vals .a { color: var(--away-text); }
+
+  /* Timeline + momentum */
+  .flow { margin-top: 2px; background: var(--surface); color: var(--text); padding: 14px 18px 16px; }
+  .flow svg { display: block; width: 100%; height: auto; }
+  .legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+
+  @media (max-width: 860px) {
+    .wrap { padding: 14px 16px 32px; }
+    .main { grid-template-columns: 1fr; }
+    .side { order: -1; } /* the insight comes first on a phone */
+    .score { font-size: 54px; gap: 10px; }
+    .team span.name { display: none; }
+    .pundit h1 { font-size: 34px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(odd) { border-left: 0; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="scorebar" aria-label="Score">
+    <div class="team"><div class="mono" aria-hidden="true">ACH</div><span class="name">Atlético Chapinero</span><span class="ten">10 men</span></div>
+    <div class="score"><span>3</span><span class="clock">84'</span><span>2</span></div>
+    <div class="team away"><span class="name">Atlético Laureles</span><div class="mono away" aria-hidden="true">ALA</div></div>
+  </header>
+
+  <nav class="switches" aria-label="Your view">
+    <div class="toggle" role="group" aria-label="Follow your team or your player">
+      <button aria-pressed="true">Chapinero</button><button aria-pressed="false">Morejo</button>
+    </div>
+    <div class="toggle" role="group" aria-label="Watch as a fan or a scout">
+      <button aria-pressed="true">Fan</button><button aria-pressed="false">Scout</button>
+    </div>
+    <label class="lang"><span class="sr">Language</span>
+      <select><option>English</option><option>Español</option><option>Português</option><option>Français</option><option>العربية</option></select>
+    </label>
+  </nav>
+
+  <div class="main">
+    <section aria-label="Match">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true">Game</button>
+        <button class="tab" role="tab" aria-selected="false">Team</button>
+        <button class="tab" role="tab" aria-selected="false">Player</button>
+      </div>
+      <div class="pitchbox">
+        <svg class="pitch" viewBox="0 0 1050 680" role="img" aria-label="Live pitch at 84 minutes">
+          <g fill="none" stroke="var(--line)" stroke-width="3">
+            <rect x="10" y="10" width="1030" height="660"/><line x1="525" y1="10" x2="525" y2="670"/>
+            <circle cx="525" cy="340" r="91"/><rect x="10" y="138" width="165" height="404"/><rect x="875" y="138" width="165" height="404"/>
+            <rect x="10" y="248" width="55" height="184"/><rect x="985" y="248" width="55" height="184"/>
+          </g>
+          <!-- Chapinero (10) attacking right -->
+          <g fill="var(--home)" stroke="#fff" stroke-width="3">
+            <circle cx="80" cy="340" r="13"/><circle cx="360" cy="190" r="13"/><circle cx="380" cy="470" r="13"/><circle cx="430" cy="330" r="13"/>
+            <circle cx="560" cy="250" r="13"/><circle cx="600" cy="430" r="13"/><circle cx="690" cy="330" r="13"/><circle cx="790" cy="160" r="13"/>
+            <circle cx="830" cy="500" r="13"/><circle cx="905" cy="300" r="15"/>
+          </g>
+          <g fill="var(--away)" stroke="#fff" stroke-width="2">
+            <circle cx="985" cy="340" r="13"/><circle cx="900" cy="230" r="13"/><circle cx="910" cy="420" r="13"/><circle cx="870" cy="330" r="13"/>
+            <circle cx="820" cy="250" r="13"/><circle cx="760" cy="410" r="13"/><circle cx="720" cy="240" r="13"/><circle cx="650" cy="520" r="13"/>
+            <circle cx="620" cy="160" r="13"/><circle cx="540" cy="360" r="13"/><circle cx="470" cy="520" r="13"/>
+          </g>
+          <circle cx="925" cy="296" r="8" fill="#fff"/>
+          <g font-family="Schibsted Grotesk, sans-serif" font-size="22" font-weight="700" fill="#fff">
+            <rect x="840" y="244" width="132" height="32" fill="var(--accent)"/><text x="852" y="267" fill="var(--on-accent)">Morejo</text>
+          </g>
+        </svg>
+        <div class="controls">
+          <button class="play" aria-label="Pause">❚❚</button>
+          <div class="speed" role="group" aria-label="Speed"><button aria-pressed="false">0.5×</button><button aria-pressed="true">1×</button><button aria-pressed="false">2×</button><button aria-pressed="false">4×</button></div>
+          <span>Second half, 39:12</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side" aria-label="Your pundit">
+      <article class="pundit">
+        <div class="minute">84'</div>
+        <div class="for">For you, a Chapinero fan</div>
+        <h1>Morejo shines with a hat-trick for Chapinero</h1>
+        <p>Harold Morejo's third goal at 84 minutes shows his sharpness with 3 shots and an xG of 0.777. Atlético Chapinero's momentum is strong at 0.761, and we're in a great position to win!</p>
+        <div class="actions">
+          <button class="btn primary">Ask why</button>
+          <button class="btn">Show best play</button>
+        </div>
+        <div class="confidence">Confidence <b>high</b>. Every number is checked against the match data.</div>
+      </article>
+      <div class="earlier">
+        <ul>
+          <li><time>70'</time><span>Down to 10, but still fighting</span></li>
+          <li><time>56'</time><span>Loancia's red card puts us at a disadvantage</span></li>
+          <li><time>47'</time><span>Chapinero struggles as Balero scores</span></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <section class="stats" aria-label="Key stats, Chapinero then Laureles">
+    <div class="stat"><div class="name">Expected goals</div><div class="vals"><span>1.66</span><span class="a">1.43</span></div></div>
+    <div class="stat"><div class="name">Possession</div><div class="vals"><span>46%</span><span class="a">54%</span></div></div>
+    <div class="stat"><div class="name">Shots</div><div class="vals"><span>14</span><span class="a">15</span></div></div>
+    <div class="stat"><div class="name">On target</div><div class="vals"><span>7</span><span class="a">5</span></div></div>
+    <div class="stat"><div class="name">Passes per defensive action</div><div class="vals"><span>7.3</span><span class="a">12.6</span></div></div>
+  </section>
+
+  <section class="flow" aria-label="Momentum and key moments">
+    <svg viewBox="0 0 1000 96" role="img" aria-label="Momentum through the match, with goals and the red card marked">
+      <line x1="0" y1="48" x2="1000" y2="48" stroke="#3a3a44"/>
+      <path d="M0 48 L60 30 L120 34 L180 26 L240 30 L300 22 L360 40 L420 44 L480 70 L520 66 L560 30 L600 58 L640 62 L700 34 L760 60 L820 28 L880 18 L933 14 L933 48 Z" fill="var(--accent)" opacity=".85"/>
+      <path d="M480 70 L520 66 L600 58 L640 62 L760 60" fill="none" stroke="var(--away-text)" stroke-width="3"/>
+      <line x1="933" y1="0" x2="933" y2="96" stroke="var(--accent)" stroke-width="2"/>
+      <g fill="var(--accent)"><circle cx="700" cy="88" r="6"/><circle cx="712" cy="88" r="6"/><circle cx="933" cy="88" r="6"/></g>
+      <g fill="var(--away-text)"><circle cx="500" cy="88" r="6"/><circle cx="755" cy="88" r="6"/></g>
+      <rect x="617" y="81" width="9" height="14" fill="#FF5C77"/>
+    </svg>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Chapinero on top</span><span><i style="background:var(--away-text)"></i>Laureles on top</span><span>Dots are goals, the bar is the red card</span></div>
+  </section>
+</main>
+</body>
+</html>

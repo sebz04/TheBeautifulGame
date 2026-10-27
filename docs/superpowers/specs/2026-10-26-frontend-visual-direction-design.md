@@ -51,12 +51,13 @@ A page that introduces MatchMind (an AI pundit that watches with you and explain
 Choices are saved in the browser; a returning visitor goes straight to the match picker or match.
 
 ### 2. Switches always available
-On the match screen, the choices sit along the top as switches: **club, player, Fan ⇄ Scout, language**. Changing any of them re-voices the insights instantly; changing club recolors the whole page.
+On the match screen, the choices sit along the top as two two-position switches, **Team ⇄ Player** (labeled with the names, e.g. *Chapinero ⇄ Morejo*) and **Fan ⇄ Scout**, plus a language menu (the user's choice at the TASK-22.2 checkpoint). Changing any of them re-voices the insights instantly; changing club recolors the whole page.
 
 **Fan and Scout map onto the agents' four voices** (the user saw and accepted this mapping in the sketch):
 - **Fan** → `club_fan` for the chosen club; `casual` when no club is chosen.
 - **A Fan watching a match their club isn't in** (the user's choice): the page asks them to **pick a side for this match**; that side's colors take over and its `club_fan` voice is used. The choice is remembered per match. The match picker always lists the fan's own club's matches first (only 11 of the 20 clubs appear in the 8 demo matches).
-- **Scout** → `player_focus` for the chosen player when that player is in the match; otherwise `analyst`.
+- **Scout** → `analyst`.
+- **Player** (either mode) → `player_focus` for the chosen player when they are in the match; otherwise the Team mapping above. (Changed at the TASK-22.2 checkpoint, when the switches replaced the pills.)
 
 ### 3. Club colors take over the page
 The chosen club's **primary color fills the page background**; content sits on white or near-black cards so text stays readable. The **secondary color is for accents** (live dot, the best-play arrow, active switches). Every club's pair is in `GET /api/league` (`primary_color`, `secondary_color`). A neutral theme is used only before a club is chosen (on the welcome page and before picking a side).
