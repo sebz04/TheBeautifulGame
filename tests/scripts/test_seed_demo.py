@@ -20,3 +20,18 @@ def test_seed_builds_an_offline_demo_match(tmp_path: Path) -> None:
     assert set(repo.list_live_lines(match_id)) == {i.insight_id for i in insights}
     assert repo.get_recap(match_id) is not None
     assert (tmp_path / "tracking" / match_id / "frames.parquet").exists()
+
+
+def test_all_scenarios_are_the_eight_showcase_matches() -> None:
+    from seed_demo import all_scenarios
+
+    names = all_scenarios()
+    assert len(names) == 8 and "comeback_red_card" in names
+
+
+def test_if_missing_skips_a_database_that_already_has_matches(tmp_path: Path) -> None:
+    from seed_demo import main_args
+
+    db = f"sqlite:///{tmp_path}/demo.db"
+    seed(db, tmp_path, "comeback_red_card")
+    assert main_args(["--db", db, "--data-dir", str(tmp_path), "--all", "--if-missing"]) == []

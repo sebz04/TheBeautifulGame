@@ -26,10 +26,13 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --locked --no-dev --extra azure --no-install-project
 COPY src ./src
 COPY data/models ./data/models
+# For the offline local demo (docker compose): the 8 storylines and the seed script.
+COPY scenarios ./scenarios
+COPY scripts/seed_demo.py ./scripts/seed_demo.py
 RUN uv sync --locked --no-dev --extra azure
 COPY --from=web /web/dist ./web/dist
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
-RUN useradd --create-home app && chown -R app /app
+RUN useradd --create-home app && mkdir /data && chown -R app /app /data
 USER app
 EXPOSE 8000
 CMD ["uvicorn", "matchmind.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

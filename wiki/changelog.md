@@ -2,6 +2,8 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-25 · README mapped to every §4.1 requirement, docs/architecture.md (pipeline and Azure diagrams), THIRD_PARTY_NOTICES adds the API, Azure, website, and font credits · README
+- 2026-10-27 · TASK-25 · `docker compose up` local run: seed_demo `--all --if-missing` builds all 8 matches with template insights on a volume, then the app serves them on :5173 · infra-ops, conventions, decisions, README
 - 2026-10-27 · TASK-24.4 · Azure SQL swept (0 left) and image c24a0ae deployed; live checks recorded · infra-ops
 - 2026-10-27 · TASK-24.4 · lead wording checked against the score at the moment (agents/scoreline.py) in all 5 languages, in the Verifier before the model; scripts/fix_scoreline.py swept 1 insight and 26 fan texts to templates in the local database · verifier
 - 2026-10-27 · TASK-24 · plan updated with the as-built deployment, why it differs, and the roadblocks; infra-ops roadblock table; TASK-24.4 added for the scoreline check · infra-ops

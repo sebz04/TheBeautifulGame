@@ -18,6 +18,7 @@
 | Purpose | Command |
 |---|---|
 | Install | `uv sync` |
+| Run everything locally | `docker compose up` → http://localhost:5173 (first run seeds all 8 matches with template insights into the `matchmind-data` volume; `docker compose down -v` resets) |
 | Test | `uv run pytest` (skips `slow`, about 6 min locally); `uv run pytest -m slow` for multi-match statistics, season history, storylines, and effects (nightly in CI) |
 | Build the showcase matches | `uv run matchmind build --all --season` (season history once, then the 8 storylines into `MATCHMIND_DB_URL` and the tracking store) · `--scenario scenarios/<id>.toml` for one |
 | Lint / format | `uv run ruff check .` · `uv run ruff format .` |
