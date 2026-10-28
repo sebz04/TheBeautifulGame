@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-31.3 · demo video link in the README; submission text in docs/submission.md · none
 - 2026-10-27 · TASK-31.1 · video script and shot list, architecture slide, end card (docs/video/, 1920×1080 PNGs from HTML) · none
 - 2026-10-27 · TASK-31.3 · MIT LICENSE file (pyproject already said MIT); repo homepage set to the live site, topics added · README
 - 2026-10-27 · TASK-31.3 · walk-through notes: straight to the club's match, 5 s lead-in and autoplay on moments, agents section collapsed with "… agent" names, Scout cards show the numbers and the advice · api-frontend

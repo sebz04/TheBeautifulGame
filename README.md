@@ -7,7 +7,7 @@ Built with **Microsoft Foundry**, **Microsoft Agent Framework**, **MCP**, **Azur
 
 ▶ **Live demo:** https://ca-matchmind-api.wonderfulocean-49523812.northcentralus.azurecontainerapps.io (free, no sign-in, available through Nov 10, 2026)
 
-🎬 **Demo video (under 2 minutes):** link added at submission
+🎬 **Demo video (under 2 minutes):** https://youtu.be/NuJLPVg5loM
 
 ## For judges: a two-minute tour
 
