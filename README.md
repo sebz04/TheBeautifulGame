@@ -1,11 +1,13 @@
 # TheBeautifulGame
 Inside the Game Hackathon 2026 Project Led and Authored By Sebastian Zapata
 
-**MatchMind: your match, your pundit.** A team of AI agents watches a synthetic football match with you and explains every key moment your way: your club, your player, your language, as a fan or as a scout. Every number it says is checked against the match data before you see it.
+**MatchMind: your match, your pundit.** A team of AI agents watches a synthetic football match with you and explains every key moment your way: your club, your player, your language, as a fan or as a scout. Every number it says is checked against the match data before you see it, and so is who it belongs to and what it means.
 
 Built with **Microsoft Foundry**, **Microsoft Agent Framework**, **MCP**, **Azure Container Apps**, **Azure SQL**, **Azure Blob Storage**, and **Application Insights**.
 
 ▶ **Live demo:** https://ca-matchmind-api.wonderfulocean-49523812.northcentralus.azurecontainerapps.io (free, no sign-in, available through Nov 10, 2026)
+
+🎬 **Demo video (under 2 minutes):** link added at submission
 
 ## For judges: a two-minute tour
 
@@ -20,6 +22,7 @@ Built with **Microsoft Foundry**, **Microsoft Agent Framework**, **MCP**, **Azur
    - the best alternative to the decision, drawn on the pitch
 6. **Ask the pundit live** (inside Ask why) re-runs the agents on that moment in about 30 s. It's limited to 5 an hour per visitor, so Foundry costs stay bounded.
 7. **Best plays:** freeze a decision and compare what the player did with the best option. The live match keeps playing in the strip at the top.
+8. **Full time:** drag to about 89', play at 8×, and the recap takes over the pundit's column, in your language.
 
 ## How it meets the challenge (§4.1)
 
@@ -37,7 +40,7 @@ Built with **Microsoft Foundry**, **Microsoft Agent Framework**, **MCP**, **Azur
 | **(iii) Narratives**: key narratives, player context, milestones, recaps | Narrative agent (`agents/narrative.py`): live lines and full-time recap with season milestones; player deviations against season baselines |
 | **(iv) Explainability**: control vs chaos, pressure changes, rhythm | `stats/team.py` (`control_chaos`, PPDA, momentum), moments such as `pressing_collapse` and `momentum_swing`; "Ask why" (`web/src/components/AskWhyPanel.tsx`) |
 | **(v) Data innovation**: synthetic football-realistic datasets | 20-club league with profiles and chemistry (`league/`), season history (`league/season.py`), storyline scenarios (`scenarios/`), a realism validator ([docs/realism.md](docs/realism.md): 18/18 checks over 20 seeds), Parquet tracking |
-| **(vi) Multi-language storytelling** | Fan texts in English, Spanish, Portuguese, French, and Arabic, each verified in its own language; interface in all five (`web/src/i18n/`), right to left for Arabic |
+| **(vi) Multi-language storytelling** | Fan texts and full-time recaps in English, Spanish, Portuguese, French, and Arabic, each verified again in its own language (`agents/personalizer.py`, `narrative.py` `translate_recap`); interface in all five (`web/src/i18n/`), right to left for Arabic |
 
 ## How it's built
 
@@ -50,20 +53,21 @@ scenario → match engine → stats store ─→ stats engine → MCP stats serv
 ```
 
 - **Multi-agent, with checks:** five specialized agents in a Microsoft Agent Framework workflow, sharing state through the store and reading numbers only through MCP tools.
-  - The Verifier recomputes every number from its source and checks lead wording against the score before the model judges the wording.
+  - The Verifier first runs deterministic checks in code, in all five languages: every number recomputed from its source; lead wording against the score at that moment (`scoreline.py`); each team's number given to that team, not its opponent (`owners.py`); PPDA read as a team's own pressing, never as pressure it faces (`meaning.py`). Only then does the model judge the wording against the cited events.
   - Failed texts become deterministic templates, so the screen is never blank and never wrong.
   - Transient errors are retried with backoff; every agent run is logged with tokens and traced.
 - **Two lanes:** overlays (name tags, speed and distance) are computed by code and sent at their exact time. Insights are precomputed, so viewers never wait on a model.
 - **Keyless on Azure:** one managed identity reads Blob Storage, signs in to Azure SQL with an Entra token, and calls Foundry. Traces go to Application Insights.
+- **Shipped by GitHub Actions:** every push to `main` runs CI, builds the image, and deploys it to Container Apps, signing in to Azure with OIDC as a managed identity (no stored secrets), then checks `/api/health`.
 
 Details: [docs/architecture.md](docs/architecture.md) · codebase map: [wiki/README.md](wiki/README.md).
 
 ## Quality and numbers
 
-- **Tests:** about 670 automated tests in Python and TypeScript, plus Playwright browser tests (the full fan journey, and axe accessibility at 1280 and 375 px). CI runs lint, types, tests, a license gate, the wiki check, and the browser tests on every push.
-- **Verifier:** on a 40-insight golden set with planted errors, it reached recall 0.95, precision 1.00, and 0 false alarms ([docs/evals.md](docs/evals.md)).
+- **Tests:** about 960 automated tests (815 Python, 142 TypeScript), plus Playwright browser tests (the full fan journey, and axe accessibility at 1280 and 375 px). CI runs lint, types, tests, a license gate, the wiki check, and the browser tests on every push; multi-match statistical tests run nightly.
+- **Verifier:** on a 40-insight golden set with 20 planted errors, it catches **20/20** with precision 1.00 and 0 false alarms on the 20 correct insights ([docs/evals.md](docs/evals.md)). The code checks were added after errors seen in real agent output: across 3,702 stored texts the team-number check found 18 real misattributions and 1 false alarm, and every flagged text was replaced by its verified template.
 - **Realism:** the engine passes all 18 professional-range checks over 20 seeds ([docs/realism.md](docs/realism.md)).
-- **Cost:** precomputing all 8 matches in 5 languages cost **$9.53** (18.3M tokens; [docs/costs.md](docs/costs.md)). Hosting runs on a $100 Azure for Students credit.
+- **Cost:** precomputing all 8 matches in 5 languages cost **$9.53** (18.3M tokens; [docs/costs.md](docs/costs.md)). Hosting runs on a $100 Azure for Students credit, with a $50 budget alert. Live questions are rate limited (5 an hour per visitor, 100 a day in all).
 - **Accessibility:** WCAG AA contrast for every club's colors, full keyboard use, and usable at 375 px wide.
 
 ## Run it yourself

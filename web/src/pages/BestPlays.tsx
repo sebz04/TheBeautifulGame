@@ -13,10 +13,12 @@ import { useAsync } from "../lib/useAsync";
 import { useFanMatch } from "../lib/useFanMatch";
 import { minuteLabel } from "../live/minute";
 import { useStore } from "../state/store";
+import { hasSubstance } from "../components/InsightPanel";
 
 /** Insights with a best play whose moment has ended by (period, t), newest first. */
 export function bestPlayMoments(rows: InsightRow[], moments: Record<string, Moment>, period: Period, t: number): InsightRow[] {
   return rows
+    .filter(hasSubstance)
     .filter((r) => {
       const m = moments[r.insight.moment_id];
       return r.best_play_event_id && m && (m.period < period || (m.period === period && m.t_end <= t));
