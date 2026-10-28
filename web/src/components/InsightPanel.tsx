@@ -9,10 +9,18 @@ import InsightCard from "./InsightCard";
 
 const EARLIER = 6;
 
+/** A template with no verified numbers only says "the full breakdown is on its way", which
+ * never comes: the agents' text for that moment failed its checks. The panel skips it and
+ * keeps the last real insight up; the moment stays on the timeline. */
+export function hasSubstance(r: InsightRow): boolean {
+  return r.insight.source !== "template" || r.insight.claims.length > 0;
+}
+
 /** Rows whose moment has ended by (period, t), newest first. */
 export function insightsSoFar(rows: InsightRow[], moments: Record<string, Moment>, period: Period, t: number): InsightRow[] {
   const end = (r: InsightRow) => moments[r.insight.moment_id];
   return rows
+    .filter(hasSubstance)
     .filter((r) => {
       const m = end(r);
       return m && (m.period < period || (m.period === period && m.t_end <= t));

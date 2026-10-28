@@ -22,6 +22,14 @@ describe("InsightPanel", () => {
     expect(insightsSoFar(ROWS, MOMENTS, 1, 100)).toEqual([]);
   });
 
+  it("leaves out templates with no numbers: they have nothing to say (TASK-31 walk-through)", () => {
+    const empty = { ...row("m1", "For Atlético Chapinero fans"), insight: { ...ROW.insight, insight_id: "m9-ins", moment_id: "m9", source: "template" as const, claims: [] } };
+    const moments = { ...MOMENTS, m9: moment("m9", 2, 390) };
+    expect(insightsSoFar([...ROWS, empty], moments, 2, 400).map((r) => r.text.headline)).toEqual(["Second", "First"]);
+    const numbered = { ...empty, insight: { ...empty.insight, claims: ROW.insight.claims } };
+    expect(insightsSoFar([...ROWS, numbered], moments, 2, 400)).toHaveLength(3);
+  });
+
   it("puts the newest on top and lists the earlier ones; an earlier one can come back to the top", () => {
     render(<InsightPanel rows={ROWS} moments={MOMENTS} period={2} t={2100} addedS={[120, 180]} onAskWhy={vi.fn()} onBestPlay={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Third");

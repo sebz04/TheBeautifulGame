@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-31.3 · live walk-through of the judge tour (all steps work, no console errors); numberless template cards hidden on the site; README numbers updated (20/20 golden set, ~960 tests, code checks, automatic deploys, recap step) · api-frontend
 - 2026-10-27 · TASK-24.2 · first automatic deploy succeeded (aa49bbd) after the federated credential took GitHub's id-bearing subject · infra-ops
 - 2026-10-27 · TASK-24.2 · automatic deploys: GitHub OIDC as the managed identity id-matchmind-deploy (app registrations are blocked for students); cleanup done (registry, firewall rule, OpenSSL link); live checks after the redeploy · infra-ops
 - 2026-10-27 · TASK-25.2 · Explainer falls back to the moment's window events instead of failing on empty event_ids; PPDA-as-pressure-faced and recap moment-mixing checks (agents/meaning.py) in the Verifier, recaps, and the sweep (local: 5 insights, 17 texts); prompts updated; golden set 20/20, live loop re-recorded · agents, verifier
