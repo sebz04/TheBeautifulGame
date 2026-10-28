@@ -20,6 +20,17 @@ export function kindLabel(kind: string, lang: Lang = "en"): string {
   return plain.charAt(0).toUpperCase() + plain.slice(1);
 }
 
+const LEAD_IN_S = 5;
+const LONG_S = 20;
+
+/** Where a marker jumps to: 5 s before the moment, so the viewer sees it happen and the
+ * pundit's card arrives as it ends. A long moment (a momentum swing over minutes) starts 5 s
+ * before its end instead, where the insight lands. */
+export function leadIn(m: Moment): number {
+  const from = m.t_end - m.t_start > LONG_S ? m.t_end : m.t_start;
+  return Math.max(0, from - LEAD_IN_S);
+}
+
 export interface TimelineProps {
   moments: Moment[];
   firstHalfS: number;
@@ -45,7 +56,7 @@ export default function Timeline({ moments, firstHalfS, totalS, period, t, added
           type="button"
           aria-label={`${kindLabel(m.kind, lang)}, ${minuteLabel(m.period, m.t_start, addedS)}`}
           title={`${kindLabel(m.kind, lang)}, ${minuteLabel(m.period, m.t_start, addedS)}`}
-          onClick={() => onSeek(m.period, m.t_start)}
+          onClick={() => onSeek(m.period, leadIn(m))}
           className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface p-0"
           style={{ left: pct(m.period, m.t_start), background: KIND_COLOR[m.kind] ?? "var(--mm-muted)" }}
         />

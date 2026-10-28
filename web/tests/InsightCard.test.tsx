@@ -37,4 +37,17 @@ describe("InsightCard", () => {
     expect(screen.getByRole("article")).toHaveAttribute("dir", "rtl");
     expect(screen.getByRole("article")).toHaveAttribute("lang", "ar");
   });
+
+  it("shows a scout the numbers and the tactical advice, and a fan only the story (note 6)", () => {
+    const scout = { ...ROW, insight: { ...ROW.insight, recommendation: "Keep Morejo high." },
+                    text: { ...ROW.text, persona: "analyst" as const } }; // prettier-ignore
+    const { unmount } = render(<InsightCard row={scout} minute="84'" onAskWhy={vi.fn()} onBestPlay={vi.fn()} />);
+    expect(screen.getByRole("heading", { name: "The numbers" })).toBeInTheDocument();
+    expect(screen.getByText("xG of 0.777")).toBeInTheDocument();
+    expect(screen.getByText("Keep Morejo high.")).toBeInTheDocument();
+    unmount();
+    render(<InsightCard row={ROW} minute="84'" onAskWhy={vi.fn()} onBestPlay={vi.fn()} />);
+    expect(screen.queryByRole("heading", { name: "The numbers" })).toBeNull();
+    expect(screen.queryByText("xG of 0.777")).toBeNull();
+  });
 });

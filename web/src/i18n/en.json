@@ -12,10 +12,8 @@
   "what.teamStats": "the team stats",
   "what.playerStats": "the player's stats",
   "what.league": "the clubs",
-
   "picker.title": "Pick a match",
   "picker.yours": "Your club is playing",
-
   "match.all": "All matches",
   "match.about": "About this match",
   "match.score": "Score",
@@ -29,7 +27,6 @@
   "tab.game": "Game",
   "tab.team": "Team",
   "tab.player": "Player",
-
   "play.group": "Playback",
   "play.play": "Play",
   "play.pause": "Pause",
@@ -37,7 +34,6 @@
   "play.time": "Match time",
   "play.first": "First half, {clock}",
   "play.second": "Second half, {clock}",
-
   "bar.view": "Your view",
   "bar.follow": "Follow your team or your player",
   "bar.mode": "Watch as a fan or a scout",
@@ -46,10 +42,8 @@
   "bar.team": "Team",
   "bar.player": "Player",
   "bar.language": "Language",
-
   "side.title": "Your club isn't playing",
   "side.prompt": "Pick a side for this match, and your pundit will watch it with you as their fan.",
-
   "stat.xg": "Expected goals",
   "stat.possession": "Possession",
   "stat.shots": "Shots",
@@ -80,7 +74,6 @@
   "player.match": "This match",
   "player.season": "Season says by now",
   "player.noSeason": "No season data for this player yet, so there's no expectation to compare with.",
-
   "kind.goal": "Goal",
   "kind.red_card": "Red card",
   "kind.big_chance": "Big chance",
@@ -91,9 +84,10 @@
   "kind.corner_pressure": "Corner pressure",
   "kind.player_deviation": "Player stands out",
   "kind.sprint_alert": "Sprint",
-
   "card.askWhy": "Ask why",
   "card.bestPlay": "Show best play",
+  "card.numbers": "The numbers",
+  "card.advice": "What they should do",
   "card.confidence": "Confidence {level}. Every number is checked against the match data.",
   "card.template": "This is a standard summary: the AI's own wording didn't pass every check.",
   "level.high": "high",
@@ -104,7 +98,6 @@
   "panel.earlier": "Earlier insights",
   "recap.fullTime": "Full time",
   "recap.english": "Recaps are written in English for now.",
-
   "why.title": "Why your pundit said this",
   "why.numbers": "The numbers it rests on",
   "why.moments": "The moments it cites",
@@ -133,11 +126,9 @@
   "live.limit": "You've used your live questions for now. Try again in {minutes} min.",
   "live.timeout": "The pundit took too long to answer. Try again.",
   "live.down": "The live pundit isn't available right now. The checked answer above still stands.",
-
   "realism.intro": "This match is synthetic: a simulation engine played it, and the stats are checked against the ranges of real professional football. It passes {passed} of {total} checks. A single match often lands outside a range or two, the way a real match can; across many simulated matches, every check passes.",
   "realism.in": "in range",
   "realism.out": "outside",
-
   "welcome.title": "Your match. Your pundit.",
   "welcome.intro": "An AI pundit that watches with you and explains every key moment your way: your club, your player, your language.",
   "welcome.club": "Pick your club",
@@ -149,9 +140,7 @@
   "welcome.scoutHint": "Numbers, tactics, and player detail",
   "welcome.start": "Start watching",
   "welcome.change": "Change my setup",
-
   "overlay.ran": "{who} has run {km} km",
-
   "best.title": "Best plays",
   "best.tab": "Best plays",
   "best.live": "Live match",

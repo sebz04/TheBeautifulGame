@@ -2,6 +2,7 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-31.3 · walk-through notes: straight to the club's match, 5 s lead-in and autoplay on moments, agents section collapsed with "… agent" names, Scout cards show the numbers and the advice · api-frontend
 - 2026-10-27 · TASK-31.3 · live walk-through of the judge tour (all steps work, no console errors); numberless template cards hidden on the site; README numbers updated (20/20 golden set, ~960 tests, code checks, automatic deploys, recap step) · api-frontend
 - 2026-10-27 · TASK-24.2 · first automatic deploy succeeded (aa49bbd) after the federated credential took GitHub's id-bearing subject · infra-ops
 - 2026-10-27 · TASK-24.2 · automatic deploys: GitHub OIDC as the managed identity id-matchmind-deploy (app registrations are blocked for students); cleanup done (registry, firewall rule, OpenSSL link); live checks after the redeploy · infra-ops

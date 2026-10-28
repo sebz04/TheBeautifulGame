@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Moment } from "../src/api/types";
-import Timeline, { kindLabel } from "../src/components/Timeline";
+import Timeline, { kindLabel, leadIn } from "../src/components/Timeline";
 
 const moment = (id: string, period: 1 | 2, t: number, kind: string): Moment => ({
   moment_id: id, match_id: "m", period, t_start: t, t_end: t + 10, kind, level: "team",
@@ -27,14 +27,22 @@ describe("Timeline", () => {
     expect(markers[1]).toHaveAccessibleName("Red card, 51'");
   });
 
+  it("starts 5 seconds before the moment, so the viewer sees it happen (note 4)", () => {
+    const point = { ...MOMENTS[0], t_start: 2800.8, t_end: 2800.8 };
+    expect(leadIn(point)).toBeCloseTo(2795.8);
+    expect(leadIn({ ...point, t_start: 2, t_end: 2 })).toBe(0); // never before the kickoff
+    const swing = { ...MOMENTS[0], t_start: 30, t_end: 450 }; // a 7-minute momentum swing
+    expect(leadIn(swing)).toBe(445); // its last seconds, where the insight lands
+  });
+
   it("seeks to a moment on click or Enter", () => {
     const onSeek = vi.fn();
     render(<Timeline moments={MOMENTS} firstHalfS={2820} totalS={5760} period={1} t={0} addedS={[120, 180]} onSeek={onSeek} />);
     fireEvent.click(screen.getByRole("button", { name: "Red card, 51'" }));
-    expect(onSeek).toHaveBeenCalledWith(2, 300);
+    expect(onSeek).toHaveBeenCalledWith(2, 295);
     screen.getByRole("button", { name: "Big chance, 66'" }).focus();
     fireEvent.keyDown(document.activeElement!, { key: "Enter" });
     fireEvent.click(document.activeElement!); // buttons activate on Enter natively
-    expect(onSeek).toHaveBeenLastCalledWith(2, 1200);
+    expect(onSeek).toHaveBeenLastCalledWith(2, 1195);
   });
 });

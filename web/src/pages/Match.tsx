@@ -243,7 +243,7 @@ export default function Match() {
         <StatsStrip matchId={id} homeId={m.home.club_id} awayId={m.away.club_id} period={live.period} t={live.t} />
       </div>
       <section aria-label={t("match.flow")} className="mt-0.5 bg-surface px-4 pb-4 pt-3 text-text">
-        <Timeline moments={moments} firstHalfS={firstHalfS} totalS={totalS} period={live.period} t={live.t} addedS={m.added_time_s} onSeek={live.seek} />
+        <Timeline moments={moments} firstHalfS={firstHalfS} totalS={totalS} period={live.period} t={live.t} addedS={m.added_time_s} onSeek={(p, t) => { live.seek(p, t); if (!live.playing) live.play(); }} />
         {timeline.status === "ready" && (
           <MomentumChart points={timeline.data.momentum} firstHalfS={firstHalfS} totalS={totalS} period={live.period} t={live.t} homeName={m.home.name} awayName={m.away.name} />
         )}

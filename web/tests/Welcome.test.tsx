@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "../src/api/client";
-import type { League } from "../src/api/types";
+import type { League, MatchRow } from "../src/api/types";
 import Welcome from "../src/pages/Welcome";
 import { DEFAULT_PREFS } from "../src/state/prefs";
 import { useStore } from "../src/state/store";
@@ -25,6 +25,7 @@ function renderAt(path = "/") {
         <Route path="/" element={<Welcome />} />
         <Route path="/welcome" element={<Welcome forceSetup />} />
         <Route path="/matches" element={<p>match list</p>} />
+        <Route path="/match/:id" element={<p>the club's match</p>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -44,7 +45,18 @@ describe("Welcome", () => {
     expect(group.querySelectorAll("button")).toHaveLength(20);
   });
 
+  it("goes straight to the club's first match (note 1), or the list when it has none", async () => {
+    const row = (id: string, home: string, away: string) =>
+      ({ match_id: id, title: id, home: { club_id: home }, away: { club_id: away }, score: { home: 0, away: 0 }, scenario_id: id }) as unknown as MatchRow; // prettier-ignore
+    vi.spyOn(api, "matches").mockResolvedValue([row("r01-suba-v-belen", "suba", "belen"), row("r02-chapinero-v-laureles", "chapinero", "laureles")]);
+    renderAt();
+    fireEvent.click(await screen.findByRole("button", { name: "Atlético Chapinero" }));
+    fireEvent.click(screen.getByRole("button", { name: /start/i }));
+    expect(await screen.findByText("the club's match")).toBeInTheDocument();
+  });
+
   it("saves exactly the choices made and goes to the match list", async () => {
+    vi.spyOn(api, "matches").mockResolvedValue([]);
     renderAt();
     fireEvent.click(await screen.findByRole("button", { name: "Atlético Chapinero" }));
     const player = screen.getByRole("combobox", { name: /favorite player/i });

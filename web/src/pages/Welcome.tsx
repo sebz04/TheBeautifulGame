@@ -27,9 +27,14 @@ export default function Welcome({ forceSetup = false }: { forceSetup?: boolean }
   if (!forceSetup && hasSavedPrefs()) return <Navigate to="/matches" replace />;
 
   const pick = (patch: Partial<Prefs>) => setDraft((d) => ({ ...d, ...patch }));
-  const start = () => {
+  // With a club picked, go straight to its first showcase match (the list when it has none,
+  // or when the list can't be read); "All matches" is one click away in the match header.
+  const start = async () => {
     setPrefs(draft);
-    navigate("/matches");
+    const clubId = draft.favorite_club_id;
+    const rows = clubId ? await api.matches().catch(() => []) : [];
+    const first = rows.find((r) => r.home.club_id === clubId || r.away.club_id === clubId);
+    navigate(first ? `/match/${first.match_id}` : "/matches");
   };
 
   return (

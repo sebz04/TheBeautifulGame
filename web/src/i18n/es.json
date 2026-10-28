@@ -12,10 +12,8 @@
   "what.teamStats": "las estadísticas de los equipos",
   "what.playerStats": "las estadísticas del jugador",
   "what.league": "los clubes",
-
   "picker.title": "Elige un partido",
   "picker.yours": "Juega tu club",
-
   "match.all": "Todos los partidos",
   "match.about": "Sobre este partido",
   "match.score": "Marcador",
@@ -29,7 +27,6 @@
   "tab.game": "Partido",
   "tab.team": "Equipos",
   "tab.player": "Jugador",
-
   "play.group": "Reproducción",
   "play.play": "Reproducir",
   "play.pause": "Pausa",
@@ -37,7 +34,6 @@
   "play.time": "Tiempo de juego",
   "play.first": "Primer tiempo, {clock}",
   "play.second": "Segundo tiempo, {clock}",
-
   "bar.view": "Tu vista",
   "bar.follow": "Sigue a tu equipo o a tu jugador",
   "bar.mode": "Míralo como hincha o como ojeador",
@@ -46,10 +42,8 @@
   "bar.team": "Equipo",
   "bar.player": "Jugador",
   "bar.language": "Idioma",
-
   "side.title": "Tu club no juega",
   "side.prompt": "Elige un bando para este partido y tu comentarista lo verá contigo como su hincha.",
-
   "stat.xg": "Goles esperados",
   "stat.possession": "Posesión",
   "stat.shots": "Remates",
@@ -80,7 +74,6 @@
   "player.match": "Este partido",
   "player.season": "Lo esperado a esta altura",
   "player.noSeason": "Aún no hay datos de temporada de este jugador, así que no hay con qué comparar.",
-
   "kind.goal": "Gol",
   "kind.red_card": "Tarjeta roja",
   "kind.big_chance": "Ocasión clara",
@@ -91,9 +84,10 @@
   "kind.corner_pressure": "Presión de córners",
   "kind.player_deviation": "Un jugador destaca",
   "kind.sprint_alert": "Sprint",
-
   "card.askWhy": "¿Por qué?",
   "card.bestPlay": "Ver la mejor jugada",
+  "card.numbers": "Los números",
+  "card.advice": "Qué deberían hacer",
   "card.confidence": "Confianza {level}. Cada número se comprueba con los datos del partido.",
   "card.template": "Este es un resumen estándar: la redacción propia de la IA no superó todas las comprobaciones.",
   "level.high": "alta",
@@ -104,7 +98,6 @@
   "panel.earlier": "Análisis anteriores",
   "recap.fullTime": "Final del partido",
   "recap.english": "Por ahora los resúmenes están en inglés.",
-
   "why.title": "Por qué lo dijo tu comentarista",
   "why.numbers": "Los números en que se basa",
   "why.moments": "Las jugadas que cita",
@@ -133,11 +126,9 @@
   "live.limit": "Ya usaste tus preguntas en vivo por ahora. Inténtalo de nuevo en {minutes} min.",
   "live.timeout": "El comentarista tardó demasiado en responder. Inténtalo de nuevo.",
   "live.down": "El comentarista en vivo no está disponible ahora. La respuesta comprobada de arriba sigue siendo válida.",
-
   "realism.intro": "Este partido es sintético: lo jugó un motor de simulación y sus estadísticas se comparan con los rangos del fútbol profesional real. Supera {passed} de {total} comprobaciones. Un solo partido a menudo queda fuera de uno o dos rangos, como puede pasar en uno real; en muchos partidos simulados, todas las comprobaciones se cumplen.",
   "realism.in": "en rango",
   "realism.out": "fuera",
-
   "welcome.title": "Tu partido. Tu comentarista.",
   "welcome.intro": "Un comentarista con IA que ve el partido contigo y explica cada momento clave a tu manera: tu club, tu jugador, tu idioma.",
   "welcome.club": "Elige tu club",
@@ -149,9 +140,7 @@
   "welcome.scoutHint": "Números, táctica y detalle de jugadores",
   "welcome.start": "Empezar a ver",
   "welcome.change": "Cambiar mis preferencias",
-
   "overlay.ran": "{who} ha recorrido {km} km",
-
   "best.title": "Mejores jugadas",
   "best.tab": "Mejores jugadas",
   "best.live": "Partido en vivo",
