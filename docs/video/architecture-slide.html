@@ -1,0 +1,95 @@
+<!doctype html>
+<!-- Video slide (1920x1080): how MatchMind is built. Rendered to architecture-slide.png. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MatchMind architecture slide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: #121216; --deep: #0b0b0e; --card: #1c1c22; --text: #f4f4f6; --muted: #a9a9b6;
+    --club: #6a1b9a; --club-soft: #b98ad6; --good: #4ade80; --rule: #2c2c35;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; background: var(--deep); color: var(--text);
+    font-family: "Schibsted Grotesk", system-ui, sans-serif; }
+  .slide { position: relative; width: 1920px; height: 1080px; padding: 72px 96px; overflow: hidden; }
+  .slide::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 10px; background: var(--club); }
+  h1 { margin: 0; font-family: "Big Shoulders Display", sans-serif; font-weight: 900; font-size: 104px;
+    line-height: .9; letter-spacing: -1px; }
+  .sub { margin: 14px 0 0; color: var(--muted); font-size: 30px; }
+  .flow { display: grid; grid-template-columns: 1fr 56px 1fr 56px 2.35fr 56px 1fr; align-items: stretch;
+    margin-top: 88px; gap: 0; }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--club-soft);
+    font-size: 44px; font-weight: 700; }
+  .box { background: var(--card); border-top: 6px solid var(--club-soft); padding: 26px 26px 24px; }
+  .box h2 { margin: 0 0 10px; font-family: "Big Shoulders Display", sans-serif; font-weight: 800;
+    font-size: 40px; line-height: 1; }
+  .box p { margin: 0; color: var(--muted); font-size: 24px; line-height: 1.35; }
+  .tech { display: inline-block; margin-top: 16px; padding: 6px 12px; background: var(--surface);
+    border: 1.5px solid var(--rule); font-size: 20px; font-weight: 700; color: var(--text); }
+  .agents { background: var(--card); border-top: 6px solid var(--good); padding: 26px; }
+  .agents h2 { margin: 0; font-family: "Big Shoulders Display", sans-serif; font-weight: 800; font-size: 40px; }
+  .agents .tag { margin: 6px 0 20px; color: var(--muted); font-size: 22px; }
+  .chain { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .agent { padding: 12px 14px; background: var(--surface); border: 1.5px solid var(--rule); font-size: 22px;
+    font-weight: 700; }
+  .agent.check { border-color: var(--good); color: var(--good); }
+  .chain .to { color: var(--muted); font-size: 26px; }
+  .loop { margin-top: 18px; color: var(--muted); font-size: 21px; line-height: 1.4; }
+  .loop b { color: var(--good); }
+  .rail { position: absolute; left: 96px; right: 96px; bottom: 96px; display: grid;
+    grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .rail div { border-top: 2px solid var(--rule); padding-top: 18px; }
+  .rail b { display: block; font-family: "Big Shoulders Display", sans-serif; font-weight: 800; font-size: 34px; }
+  .rail span { color: var(--muted); font-size: 21px; line-height: 1.35; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <h1>How MatchMind works</h1>
+  <p class="sub">Code computes every number. Agents explain it. Nothing reaches the screen unverified.</p>
+
+  <div class="flow">
+    <div class="box">
+      <h2>Match engine</h2>
+      <p>A fictional 20-club league, simulated play by play with 10 Hz player tracking.</p>
+      <span class="tech">Synthetic data</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box">
+      <h2>Stats &amp; MCP</h2>
+      <p>xT, pitch control, pressing, momentum, key moments, served as MCP tools.</p>
+      <span class="tech">Azure SQL · Blob · MCP</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="agents">
+      <h2>Five agents on Microsoft Foundry</h2>
+      <p class="tag">Microsoft Agent Framework workflow · gpt-4.1-mini</p>
+      <div class="chain">
+        <span class="agent">Tactical Analyst</span><span class="to">→</span>
+        <span class="agent">Explainer</span><span class="to">⇄</span>
+        <span class="agent check">Verifier</span><span class="to">→</span>
+        <span class="agent">Narrative</span><span class="to">→</span>
+        <span class="agent">Personalizer</span>
+      </div>
+      <p class="loop"><b>Verifier:</b> recomputes every number, checks whose it is and the score, then judges the wording. Fails go back for a rewrite or become a verified template. <b>20 of 20 planted errors caught.</b></p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box">
+      <h2>Your pundit</h2>
+      <p>Live replay with the insight beside it: 4 voices, 5 languages, ask why.</p>
+      <span class="tech">Azure Container Apps</span>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div><b>Keyless</b><span>One managed identity for SQL, Blob Storage, and Foundry. No API keys anywhere.</span></div>
+    <div><b>Traced</b><span>Every agent run logged with tokens and traced in Application Insights.</span></div>
+    <div><b>Shipped</b><span>GitHub Actions tests, builds, and deploys every push with OIDC.</span></div>
+    <div><b>Personal</b><span>Your club, your player, fan or scout, in English, Spanish, Portuguese, French, Arabic.</span></div>
+  </div>
+</div>
+</body>
+</html>
