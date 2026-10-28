@@ -11,7 +11,7 @@ The Verifier (TASK-18) then checks every claim against the stats store.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any, Literal
 
 from agent_framework.exceptions import ChatClientException
@@ -125,10 +125,14 @@ async def explain(
     names: Mapping[str, str] | None = None,
     feedback: str | None = None,
     tracer: Tracer | None = None,
+    fallback_events: Sequence[str] = (),
 ) -> Insight:
     """Explain one surfaced moment. Raises ``ExplainerError`` after one failed regeneration.
     ``names`` maps club and player ids to display names (``context.match_names``).
-    ``feedback`` is the Verifier's failures on the previous insight, for a regeneration."""
+    ``feedback`` is the Verifier's failures on the previous insight, for a regeneration.
+    ``fallback_events`` (``context.window_event_ids``) stand in when the reply cites no
+    events: moments found from rolling stats have none of their own, and an empty list
+    used to end in a template (TASK-25.2)."""
     agent = make_agent(
         "explainer", PROMPT, ExplainerReply, tools, client=client, options={"temperature": 0.0}
     )
@@ -157,6 +161,8 @@ async def explain(
             reply = response.value
             if not isinstance(reply, ExplainerReply):
                 raise ValueError("the answer was not an insight in the requested JSON shape")
+            if not reply.event_ids and fallback_events:
+                reply = reply.model_copy(update={"event_ids": list(fallback_events)})
             draft = ExplainerDraft.model_validate(reply.model_dump())
             _counterfactuals_read(draft, tool_calls(response))
         except ValidationError as exc:

@@ -1,9 +1,10 @@
 """Sweep stored insights and fan texts with the Verifier's newer checks.
 
-- Lead wording the score contradicts (TASK-24.4) and team numbers given to the other team
-  (TASK-25.2, ``agents/owners.py``): an insight that fails becomes its template (and so do
-  all its fan texts and its live line); a fan text that fails becomes its template for that
-  fan. Templates are built from the checked claims only, so they're right by construction.
+- Lead wording the score contradicts (TASK-24.4), team numbers given to the other team
+  (TASK-25.2, ``agents/owners.py``), and PPDA read as pressure faced
+  (``agents/meaning.py``): an insight that fails becomes its template (and so do all its
+  fan texts and its live line); a fan text that fails becomes its template for that fan.
+  Templates are built from the checked claims only, so they're right by construction.
 - Template texts are rendered again, so template fixes (French elision, headlines without
   a subject; TASK-25.2) reach texts stored before them.
 
@@ -19,6 +20,7 @@ from __future__ import annotations
 import argparse
 
 from matchmind.agents.context import match_names
+from matchmind.agents.meaning import ppda_slips
 from matchmind.agents.orchestrator import ALL_LANGS, template_insight
 from matchmind.agents.owners import owner_failures
 from matchmind.agents.personalizer import variants_for
@@ -38,7 +40,9 @@ def _score_at(moment: Moment, goals: list[Event], home: str, away: str) -> dict[
 def _fails(text: str, lang: Lang, claims: list[Claim], teams: dict[str, list[str]],
            score: dict[str, int]) -> bool:  # fmt: skip
     return bool(
-        lead_failures(text, lang, teams, score) or owner_failures(text, lang, claims, teams)
+        lead_failures(text, lang, teams, score)
+        or owner_failures(text, lang, claims, teams)
+        or ppda_slips(text, lang)
     )
 
 

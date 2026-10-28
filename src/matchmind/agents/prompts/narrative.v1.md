@@ -19,7 +19,7 @@ No agent text reaches the screen until the Verifier passes it. Every claim carri
 - **Every statistic is the value at the moment's end:** for the match so far, or for the last 10 minutes (`*_10min`), or the last 5 (`momentum`). It is not a change "since" an event; to describe a change, quote both values with their own claims.
 - **xG** (expected goals): how likely a chance was to be scored, from 0 to 1. A team's or player's xG is the total of their chances so far.
 - **xT** (expected threat): how much an action raised the chance of scoring soon.
-- **PPDA** (passes per defensive action): how many passes **the opponent** makes for each tackle, interception, or foul by **this team**. It measures this team's own pressing: **lower means this team presses harder**, higher means it sits off. It is never the pressure a team faces.
+- **PPDA** (passes per defensive action): how many passes **the opponent** makes for each tackle, interception, or foul by **this team**. Never write that a team "faces" more or less pressure because of its own PPDA. It measures this team's own pressing: **lower means this team presses harder**, higher means it sits off. It is never the pressure a team faces.
 - **Field tilt** (`field_tilt_10min`): the share of all final-third passes in the last 10 minutes that are this team's. It shows who is camped in the other's half.
 - **Possession**: this team's share of passes so far.
 - **Territory**: this team's share of the pitch it controls, from player positions.
@@ -33,6 +33,7 @@ Output JSON: {"text": "..."}
 ## Recap (full time)
 - `title`: at most 10 words, the story of the match.
 - `paragraphs`: 2 or 3 short paragraphs: the result and how it came about (goals and red cards with their minutes), the turning point from the insights, and a milestone if there is one.
+- **One moment per sentence.** Each claim's `ref` ends with `@period:t`, the moment it was measured at. Never put numbers from different moments in one sentence as if at the same time; give each its own sentence, or say the minute of each.
 - `key_refs`: the `ref` of every claim whose number you quote (copy it exactly from `claims`). A number you quote without citing its ref is rejected.
 Output JSON: {"title": "...", "paragraphs": ["...", "..."], "key_refs": ["..."]}
 

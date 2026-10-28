@@ -29,7 +29,9 @@
   - recall 0.95 on planted errors (numbers 1.00, wording 0.88);
   - precision 1.00, with 0 false alarms on 60 correct checks;
   - about 2 s per model check.
-- **Live loop (final recording, 3 moments):** all 3 verified on the first try, 12–21 s each. Earlier runs needed up to 2 regenerations. The Verifier caught unclaimed counts ("5 shots", "10 men") and a wrong value (63% field tilt where the stats say 38.5%), and the feedback fixed them.
+  - **2026-10-27 rerun (TASK-25.2, 1 run):** recall 20/20 = 1.00, precision 1.00, 0 false alarms; `e18` and `e19` are now caught by code (`owners.py`).
+- **Live loop, re-recorded 2026-10-27 (TASK-25.2):** all 3 moments verified (attempts 1, 2, 1; 15–24 s each); the pressing-collapse insight reads PPDA correctly ("higher … Laureles press less aggressively").
+- **Live loop (TASK-19 recording, 3 moments):** all 3 verified on the first try, 12–21 s each. Earlier runs needed up to 2 regenerations. The Verifier caught unclaimed counts ("5 shots", "10 men") and a wrong value (63% field tilt where the stats say 38.5%), and the feedback fixed them.
 - **Known gaps** (also in `docs/evals.md`):
   - ~~Numbers are matched to claims by value, not meaning~~: team numbers are now tied to the team named (below, TASK-25.2).
   - Interpretation slips pass, such as PPDA read as pressure faced.
@@ -75,3 +77,7 @@ The Verifier's deterministic rule: every number an agent writes must match a ver
   - Each claim must agree with its stored value, compared at the claim's own precision.
   - Each number in the text must match a verified claim. Unit conversion is allowed (km/h ↔ m/s, m ↔ km, ratio ↔ %), and so is rounding to the written precision ("12" for 11.6, but not "12.0").
   - Minutes, scores (either order) and formations must be in the sets passed in.
+
+## Interpretation slips (`agents/meaning.py`, TASK-25.2)
+- **`ppda_slips(text, lang)`:** a sentence that mentions PPDA and says a team "faces"/"suffers" pressure (enfrentar, sufrir, sofrer, subir) without naming who applies it fails: PPDA is a team's own pressing. "Under pressure" and "pressure from X" / "presión de X" / "pression d'X" pass. In the Verifier (deterministic, before the model) and in recaps. On stored texts it found 5 insights and 17 fan texts, all slips; the sweep replaced them.
+- **`mixed_moments(text, lang, claims)`:** a recap sentence whose numbers come from claims at two moments (`@period:t`) fails, unless the sentence gives both minutes. No stored recap had one.

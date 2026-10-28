@@ -2,6 +2,9 @@
 
 Format: `YYYY-MM-DD · TASK-ID · summary · pages touched`. Newest first.
 
+- 2026-10-27 · TASK-25.2 · Explainer falls back to the moment's window events instead of failing on empty event_ids; PPDA-as-pressure-faced and recap moment-mixing checks (agents/meaning.py) in the Verifier, recaps, and the sweep (local: 5 insights, 17 texts); prompts updated; golden set 20/20, live loop re-recorded · agents, verifier
+- 2026-10-27 · TASK-25.5 · nightly: four level-2 effect thresholds xfail pending recalibration, timeout 5 h, slowest tests logged · conventions
+- 2026-10-27 · cleanup · unused Container Registry removed from the template (and from Azure) · infra-ops
 - 2026-10-27 · TASK-25.4 · live site verified after the reseed: Arabic intact in all 8 matches, recaps in 5 languages · infra-ops
 - 2026-10-27 · TASK-25.4 · text columns are NVARCHAR(max) on Azure SQL (Arabic was stored as "?"); seed_cloud `--tables` rebuilds only named tables · data-model, infra-ops
 - 2026-10-27 · TASK-25.3 · seed_cloud commits per chunk, retries dropped connections, and `--resume` finishes a stopped copy · infra-ops

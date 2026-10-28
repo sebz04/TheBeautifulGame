@@ -1,5 +1,6 @@
-# Azure Developer CLI: `azd up` provisions infra/ and deploys the API + website image,
-# built in Azure Container Registry (no local Docker needed).
+# Azure Developer CLI: `azd provision` creates infra/. The API + website image is built by
+# GitHub Actions (ghcr.io) and deployed with `az containerapp update` (.github/workflows/
+# deploy.yml): ACR builds are paused on Azure for Students, so `azd deploy` isn't used.
 name: matchmind
 services:
   api:

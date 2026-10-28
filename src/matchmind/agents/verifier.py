@@ -25,8 +25,9 @@ from agent_framework.exceptions import ChatClientException
 from opentelemetry.trace import Tracer
 from pydantic import BaseModel
 
-from matchmind.agents.context import match_names
+from matchmind.agents.context import match_names, window_event_ids
 from matchmind.agents.explainer import ExplainerError, explain
+from matchmind.agents.meaning import ppda_slips
 from matchmind.agents.numbers import check_text
 from matchmind.agents.owners import owner_failures
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
@@ -207,6 +208,7 @@ async def verify(
     failures, fixed = _numbers(insight, lang, text, facts)
     failures += _leads(insight, lang, text, facts)
     failures += _teams(insight, lang, text, facts)
+    failures += ppda_slips(text, lang)
     if not failures:
         failures = await _wording(insight, lang, text, facts, client, tracer)
     return Verdict(ok=not failures, failures=failures, fixed_claims=fixed)
@@ -247,6 +249,7 @@ async def verify_loop(
             insight = await explain(
                 decision, moment, client, tools,
                 names=facts.names, feedback=feedback, tracer=tracer,
+                fallback_events=_window_events(facts, moment),
             )  # fmt: skip
         except ExplainerError as exc:
             log.warning("Explainer gave up: %s", exc)
@@ -258,6 +261,12 @@ async def verify_loop(
             return insight.model_copy(update={"verified": True})
         feedback = "\n".join(f"- {f}" for f in verdict.failures)
     return None
+
+
+def _window_events(facts: Facts, moment: Moment) -> list[str]:
+    """``facts.window_events`` when the facts know the match's events (``StatsFacts``)."""
+    found = getattr(facts, "window_events", None)
+    return list(found(moment)) if found else []
 
 
 class DictFacts:
@@ -334,6 +343,9 @@ class StatsFacts:
                  and (e.period, e.t) <= (moment.period, moment.t_end)]  # fmt: skip
         teams = team_variants({home: self.meta.home.name, away: self.meta.away.name})
         return teams, {home: goals.count(home), away: goals.count(away)}
+
+    def window_events(self, moment: Moment) -> list[str]:
+        return window_event_ids(self._order, moment)
 
     def before(self, event: Event) -> list[Event]:
         i = self._index.get(event.event_id, 0)

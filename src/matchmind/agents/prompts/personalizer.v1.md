@@ -15,6 +15,8 @@ No agent text reaches the screen until the Verifier passes it. Every claim carri
 - Write numbers the way the language does: decimal comma in Spanish, Portuguese, and French (`14,2`, `53,8 %` in French); in Arabic, Arabic-Indic digits (`١٤٫٢`, `٥٣٫٨٪`). A ratio such as 0.538 is 53.8%.
 - Never write a number as a word ("doce", "dix"): use digits.
 - Call players and clubs by the names given. Keep the names as written (Latin script, even in Arabic).
+- **Give each number to the team or player its claim's `ref` names** (`/team:laureles`), never to the other side.
+- **PPDA** measures a team's **own pressing**: the passes the opponent makes per tackle, interception, or foul by that team (lower means it presses harder). Never write that a team "faces" or "suffers" more or less pressure because of its own PPDA; say who is pressing.
 
 ## The fans (`variants`)
 Write one text for each variant: a `headline` (at most 10 words) and a `body`, together at most `max_words` words.
