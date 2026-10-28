@@ -1,14 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-// Welcome → pick a club → open the match → play → an insight appears → Spanish → Ask why → Best plays.
+// Welcome → pick a club → straight to its match → play → an insight appears → Spanish → Ask why → Best plays.
 test("a fan's first match", async ({ page, request }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Atlético Chapinero" }).click();
   await page.getByRole("button", { name: "Start watching" }).click();
-  await expect(page).toHaveURL(/\/matches$/);
-
-  await page.getByRole("list").getByRole("link").first().click();
-  await expect(page).toHaveURL(/\/match\//);
+  await expect(page).toHaveURL(/\/match\//); // the club's first match, no list in between
   const matchId = page.url().split("/match/")[1];
 
   // Jump to a few seconds before the first moment ends, then play: its insight appears.

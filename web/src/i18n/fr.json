@@ -12,10 +12,8 @@
   "what.teamStats": "les statistiques des équipes",
   "what.playerStats": "les statistiques du joueur",
   "what.league": "les clubs",
-
   "picker.title": "Choisissez un match",
   "picker.yours": "Votre club joue",
-
   "match.all": "Tous les matchs",
   "match.about": "À propos de ce match",
   "match.score": "Score",
@@ -29,7 +27,6 @@
   "tab.game": "Match",
   "tab.team": "Équipes",
   "tab.player": "Joueur",
-
   "play.group": "Lecture",
   "play.play": "Lire",
   "play.pause": "Pause",
@@ -37,7 +34,6 @@
   "play.time": "Temps de jeu",
   "play.first": "Première mi-temps, {clock}",
   "play.second": "Seconde mi-temps, {clock}",
-
   "bar.view": "Votre vue",
   "bar.follow": "Suivez votre équipe ou votre joueur",
   "bar.mode": "Regardez en supporter ou en recruteur",
@@ -46,10 +42,8 @@
   "bar.team": "Équipe",
   "bar.player": "Joueur",
   "bar.language": "Langue",
-
   "side.title": "Votre club ne joue pas",
   "side.prompt": "Choisissez un camp pour ce match : votre consultant le regardera avec vous, en supporter de ce camp.",
-
   "stat.xg": "Buts attendus",
   "stat.possession": "Possession",
   "stat.shots": "Tirs",
@@ -80,7 +74,6 @@
   "player.match": "Ce match",
   "player.season": "Attendu à ce stade",
   "player.noSeason": "Pas encore de données de saison pour ce joueur, donc rien à comparer.",
-
   "kind.goal": "But",
   "kind.red_card": "Carton rouge",
   "kind.big_chance": "Grosse occasion",
@@ -91,9 +84,10 @@
   "kind.corner_pressure": "Pression sur corners",
   "kind.player_deviation": "Un joueur se distingue",
   "kind.sprint_alert": "Sprint",
-
   "card.askWhy": "Pourquoi ?",
   "card.bestPlay": "Voir la meilleure option",
+  "card.numbers": "Les chiffres",
+  "card.advice": "Ce qu'ils devraient faire",
   "card.confidence": "Confiance {level}. Chaque chiffre est vérifié avec les données du match.",
   "card.template": "Ceci est un résumé standard : la formulation propre de l'IA n'a pas passé toutes les vérifications.",
   "level.high": "élevée",
@@ -104,7 +98,6 @@
   "panel.earlier": "Analyses précédentes",
   "recap.fullTime": "Fin du match",
   "recap.english": "Les résumés sont en anglais pour l'instant.",
-
   "why.title": "Pourquoi votre consultant a dit cela",
   "why.numbers": "Les chiffres sur lesquels il s'appuie",
   "why.moments": "Les actions qu'il cite",
@@ -133,11 +126,9 @@
   "live.limit": "Vous avez utilisé vos questions en direct pour le moment. Réessayez dans {minutes} min.",
   "live.timeout": "Le consultant a mis trop de temps à répondre. Réessayez.",
   "live.down": "Le consultant en direct n'est pas disponible pour l'instant. La réponse vérifiée ci-dessus reste valable.",
-
   "realism.intro": "Ce match est synthétique : un moteur de simulation l'a joué, et ses statistiques sont comparées aux fourchettes du football professionnel réel. Il passe {passed} vérifications sur {total}. Un seul match sort souvent d'une ou deux fourchettes, comme un vrai match ; sur de nombreux matchs simulés, toutes les vérifications passent.",
   "realism.in": "dans la fourchette",
   "realism.out": "hors fourchette",
-
   "welcome.title": "Votre match. Votre consultant.",
   "welcome.intro": "Un consultant IA qui regarde le match avec vous et explique chaque moment clé à votre façon : votre club, votre joueur, votre langue.",
   "welcome.club": "Choisissez votre club",
@@ -149,9 +140,7 @@
   "welcome.scoutHint": "Des chiffres, de la tactique et le détail des joueurs",
   "welcome.start": "Commencer",
   "welcome.change": "Modifier mes réglages",
-
   "overlay.ran": "{who} a parcouru {km} km",
-
   "best.title": "Meilleures options",
   "best.tab": "Meilleures options",
   "best.live": "Match en direct",

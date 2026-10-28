@@ -33,6 +33,7 @@ describe("AskWhyPanel", () => {
     expect(screen.getByText(/84'/)).toBeInTheDocument(); // the shot, by minute
     expect(screen.getByText(/explainer/i)).toBeInTheDocument();
     expect(screen.getByText(/t-abc/)).toBeInTheDocument();
+    expect(screen.getByText(/t-abc/).closest("details")).not.toHaveAttribute("open"); // collapsed (note 5)
     expect(screen.getByRole("img", { name: /best option/i })).toBeInTheDocument(); // counterfactual arrow
   });
 
@@ -83,6 +84,11 @@ describe("runSummary", () => {
       { ...run, run_id: "3", agent: "verifier", latency_ms: 1500 },
       { ...run, run_id: "4", agent: "template:personalizer", latency_ms: 0, status: "fallback" },
     ]);
-    expect(lines).toEqual(["explainer: 2 runs, 10.0 s, 1 retry", "verifier: 1 run, 1.5 s", "template (personalizer): used 1 time"]);
+    expect(lines).toEqual([
+      "Explainer agent: 2 runs, 10.0 s, 1 retry",
+      "Verifier agent: 1 run, 1.5 s",
+      "Template in place of the Personalizer agent: used 1 time",
+    ]);
+    expect(runSummary([{ ...run, agent: "analyst" }])[0]).toMatch(/^Tactical Analyst agent: /);
   });
 });

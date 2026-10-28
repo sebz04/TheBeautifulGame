@@ -43,15 +43,25 @@ export function CounterfactualPitch({ cf, from, label }: { cf: Counterfactual; f
 }
 
 /** Agent runs grouped by agent: "explainer: 3 runs, 38.1 s" (fallbacks to templates counted). */
+const AGENT_NAMES: Record<string, string> = {
+  analyst: "Tactical Analyst", explainer: "Explainer", verifier: "Verifier",
+  narrative: "Narrative", personalizer: "Personalizer",
+}; // prettier-ignore
+
+/** "personalizer" → "Personalizer agent", so a reader knows each line is an AI agent. */
+function agentName(id: string): string {
+  return `${AGENT_NAMES[id] ?? id.charAt(0).toUpperCase() + id.slice(1)} agent`;
+}
+
 export function runSummary(runs: AgentRun[]): string[] {
   const by = new Map<string, { n: number; ms: number; retries: number }>();
   for (const r of runs) {
-    const name = r.agent.startsWith("template:") ? `template (${r.agent.slice(9)})` : r.agent;
+    const name = r.agent.startsWith("template:") ? `Template in place of the ${agentName(r.agent.slice(9))}` : agentName(r.agent);
     const g = by.get(name) ?? { n: 0, ms: 0, retries: 0 };
     by.set(name, { n: g.n + 1, ms: g.ms + r.latency_ms, retries: g.retries + Math.max(0, r.attempts - 1) });
   }
   return [...by].map(([name, g]) =>
-    name.startsWith("template")
+    name.startsWith("Template")
       ? `${name}: used ${g.n} time${g.n === 1 ? "" : "s"}`
       : `${name}: ${g.n} run${g.n === 1 ? "" : "s"}, ${(g.ms / 1000).toFixed(1)} s${g.retries ? `, ${g.retries} retr${g.retries === 1 ? "y" : "ies"}` : ""}`,
   );
@@ -145,15 +155,18 @@ export default function AskWhyPanel({ row, matchId, variant, lang, addedS, names
                 </li>
               ))}
             </ul>
-            <h3 className="mb-2 mt-5 text-sm font-bold text-muted">{t("why.agents")}</h3>
-            <ul className="m-0 list-none p-0 text-sm">
-              {runSummary(why.data.agent_runs).map((line) => (
-                <li key={line} className="border-t border-[color:var(--mm-rule)] py-2">
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-muted">{why.data.trace_id ? t("why.trace", { id: why.data.trace_id }) : t("why.traceNone")}</p>
+            {/* Collapsed for fans; one click shows which agents ran and the trace id. */}
+            <details className="mt-5">
+              <summary className="cursor-pointer text-sm font-bold text-muted">{t("why.agents")}</summary>
+              <ul className="m-0 mt-2 list-none p-0 text-sm">
+                {runSummary(why.data.agent_runs).map((line) => (
+                  <li key={line} className="border-t border-[color:var(--mm-rule)] py-2">
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted">{why.data.trace_id ? t("why.trace", { id: why.data.trace_id }) : t("why.traceNone")}</p>
+            </details>
           </div>
           <div>
             {why.data.counterfactual && decisionOf(why.data) && (
