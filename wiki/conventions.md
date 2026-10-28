@@ -34,5 +34,5 @@ CI (`.github/workflows/ci.yml`) runs lint, format check, types, tests, the licen
 - No live model calls in tests (`FakeChatClient`, recorded fixtures in `tests/fixtures/llm/`).
 - Tests mirror `src/matchmind/` under `tests/`; tests for `scripts/` live in `tests/scripts/` (`scripts/` is on the pytest path).
 - New runtime dependencies must pass the license gate and be added to `THIRD_PARTY_NOTICES.md`.
-- **Slow vs fast tests:** a test that simulates many matches (statistics over seeds, season rounds, storylines, attribute effects) is marked `@pytest.mark.slow` and runs nightly. Single-match checks (determinism, consistency, offsides, red cards, motion) stay in CI. Statistical margins allow for platform differences: the same seed is not bit-identical on macOS and Linux.
+- **Slow vs fast tests:** a test that simulates many matches (statistics over seeds, season rounds, storylines, attribute effects) is marked `@pytest.mark.slow` and runs nightly. Single-match checks (determinism, consistency, offsides, red cards, motion) stay in CI. Statistical margins allow for platform differences: the same seed is not bit-identical on macOS and Linux. **Nightly status (2026-10-27):** four attribute-effect thresholds set for the level-2 engine are `xfail` until they're recalibrated for level 3 (TASK-25.5); the job timeout is 5 h and it logs the 15 slowest tests.
 

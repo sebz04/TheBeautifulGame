@@ -63,13 +63,14 @@ Agent Framework 1.23 (`agent-framework-core`, `agent-framework-foundry`).
 - Tests: `tests/agents/conftest.py` has `StatsStub`, Agent Framework `@tool` stand-ins with the MCP tool names that record their calls. `FakeChatClient` replies can be `[tool_call(name, **args)]`, and a callable reply sees earlier results in `call.tool_results`.
 
 ## Explainer (`agents/explainer.py`, TASK-17.2)
-- `explain(decision, moment, client, tools, *, names=None, tracer=None) -> Insight` returns an `Insight` with:
+- `explain(decision, moment, client, tools, *, names=None, tracer=None, fallback_events=()) -> Insight` returns an `Insight` with:
   - `insight_id` `<moment_id>-ins`, `source="agent"`, `verified=False`, `prompt_version="explainer.v1"`;
   - `trace_id` from the run's span (None when tracing is off).
 - **Two models.** `ExplainerReply` is the plain `response_format`. `ExplainerDraft` adds the checks:
   - event ids and claims are present, and every claim has a ref;
   - headline, why, and recommendation aren't empty.
   - A failed check would fail the call inside the Foundry client (see Gotchas), which is why the reply model stays plain.
+- **No events cited (TASK-25.2):** 27 of r01's 34 moments (momentum swings, formation shifts, pressing collapses, player deviations) have no events of their own, and an empty `event_ids` used to end in a template (live re-asks on `d000` too). Now `verify_loop` passes `context.window_event_ids(events, moment)` as `fallback_events`: a player's events up to the moment, of the stat's type (`dribbles` → `carry`), or the team's events in the 5-minute window, the latest 8.
 - **Counterfactual claims** (metric `counterfactual_*`) must cite an event id that `get_counterfactual` was called with in the same run.
 - **One regeneration.** A bad reply (malformed JSON, a failed check, an unread counterfactual) is sent back once with the problem. A second bad reply raises `ExplainerError`, and TASK-20 falls back to a template. Service errors (timeouts, 429s) are raised as they are.
 - The recommendation answers "What should they do?" (team and player) or "What to watch next" (game).

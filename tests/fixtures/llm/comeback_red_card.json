@@ -1,5 +1,5 @@
 {
- "recorded": "2026-10-25",
+ "recorded": "2026-10-27",
  "deployment": "gpt-4.1-mini",
  "prompts": [
   "analyst.v1.md",
@@ -181,21 +181,20 @@
   ],
   "lookups": {
    "metric:red@2:638.5/team:chapinero|red|": 1.0,
-   "metric:players@2:638.5/team:chapinero|players|": 10.0,
    "metric:ppda_10min@2:638.5/team:chapinero|ppda_10min|": 4.6,
-   "metric:possession@2:638.5/team:chapinero|possession|%": 0.4428191489361702,
-   "metric:interceptions@2:638.5/player:ach-04|interceptions|": 12.0,
-   "metric:tackles@2:638.5/player:ach-04|tackles|": 2.0,
+   "metric:ppda_10min@2:638.5/team:laureles|ppda_10min|": 9.2,
+   "metric:possession@2:638.5/team:chapinero|possession|": 0.4428191489361702,
+   "metric:momentum@2:638.5/team:chapinero|momentum|": 0.2668643531950474,
    "metric:goals@1:2800.8/player:ala-17|goals|": 1.0,
    "metric:xg@1:2800.8/player:ala-17|xg|": 0.409,
    "metric:momentum@1:2800.8/team:laureles|momentum|": 0.33095635589062455,
-   "metric:momentum@1:2800.8/team:chapinero|momentum|": 0.009592071506184649,
    "metric:possession@1:2800.8/team:laureles|possession|%": 0.5799676898222941,
-   "metric:territory@1:2800.8/team:laureles|territory|%": 0.6282430744394378,
-   "metric:field_tilt_10min@1:2800.8/team:laureles|field_tilt_10min|%": 0.38461538461538464,
+   "metric:xg@1:2800.8/team:laureles|xg|": 0.502,
+   "metric:xg@1:2800.8/team:chapinero|xg|": 0.482,
+   "metric:momentum@1:2800.8/team:chapinero|momentum|": 0.009592071506184649,
    "metric:ppda_10min@1:1200.0/team:laureles|ppda_10min|": 9.0,
    "metric:ppda_10min@1:1200.0/team:chapinero|ppda_10min|": 6.375,
-   "metric:field_tilt_10min@1:1200.0/team:chapinero|field_tilt_10min|": 0.7222222222222222
+   "metric:field_tilt_10min@1:1200.0/team:chapinero|field_tilt_10min|%": 0.7222222222222222
   },
   "events": {
    "r01-chapinero-v-laureles-e01058": {
@@ -234,211 +233,55 @@
     "ball_speed_ms": null,
     "extras": {}
    },
-   "r01-chapinero-v-laureles-e00272": {
-    "event_id": "r01-chapinero-v-laureles-e00272",
+   "r01-chapinero-v-laureles-e00327": {
+    "event_id": "r01-chapinero-v-laureles-e00327",
     "match_id": "r01-chapinero-v-laureles",
     "period": 1,
-    "t": 904.2,
+    "t": 1068.6,
     "type": "pass",
-    "team_id": "laureles",
-    "player_id": "ala-08",
-    "x": 79.48,
-    "y": 5.34,
-    "end_x": 57.19,
-    "end_y": 12.88,
+    "team_id": "chapinero",
+    "player_id": "ach-11",
+    "x": 43.5,
+    "y": 4.53,
+    "end_x": 7.4,
+    "end_y": 32.29,
     "outcome": true,
-    "receiver_id": "ala-14",
-    "ball_speed_ms": 10.0,
+    "receiver_id": "ach-02",
+    "ball_speed_ms": 26.79,
     "extras": {
-     "chosen_score": -0.00012729164457538815,
-     "best_score": -0.00012729164457538815,
+     "chosen_score": -0.0011400133213473052,
+     "best_score": -0.00052771727479985,
      "chosen_option": {
       "kind": "pass",
-      "target": "ala-14",
+      "target": "ach-02",
       "end": [
-       57.53,
-       11.74
+       9.01,
+       33.95
       ]
      },
      "best_option": {
       "kind": "pass",
-      "target": "ala-14",
+      "target": "ach-04",
       "end": [
-       57.53,
-       11.74
+       25.28,
+       19.19
       ]
      },
-     "risk_weight": 1.048912,
-     "lofted": false,
-     "arrival_t": 907.0
+     "risk_weight": 0.98008,
+     "lofted": true,
+     "arrival_t": 1071.0
     }
    },
-   "r01-chapinero-v-laureles-e00273": {
-    "event_id": "r01-chapinero-v-laureles-e00273",
+   "r01-chapinero-v-laureles-e00329": {
+    "event_id": "r01-chapinero-v-laureles-e00329",
     "match_id": "r01-chapinero-v-laureles",
     "period": 1,
-    "t": 909.0,
-    "type": "pass",
+    "t": 1074.7,
+    "type": "interception",
     "team_id": "laureles",
     "player_id": "ala-14",
-    "x": 57.48,
-    "y": 12.79,
-    "end_x": 77.9,
-    "end_y": 19.12,
-    "outcome": true,
-    "receiver_id": "ala-07",
-    "ball_speed_ms": 11.45,
-    "extras": {
-     "chosen_score": -0.0016804677229127873,
-     "best_score": 0.00026743461145211245,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ala-07",
-      "end": [
-       77.63,
-       17.81
-      ]
-     },
-     "best_option": {
-      "kind": "carry",
-      "target": null,
-      "end": [
-       51.75,
-       16.8
-      ]
-     },
-     "risk_weight": 0.962752,
-     "lofted": false,
-     "arrival_t": 911.1
-    }
-   },
-   "r01-chapinero-v-laureles-e00274": {
-    "event_id": "r01-chapinero-v-laureles-e00274",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 912.6,
-    "type": "pass",
-    "team_id": "laureles",
-    "player_id": "ala-07",
-    "x": 77.59,
-    "y": 18.99,
-    "end_x": 79.95,
-    "end_y": 53.68,
-    "outcome": true,
-    "receiver_id": "ala-05",
-    "ball_speed_ms": 24.21,
-    "extras": {
-     "chosen_score": -0.0003846271888586078,
-     "best_score": -0.0003846271888586078,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ala-05",
-      "end": [
-       80.78,
-       56.19
-      ]
-     },
-     "best_option": {
-      "kind": "pass",
-      "target": "ala-05",
-      "end": [
-       80.78,
-       56.19
-      ]
-     },
-     "risk_weight": 1.0222,
-     "lofted": true,
-     "arrival_t": 914.5
-    }
-   },
-   "r01-chapinero-v-laureles-e00275": {
-    "event_id": "r01-chapinero-v-laureles-e00275",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 916.2,
-    "type": "pass",
-    "team_id": "laureles",
-    "player_id": "ala-05",
-    "x": 80.32,
-    "y": 53.54,
-    "end_x": 76.68,
-    "end_y": 13.66,
-    "outcome": true,
-    "receiver_id": "ala-08",
-    "ball_speed_ms": 27.55,
-    "extras": {
-     "chosen_score": -0.0016159078816224497,
-     "best_score": 0.001052691253509219,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ala-08",
-      "end": [
-       79.21,
-       9.69
-      ]
-     },
-     "best_option": {
-      "kind": "pass",
-      "target": "ala-12",
-      "end": [
-       57.91,
-       54.19
-      ]
-     },
-     "risk_weight": 0.94,
-     "lofted": true,
-     "arrival_t": 918.1
-    }
-   },
-   "r01-chapinero-v-laureles-e00276": {
-    "event_id": "r01-chapinero-v-laureles-e00276",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 919.4,
-    "type": "pass",
-    "team_id": "laureles",
-    "player_id": "ala-08",
-    "x": 76.85,
-    "y": 13.59,
-    "end_x": 57.29,
-    "end_y": 14.29,
-    "outcome": true,
-    "receiver_id": "ala-14",
-    "ball_speed_ms": 10.01,
-    "extras": {
-     "chosen_score": 0.00069369136851048,
-     "best_score": 0.00069369136851048,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ala-14",
-      "end": [
-       57.89,
-       13.59
-      ]
-     },
-     "best_option": {
-      "kind": "pass",
-      "target": "ala-14",
-      "end": [
-       57.89,
-       13.59
-      ]
-     },
-     "risk_weight": 1.048912,
-     "lofted": false,
-     "arrival_t": 921.6
-    }
-   },
-   "r01-chapinero-v-laureles-e00279": {
-    "event_id": "r01-chapinero-v-laureles-e00279",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 927.0,
-    "type": "interception",
-    "team_id": "chapinero",
-    "player_id": "ach-14",
-    "x": 46.0,
-    "y": 32.36,
+    "x": 42.03,
+    "y": 21.16,
     "end_x": null,
     "end_y": null,
     "outcome": true,
@@ -446,277 +289,237 @@
     "ball_speed_ms": null,
     "extras": {}
    },
-   "r01-chapinero-v-laureles-e00280": {
-    "event_id": "r01-chapinero-v-laureles-e00280",
+   "r01-chapinero-v-laureles-e00330": {
+    "event_id": "r01-chapinero-v-laureles-e00330",
     "match_id": "r01-chapinero-v-laureles",
     "period": 1,
-    "t": 928.6,
+    "t": 1075.6,
     "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-14",
-    "x": 45.32,
-    "y": 32.12,
-    "end_x": 60.43,
-    "end_y": 23.28,
+    "team_id": "laureles",
+    "player_id": "ala-14",
+    "x": 41.67,
+    "y": 21.98,
+    "end_x": 30.82,
+    "end_y": 32.29,
     "outcome": true,
-    "receiver_id": "ach-17",
-    "ball_speed_ms": 10.0,
+    "receiver_id": "ala-17",
+    "ball_speed_ms": 12.06,
     "extras": {
-     "chosen_score": 0.0014303261866795924,
-     "best_score": 0.0025660477106777915,
+     "chosen_score": 0.004054507664842507,
+     "best_score": 0.004054507664842507,
      "chosen_option": {
       "kind": "pass",
-      "target": "ach-17",
+      "target": "ala-17",
       "end": [
-       61.46,
-       24.93
-      ]
-     },
-     "best_option": {
-      "kind": "through",
-      "target": "ach-17",
-      "end": [
-       66.4,
-       23.79
-      ]
-     },
-     "risk_weight": 1.036336,
-     "lofted": false,
-     "arrival_t": 930.6
-    }
-   },
-   "r01-chapinero-v-laureles-e00281": {
-    "event_id": "r01-chapinero-v-laureles-e00281",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 931.9,
-    "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-17",
-    "x": 60.7,
-    "y": 23.43,
-    "end_x": 59.02,
-    "end_y": 22.15,
-    "outcome": true,
-    "receiver_id": "ach-13",
-    "ball_speed_ms": 10.0,
-    "extras": {
-     "chosen_score": -0.0034405046349437465,
-     "best_score": -0.00017560987271041518,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ach-13",
-      "end": [
-       57.43,
-       23.59
+       30.21,
+       30.97
       ]
      },
      "best_option": {
       "kind": "pass",
-      "target": "ach-11",
+      "target": "ala-17",
       "end": [
-       59.81,
-       12.15
+       30.21,
+       30.97
       ]
      },
-     "risk_weight": 0.999496,
+     "risk_weight": 0.962752,
      "lofted": false,
-     "arrival_t": 932.1
+     "arrival_t": 1076.9
     }
    },
-   "r01-chapinero-v-laureles-e00282": {
-    "event_id": "r01-chapinero-v-laureles-e00282",
+   "r01-chapinero-v-laureles-e00334": {
+    "event_id": "r01-chapinero-v-laureles-e00334",
     "match_id": "r01-chapinero-v-laureles",
     "period": 1,
-    "t": 933.1,
+    "t": 1092.8,
     "type": "pass",
     "team_id": "chapinero",
-    "player_id": "ach-13",
-    "x": 60.78,
-    "y": 20.53,
-    "end_x": 39.05,
-    "end_y": 24.06,
-    "outcome": true,
-    "receiver_id": "ach-04",
-    "ball_speed_ms": 10.3,
-    "extras": {
-     "chosen_score": -0.004027889191355128,
-     "best_score": 0.0031724089413444393,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ach-04",
-      "end": [
-       39.55,
-       23.13
-      ]
-     },
-     "best_option": {
-      "kind": "carry",
-      "target": null,
-      "end": [
-       65.96,
-       17.02
-      ]
-     },
-     "risk_weight": 0.94,
-     "lofted": false,
-     "arrival_t": 935.6
-    }
-   },
-   "r01-chapinero-v-laureles-e00283": {
-    "event_id": "r01-chapinero-v-laureles-e00283",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 937.4,
-    "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-04",
-    "x": 39.36,
-    "y": 23.99,
-    "end_x": 70.42,
-    "end_y": 4.76,
-    "outcome": true,
-    "receiver_id": "ach-13",
-    "ball_speed_ms": 10.0,
-    "extras": {
-     "chosen_score": -0.000403323932719334,
-     "best_score": 0.00595866855121631,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ach-13",
-      "end": [
-       48.34,
-       18.16
-      ]
-     },
-     "best_option": {
-      "kind": "through",
-      "target": "ach-11",
-      "end": [
-       65.89,
-       15.44
-      ]
-     },
-     "risk_weight": 0.95572,
-     "lofted": false,
-     "arrival_t": 943.5
-    }
-   },
-   "r01-chapinero-v-laureles-e00284": {
-    "event_id": "r01-chapinero-v-laureles-e00284",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 944.8,
-    "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-13",
-    "x": 71.96,
-    "y": 3.81,
-    "end_x": 67.0,
-    "end_y": 3.38,
-    "outcome": true,
-    "receiver_id": "ach-11",
-    "ball_speed_ms": 11.97,
-    "extras": {
-     "chosen_score": -0.0018632302159205586,
-     "best_score": 0.0034567898538476454,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ach-11",
-      "end": [
-       65.6,
-       4.05
-      ]
-     },
-     "best_option": {
-      "kind": "pass",
-      "target": "ach-17",
-      "end": [
-       76.23,
-       14.9
-      ]
-     },
-     "risk_weight": 0.94,
-     "lofted": false,
-     "arrival_t": 945.2
-    }
-   },
-   "r01-chapinero-v-laureles-e00285": {
-    "event_id": "r01-chapinero-v-laureles-e00285",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 946.6,
-    "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-11",
-    "x": 67.02,
-    "y": 3.36,
-    "end_x": 78.32,
-    "end_y": 10.52,
-    "outcome": true,
-    "receiver_id": "ach-17",
-    "ball_speed_ms": 13.39,
-    "extras": {
-     "chosen_score": 0.004961372529994471,
-     "best_score": 0.004961372529994471,
-     "chosen_option": {
-      "kind": "pass",
-      "target": "ach-17",
-      "end": [
-       77.92,
-       10.94
-      ]
-     },
-     "best_option": {
-      "kind": "pass",
-      "target": "ach-17",
-      "end": [
-       77.92,
-       10.94
-      ]
-     },
-     "risk_weight": 0.98008,
-     "lofted": false,
-     "arrival_t": 947.6
-    }
-   },
-   "r01-chapinero-v-laureles-e00286": {
-    "event_id": "r01-chapinero-v-laureles-e00286",
-    "match_id": "r01-chapinero-v-laureles",
-    "period": 1,
-    "t": 949.3,
-    "type": "pass",
-    "team_id": "chapinero",
-    "player_id": "ach-17",
-    "x": 78.11,
-    "y": 10.61,
-    "end_x": 26.61,
-    "end_y": 53.11,
+    "player_id": "ach-15",
+    "x": 28.28,
+    "y": 67.7,
+    "end_x": 22.67,
+    "end_y": 67.09,
     "outcome": true,
     "receiver_id": "ach-09",
-    "ball_speed_ms": 27.78,
+    "ball_speed_ms": 12.0,
     "extras": {
-     "chosen_score": -0.009918679319023758,
-     "best_score": 0.03200022930482134,
+     "chosen_score": -0.00018141395580321832,
+     "best_score": -0.00011429555796072617,
      "chosen_option": {
       "kind": "pass",
       "target": "ach-09",
       "end": [
-       37.89,
-       52.82
+       22.09,
+       66.63
+      ]
+     },
+     "best_option": {
+      "kind": "pass",
+      "target": "ach-07",
+      "end": [
+       23.82,
+       53.89
+      ]
+     },
+     "risk_weight": 1.049368,
+     "restart": "throw_in",
+     "lofted": false,
+     "arrival_t": 1093.3
+    }
+   },
+   "r01-chapinero-v-laureles-e00335": {
+    "event_id": "r01-chapinero-v-laureles-e00335",
+    "match_id": "r01-chapinero-v-laureles",
+    "period": 1,
+    "t": 1095.2,
+    "type": "pass",
+    "team_id": "chapinero",
+    "player_id": "ach-09",
+    "x": 22.57,
+    "y": 66.7,
+    "end_x": 21.5,
+    "end_y": 15.27,
+    "outcome": true,
+    "receiver_id": "ach-03",
+    "ball_speed_ms": 23.59,
+    "extras": {
+     "chosen_score": -7.995129391694296e-05,
+     "best_score": 7.347752506301408e-05,
+     "chosen_option": {
+      "kind": "pass",
+      "target": "ach-04",
+      "end": [
+       23.04,
+       34.99
+      ]
+     },
+     "best_option": {
+      "kind": "pass",
+      "target": "ach-03",
+      "end": [
+       23.45,
+       16.42
+      ]
+     },
+     "risk_weight": 0.982216,
+     "lofted": true,
+     "arrival_t": 1099.4
+    }
+   },
+   "r01-chapinero-v-laureles-e00336": {
+    "event_id": "r01-chapinero-v-laureles-e00336",
+    "match_id": "r01-chapinero-v-laureles",
+    "period": 1,
+    "t": 1101.3,
+    "type": "carry",
+    "team_id": "chapinero",
+    "player_id": "ach-03",
+    "x": 21.52,
+    "y": 15.04,
+    "end_x": 25.69,
+    "end_y": 12.12,
+    "outcome": true,
+    "receiver_id": null,
+    "ball_speed_ms": null,
+    "extras": {
+     "chosen_score": -0.005527341680047783,
+     "best_score": 0.0006344095651710677,
+     "chosen_option": {
+      "kind": "carry",
+      "target": null,
+      "end": [
+       27.26,
+       11.03
+      ]
+     },
+     "best_option": {
+      "kind": "pass",
+      "target": "ach-13",
+      "end": [
+       39.52,
+       23.37
+      ]
+     },
+     "risk_weight": 0.96676
+    }
+   },
+   "r01-chapinero-v-laureles-e00337": {
+    "event_id": "r01-chapinero-v-laureles-e00337",
+    "match_id": "r01-chapinero-v-laureles",
+    "period": 1,
+    "t": 1103.0,
+    "type": "pass",
+    "team_id": "chapinero",
+    "player_id": "ach-03",
+    "x": 25.67,
+    "y": 12.14,
+    "end_x": 38.17,
+    "end_y": 61.18,
+    "outcome": true,
+    "receiver_id": "ach-15",
+    "ball_speed_ms": 28.23,
+    "extras": {
+     "chosen_score": -0.0010575119277751236,
+     "best_score": 0.0006990395805076129,
+     "chosen_option": {
+      "kind": "pass",
+      "target": "ach-15",
+      "end": [
+       39.32,
+       57.24
       ]
      },
      "best_option": {
       "kind": "through",
-      "target": "ach-19",
+      "target": "ach-11",
       "end": [
-       93.11,
-       35.91
+       40.27,
+       18.2
       ]
      },
-     "risk_weight": 0.999496,
+     "risk_weight": 0.96676,
      "lofted": true,
-     "arrival_t": 955.8
+     "arrival_t": 1105.8
+    }
+   },
+   "r01-chapinero-v-laureles-e00338": {
+    "event_id": "r01-chapinero-v-laureles-e00338",
+    "match_id": "r01-chapinero-v-laureles",
+    "period": 1,
+    "t": 1107.5,
+    "type": "pass",
+    "team_id": "chapinero",
+    "player_id": "ach-15",
+    "x": 38.1,
+    "y": 60.87,
+    "end_x": 44.58,
+    "end_y": 25.58,
+    "outcome": true,
+    "receiver_id": "ach-13",
+    "ball_speed_ms": 23.5,
+    "extras": {
+     "chosen_score": -0.009611176875708389,
+     "best_score": -0.00034914574169393926,
+     "chosen_option": {
+      "kind": "pass",
+      "target": "ach-13",
+      "end": [
+       42.56,
+       26.36
+      ]
+     },
+     "best_option": {
+      "kind": "pass",
+      "target": "ach-07",
+      "end": [
+       25.26,
+       47.07
+      ]
+     },
+     "risk_weight": 1.049368,
+     "lofted": true,
+     "arrival_t": 1109.5
     }
    }
   },
@@ -729,24 +532,21 @@
    "r01-chapinero-v-laureles-e00845": "defensive",
    "r01-chapinero-v-laureles-e00846": "attacking",
    "r01-chapinero-v-laureles-e00847": "attacking",
-   "r01-chapinero-v-laureles-e00272": "defensive",
-   "r01-chapinero-v-laureles-e00269": "middle",
-   "r01-chapinero-v-laureles-e00270": "defensive",
-   "r01-chapinero-v-laureles-e00271": "defensive",
-   "r01-chapinero-v-laureles-e00273": "middle",
-   "r01-chapinero-v-laureles-e00274": "defensive",
-   "r01-chapinero-v-laureles-e00275": "defensive",
-   "r01-chapinero-v-laureles-e00276": "defensive",
-   "r01-chapinero-v-laureles-e00279": "middle",
-   "r01-chapinero-v-laureles-e00277": "middle",
-   "r01-chapinero-v-laureles-e00278": "middle",
-   "r01-chapinero-v-laureles-e00280": "middle",
-   "r01-chapinero-v-laureles-e00281": "middle",
-   "r01-chapinero-v-laureles-e00282": "middle",
-   "r01-chapinero-v-laureles-e00283": "middle",
-   "r01-chapinero-v-laureles-e00284": "attacking",
-   "r01-chapinero-v-laureles-e00285": "middle",
-   "r01-chapinero-v-laureles-e00286": "attacking"
+   "r01-chapinero-v-laureles-e00327": "middle",
+   "r01-chapinero-v-laureles-e00324": "defensive",
+   "r01-chapinero-v-laureles-e00325": "middle",
+   "r01-chapinero-v-laureles-e00326": "defensive",
+   "r01-chapinero-v-laureles-e00329": "middle",
+   "r01-chapinero-v-laureles-e00328": "defensive",
+   "r01-chapinero-v-laureles-e00330": "middle",
+   "r01-chapinero-v-laureles-e00334": "defensive",
+   "r01-chapinero-v-laureles-e00331": "attacking",
+   "r01-chapinero-v-laureles-e00332": "attacking",
+   "r01-chapinero-v-laureles-e00333": "attacking",
+   "r01-chapinero-v-laureles-e00335": "defensive",
+   "r01-chapinero-v-laureles-e00336": "defensive",
+   "r01-chapinero-v-laureles-e00337": "defensive",
+   "r01-chapinero-v-laureles-e00338": "middle"
   },
   "before": {
    "r01-chapinero-v-laureles-e01058": [
@@ -923,1480 +723,870 @@
      }
     }
    ],
-   "r01-chapinero-v-laureles-e00272": [
+   "r01-chapinero-v-laureles-e00327": [
     {
-     "event_id": "r01-chapinero-v-laureles-e00269",
+     "event_id": "r01-chapinero-v-laureles-e00324",
      "match_id": "r01-chapinero-v-laureles",
      "period": 1,
-     "t": 891.9,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-17",
-     "x": 52.29,
-     "y": 33.75,
-     "end_x": 74.58,
-     "end_y": 10.19,
-     "outcome": true,
-     "receiver_id": "ala-08",
-     "ball_speed_ms": 24.99,
-     "extras": {
-      "chosen_score": -0.00310424515911618,
-      "best_score": -0.0025519223270164208,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-08",
-       "end": [
-        78.59,
-        6.91
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        52.65,
-        18.22
-       ]
-      },
-      "risk_weight": 0.979168,
-      "lofted": true,
-      "arrival_t": 893.5
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00270",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 895.1,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 74.24,
-     "y": 10.5,
-     "end_x": 73.21,
-     "end_y": 52.37,
-     "outcome": true,
-     "receiver_id": "ala-05",
-     "ball_speed_ms": 27.22,
-     "extras": {
-      "chosen_score": -0.000515280556264598,
-      "best_score": -0.000515280556264598,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        77.98,
-        56.89
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        77.98,
-        56.89
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": true,
-      "arrival_t": 897.2
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00271",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 898.8,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-05",
-     "x": 73.3,
-     "y": 52.42,
-     "end_x": 79.55,
-     "end_y": 4.98,
-     "outcome": true,
-     "receiver_id": "ala-08",
-     "ball_speed_ms": 22.7,
-     "extras": {
-      "chosen_score": -0.0018494639346600548,
-      "best_score": 0.0005970392856847928,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-08",
-       "end": [
-        79.52,
-        10.5
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-12",
-       "end": [
-        55.27,
-        53.99
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": true,
-      "arrival_t": 903.0
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00273": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00270",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 895.1,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 74.24,
-     "y": 10.5,
-     "end_x": 73.21,
-     "end_y": 52.37,
-     "outcome": true,
-     "receiver_id": "ala-05",
-     "ball_speed_ms": 27.22,
-     "extras": {
-      "chosen_score": -0.000515280556264598,
-      "best_score": -0.000515280556264598,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        77.98,
-        56.89
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        77.98,
-        56.89
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": true,
-      "arrival_t": 897.2
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00271",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 898.8,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-05",
-     "x": 73.3,
-     "y": 52.42,
-     "end_x": 79.55,
-     "end_y": 4.98,
-     "outcome": true,
-     "receiver_id": "ala-08",
-     "ball_speed_ms": 22.7,
-     "extras": {
-      "chosen_score": -0.0018494639346600548,
-      "best_score": 0.0005970392856847928,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-08",
-       "end": [
-        79.52,
-        10.5
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-12",
-       "end": [
-        55.27,
-        53.99
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": true,
-      "arrival_t": 903.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00272",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 904.2,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 79.48,
-     "y": 5.34,
-     "end_x": 57.19,
-     "end_y": 12.88,
-     "outcome": true,
-     "receiver_id": "ala-14",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.00012729164457538815,
-      "best_score": -0.00012729164457538815,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": false,
-      "arrival_t": 907.0
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00274": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00271",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 898.8,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-05",
-     "x": 73.3,
-     "y": 52.42,
-     "end_x": 79.55,
-     "end_y": 4.98,
-     "outcome": true,
-     "receiver_id": "ala-08",
-     "ball_speed_ms": 22.7,
-     "extras": {
-      "chosen_score": -0.0018494639346600548,
-      "best_score": 0.0005970392856847928,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-08",
-       "end": [
-        79.52,
-        10.5
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-12",
-       "end": [
-        55.27,
-        53.99
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": true,
-      "arrival_t": 903.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00272",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 904.2,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 79.48,
-     "y": 5.34,
-     "end_x": 57.19,
-     "end_y": 12.88,
-     "outcome": true,
-     "receiver_id": "ala-14",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.00012729164457538815,
-      "best_score": -0.00012729164457538815,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": false,
-      "arrival_t": 907.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00273",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 909.0,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 57.48,
-     "y": 12.79,
-     "end_x": 77.9,
-     "end_y": 19.12,
-     "outcome": true,
-     "receiver_id": "ala-07",
-     "ball_speed_ms": 11.45,
-     "extras": {
-      "chosen_score": -0.0016804677229127873,
-      "best_score": 0.00026743461145211245,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-07",
-       "end": [
-        77.63,
-        17.81
-       ]
-      },
-      "best_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        51.75,
-        16.8
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 911.1
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00275": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00272",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 904.2,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 79.48,
-     "y": 5.34,
-     "end_x": 57.19,
-     "end_y": 12.88,
-     "outcome": true,
-     "receiver_id": "ala-14",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.00012729164457538815,
-      "best_score": -0.00012729164457538815,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.53,
-        11.74
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": false,
-      "arrival_t": 907.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00273",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 909.0,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 57.48,
-     "y": 12.79,
-     "end_x": 77.9,
-     "end_y": 19.12,
-     "outcome": true,
-     "receiver_id": "ala-07",
-     "ball_speed_ms": 11.45,
-     "extras": {
-      "chosen_score": -0.0016804677229127873,
-      "best_score": 0.00026743461145211245,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-07",
-       "end": [
-        77.63,
-        17.81
-       ]
-      },
-      "best_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        51.75,
-        16.8
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 911.1
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00274",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 912.6,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-07",
-     "x": 77.59,
-     "y": 18.99,
-     "end_x": 79.95,
-     "end_y": 53.68,
-     "outcome": true,
-     "receiver_id": "ala-05",
-     "ball_speed_ms": 24.21,
-     "extras": {
-      "chosen_score": -0.0003846271888586078,
-      "best_score": -0.0003846271888586078,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        80.78,
-        56.19
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        80.78,
-        56.19
-       ]
-      },
-      "risk_weight": 1.0222,
-      "lofted": true,
-      "arrival_t": 914.5
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00276": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00273",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 909.0,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 57.48,
-     "y": 12.79,
-     "end_x": 77.9,
-     "end_y": 19.12,
-     "outcome": true,
-     "receiver_id": "ala-07",
-     "ball_speed_ms": 11.45,
-     "extras": {
-      "chosen_score": -0.0016804677229127873,
-      "best_score": 0.00026743461145211245,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-07",
-       "end": [
-        77.63,
-        17.81
-       ]
-      },
-      "best_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        51.75,
-        16.8
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 911.1
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00274",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 912.6,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-07",
-     "x": 77.59,
-     "y": 18.99,
-     "end_x": 79.95,
-     "end_y": 53.68,
-     "outcome": true,
-     "receiver_id": "ala-05",
-     "ball_speed_ms": 24.21,
-     "extras": {
-      "chosen_score": -0.0003846271888586078,
-      "best_score": -0.0003846271888586078,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        80.78,
-        56.19
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-05",
-       "end": [
-        80.78,
-        56.19
-       ]
-      },
-      "risk_weight": 1.0222,
-      "lofted": true,
-      "arrival_t": 914.5
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00275",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 916.2,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-05",
-     "x": 80.32,
-     "y": 53.54,
-     "end_x": 76.68,
-     "end_y": 13.66,
-     "outcome": true,
-     "receiver_id": "ala-08",
-     "ball_speed_ms": 27.55,
-     "extras": {
-      "chosen_score": -0.0016159078816224497,
-      "best_score": 0.001052691253509219,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-08",
-       "end": [
-        79.21,
-        9.69
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-12",
-       "end": [
-        57.91,
-        54.19
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": true,
-      "arrival_t": 918.1
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00279": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00276",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 919.4,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-08",
-     "x": 76.85,
-     "y": 13.59,
-     "end_x": 57.29,
-     "end_y": 14.29,
-     "outcome": true,
-     "receiver_id": "ala-14",
-     "ball_speed_ms": 10.01,
-     "extras": {
-      "chosen_score": 0.00069369136851048,
-      "best_score": 0.00069369136851048,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.89,
-        13.59
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-14",
-       "end": [
-        57.89,
-        13.59
-       ]
-      },
-      "risk_weight": 1.048912,
-      "lofted": false,
-      "arrival_t": 921.6
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00277",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 922.6,
-     "type": "carry",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 57.63,
-     "y": 14.3,
-     "end_x": 53.5,
-     "end_y": 11.4,
-     "outcome": true,
-     "receiver_id": null,
-     "ball_speed_ms": null,
-     "extras": {
-      "chosen_score": -0.005341100840760061,
-      "best_score": 0.0005030311042990806,
-      "chosen_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        51.89,
-        10.28
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-13",
-       "end": [
-        54.03,
-        25.68
-       ]
-      },
-      "risk_weight": 0.962752
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00278",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 924.3,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 53.53,
-     "y": 11.43,
-     "end_x": 46.0,
-     "end_y": 32.36,
-     "outcome": false,
-     "receiver_id": null,
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.0003487242955495752,
-      "best_score": 6.363747293364604e-05,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-13",
-       "end": [
-        51.47,
-        16.88
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-11",
-       "end": [
-        54.15,
-        20.85
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 927.0
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00280": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00277",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 922.6,
-     "type": "carry",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 57.63,
-     "y": 14.3,
-     "end_x": 53.5,
-     "end_y": 11.4,
-     "outcome": true,
-     "receiver_id": null,
-     "ball_speed_ms": null,
-     "extras": {
-      "chosen_score": -0.005341100840760061,
-      "best_score": 0.0005030311042990806,
-      "chosen_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        51.89,
-        10.28
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-13",
-       "end": [
-        54.03,
-        25.68
-       ]
-      },
-      "risk_weight": 0.962752
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00278",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 924.3,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 53.53,
-     "y": 11.43,
-     "end_x": 46.0,
-     "end_y": 32.36,
-     "outcome": false,
-     "receiver_id": null,
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.0003487242955495752,
-      "best_score": 6.363747293364604e-05,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-13",
-       "end": [
-        51.47,
-        16.88
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-11",
-       "end": [
-        54.15,
-        20.85
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 927.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00279",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 927.0,
-     "type": "interception",
-     "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 46.0,
-     "y": 32.36,
-     "end_x": null,
-     "end_y": null,
-     "outcome": true,
-     "receiver_id": null,
-     "ball_speed_ms": null,
-     "extras": {}
-    }
-   ],
-   "r01-chapinero-v-laureles-e00281": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00278",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 924.3,
-     "type": "pass",
-     "team_id": "laureles",
-     "player_id": "ala-14",
-     "x": 53.53,
-     "y": 11.43,
-     "end_x": 46.0,
-     "end_y": 32.36,
-     "outcome": false,
-     "receiver_id": null,
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.0003487242955495752,
-      "best_score": 6.363747293364604e-05,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ala-13",
-       "end": [
-        51.47,
-        16.88
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ala-11",
-       "end": [
-        54.15,
-        20.85
-       ]
-      },
-      "risk_weight": 0.962752,
-      "lofted": false,
-      "arrival_t": 927.0
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00279",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 927.0,
-     "type": "interception",
-     "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 46.0,
-     "y": 32.36,
-     "end_x": null,
-     "end_y": null,
-     "outcome": true,
-     "receiver_id": null,
-     "ball_speed_ms": null,
-     "extras": {}
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00280",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 928.6,
+     "t": 1059.7,
      "type": "pass",
      "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 45.32,
-     "y": 32.12,
-     "end_x": 60.43,
-     "end_y": 23.28,
-     "outcome": true,
-     "receiver_id": "ach-17",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": 0.0014303261866795924,
-      "best_score": 0.0025660477106777915,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-17",
-       "end": [
-        61.46,
-        24.93
-       ]
-      },
-      "best_option": {
-       "kind": "through",
-       "target": "ach-17",
-       "end": [
-        66.4,
-        23.79
-       ]
-      },
-      "risk_weight": 1.036336,
-      "lofted": false,
-      "arrival_t": 930.6
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00282": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00279",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 927.0,
-     "type": "interception",
-     "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 46.0,
-     "y": 32.36,
-     "end_x": null,
-     "end_y": null,
-     "outcome": true,
-     "receiver_id": null,
-     "ball_speed_ms": null,
-     "extras": {}
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00280",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 928.6,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 45.32,
-     "y": 32.12,
-     "end_x": 60.43,
-     "end_y": 23.28,
-     "outcome": true,
-     "receiver_id": "ach-17",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": 0.0014303261866795924,
-      "best_score": 0.0025660477106777915,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-17",
-       "end": [
-        61.46,
-        24.93
-       ]
-      },
-      "best_option": {
-       "kind": "through",
-       "target": "ach-17",
-       "end": [
-        66.4,
-        23.79
-       ]
-      },
-      "risk_weight": 1.036336,
-      "lofted": false,
-      "arrival_t": 930.6
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00281",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 931.9,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-17",
-     "x": 60.7,
-     "y": 23.43,
-     "end_x": 59.02,
-     "end_y": 22.15,
+     "player_id": "ach-03",
+     "x": 34.13,
+     "y": 18.56,
+     "end_x": 47.42,
+     "end_y": 27.01,
      "outcome": true,
      "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
+     "ball_speed_ms": 10.5,
      "extras": {
-      "chosen_score": -0.0034405046349437465,
-      "best_score": -0.00017560987271041518,
+      "chosen_score": 0.0007000260450295442,
+      "best_score": 0.0007000260450295442,
       "chosen_option": {
        "kind": "pass",
        "target": "ach-13",
        "end": [
-        57.43,
-        23.59
+        47.4,
+        26.04
        ]
       },
       "best_option": {
-       "kind": "pass",
-       "target": "ach-11",
-       "end": [
-        59.81,
-        12.15
-       ]
-      },
-      "risk_weight": 0.999496,
-      "lofted": false,
-      "arrival_t": 932.1
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00283": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00280",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 928.6,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-14",
-     "x": 45.32,
-     "y": 32.12,
-     "end_x": 60.43,
-     "end_y": 23.28,
-     "outcome": true,
-     "receiver_id": "ach-17",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": 0.0014303261866795924,
-      "best_score": 0.0025660477106777915,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-17",
-       "end": [
-        61.46,
-        24.93
-       ]
-      },
-      "best_option": {
-       "kind": "through",
-       "target": "ach-17",
-       "end": [
-        66.4,
-        23.79
-       ]
-      },
-      "risk_weight": 1.036336,
-      "lofted": false,
-      "arrival_t": 930.6
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00281",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 931.9,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-17",
-     "x": 60.7,
-     "y": 23.43,
-     "end_x": 59.02,
-     "end_y": 22.15,
-     "outcome": true,
-     "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.0034405046349437465,
-      "best_score": -0.00017560987271041518,
-      "chosen_option": {
        "kind": "pass",
        "target": "ach-13",
        "end": [
-        57.43,
-        23.59
+        47.4,
+        26.04
        ]
       },
-      "best_option": {
-       "kind": "pass",
-       "target": "ach-11",
-       "end": [
-        59.81,
-        12.15
-       ]
-      },
-      "risk_weight": 0.999496,
+      "risk_weight": 0.96676,
       "lofted": false,
-      "arrival_t": 932.1
+      "arrival_t": 1061.3
      }
     },
     {
-     "event_id": "r01-chapinero-v-laureles-e00282",
+     "event_id": "r01-chapinero-v-laureles-e00325",
      "match_id": "r01-chapinero-v-laureles",
      "period": 1,
-     "t": 933.1,
+     "t": 1062.3,
      "type": "pass",
      "team_id": "chapinero",
      "player_id": "ach-13",
-     "x": 60.78,
-     "y": 20.53,
-     "end_x": 39.05,
-     "end_y": 24.06,
+     "x": 47.15,
+     "y": 26.76,
+     "end_x": 29.56,
+     "end_y": 10.33,
      "outcome": true,
-     "receiver_id": "ach-04",
-     "ball_speed_ms": 10.3,
+     "receiver_id": "ach-03",
+     "ball_speed_ms": 11.61,
      "extras": {
-      "chosen_score": -0.004027889191355128,
-      "best_score": 0.0031724089413444393,
+      "chosen_score": -0.0022066897828398923,
+      "best_score": -0.0016485432596931556,
       "chosen_option": {
        "kind": "pass",
-       "target": "ach-04",
+       "target": "ach-03",
        "end": [
-        39.55,
-        23.13
+        29.28,
+        11.62
        ]
       },
       "best_option": {
-       "kind": "carry",
-       "target": null,
+       "kind": "pass",
+       "target": "ach-15",
        "end": [
-        65.96,
-        17.02
+        42.96,
+        61.16
        ]
       },
       "risk_weight": 0.94,
       "lofted": false,
-      "arrival_t": 935.6
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00284": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00281",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 931.9,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-17",
-     "x": 60.7,
-     "y": 23.43,
-     "end_x": 59.02,
-     "end_y": 22.15,
-     "outcome": true,
-     "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.0034405046349437465,
-      "best_score": -0.00017560987271041518,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-13",
-       "end": [
-        57.43,
-        23.59
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ach-11",
-       "end": [
-        59.81,
-        12.15
-       ]
-      },
-      "risk_weight": 0.999496,
-      "lofted": false,
-      "arrival_t": 932.1
+      "arrival_t": 1064.7
      }
     },
     {
-     "event_id": "r01-chapinero-v-laureles-e00282",
+     "event_id": "r01-chapinero-v-laureles-e00326",
      "match_id": "r01-chapinero-v-laureles",
      "period": 1,
-     "t": 933.1,
+     "t": 1065.6,
      "type": "pass",
      "team_id": "chapinero",
-     "player_id": "ach-13",
-     "x": 60.78,
-     "y": 20.53,
-     "end_x": 39.05,
-     "end_y": 24.06,
-     "outcome": true,
-     "receiver_id": "ach-04",
-     "ball_speed_ms": 10.3,
-     "extras": {
-      "chosen_score": -0.004027889191355128,
-      "best_score": 0.0031724089413444393,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-04",
-       "end": [
-        39.55,
-        23.13
-       ]
-      },
-      "best_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        65.96,
-        17.02
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": false,
-      "arrival_t": 935.6
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00283",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 937.4,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-04",
-     "x": 39.36,
-     "y": 23.99,
-     "end_x": 70.42,
-     "end_y": 4.76,
-     "outcome": true,
-     "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.000403323932719334,
-      "best_score": 0.00595866855121631,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-13",
-       "end": [
-        48.34,
-        18.16
-       ]
-      },
-      "best_option": {
-       "kind": "through",
-       "target": "ach-11",
-       "end": [
-        65.89,
-        15.44
-       ]
-      },
-      "risk_weight": 0.95572,
-      "lofted": false,
-      "arrival_t": 943.5
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00285": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00282",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 933.1,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-13",
-     "x": 60.78,
-     "y": 20.53,
-     "end_x": 39.05,
-     "end_y": 24.06,
-     "outcome": true,
-     "receiver_id": "ach-04",
-     "ball_speed_ms": 10.3,
-     "extras": {
-      "chosen_score": -0.004027889191355128,
-      "best_score": 0.0031724089413444393,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-04",
-       "end": [
-        39.55,
-        23.13
-       ]
-      },
-      "best_option": {
-       "kind": "carry",
-       "target": null,
-       "end": [
-        65.96,
-        17.02
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": false,
-      "arrival_t": 935.6
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00283",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 937.4,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-04",
-     "x": 39.36,
-     "y": 23.99,
-     "end_x": 70.42,
-     "end_y": 4.76,
-     "outcome": true,
-     "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.000403323932719334,
-      "best_score": 0.00595866855121631,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-13",
-       "end": [
-        48.34,
-        18.16
-       ]
-      },
-      "best_option": {
-       "kind": "through",
-       "target": "ach-11",
-       "end": [
-        65.89,
-        15.44
-       ]
-      },
-      "risk_weight": 0.95572,
-      "lofted": false,
-      "arrival_t": 943.5
-     }
-    },
-    {
-     "event_id": "r01-chapinero-v-laureles-e00284",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 944.8,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-13",
-     "x": 71.96,
-     "y": 3.81,
-     "end_x": 67.0,
-     "end_y": 3.38,
+     "player_id": "ach-03",
+     "x": 29.77,
+     "y": 10.57,
+     "end_x": 43.79,
+     "end_y": 4.39,
      "outcome": true,
      "receiver_id": "ach-11",
-     "ball_speed_ms": 11.97,
+     "ball_speed_ms": 10.0,
      "extras": {
-      "chosen_score": -0.0018632302159205586,
-      "best_score": 0.0034567898538476454,
+      "chosen_score": 0.000352199429572296,
+      "best_score": 0.0006275885577563272,
       "chosen_option": {
        "kind": "pass",
        "target": "ach-11",
        "end": [
-        65.6,
-        4.05
-       ]
-      },
-      "best_option": {
-       "kind": "pass",
-       "target": "ach-17",
-       "end": [
-        76.23,
-        14.9
-       ]
-      },
-      "risk_weight": 0.94,
-      "lofted": false,
-      "arrival_t": 945.2
-     }
-    }
-   ],
-   "r01-chapinero-v-laureles-e00286": [
-    {
-     "event_id": "r01-chapinero-v-laureles-e00283",
-     "match_id": "r01-chapinero-v-laureles",
-     "period": 1,
-     "t": 937.4,
-     "type": "pass",
-     "team_id": "chapinero",
-     "player_id": "ach-04",
-     "x": 39.36,
-     "y": 23.99,
-     "end_x": 70.42,
-     "end_y": 4.76,
-     "outcome": true,
-     "receiver_id": "ach-13",
-     "ball_speed_ms": 10.0,
-     "extras": {
-      "chosen_score": -0.000403323932719334,
-      "best_score": 0.00595866855121631,
-      "chosen_option": {
-       "kind": "pass",
-       "target": "ach-13",
-       "end": [
-        48.34,
-        18.16
+        43.03,
+        4.24
        ]
       },
       "best_option": {
        "kind": "through",
        "target": "ach-11",
        "end": [
-        65.89,
-        15.44
+        50.55,
+        4.52
        ]
       },
-      "risk_weight": 0.95572,
+      "risk_weight": 0.96676,
       "lofted": false,
-      "arrival_t": 943.5
+      "arrival_t": 1067.2
      }
-    },
+    }
+   ],
+   "r01-chapinero-v-laureles-e00329": [
     {
-     "event_id": "r01-chapinero-v-laureles-e00284",
+     "event_id": "r01-chapinero-v-laureles-e00326",
      "match_id": "r01-chapinero-v-laureles",
      "period": 1,
-     "t": 944.8,
+     "t": 1065.6,
      "type": "pass",
      "team_id": "chapinero",
-     "player_id": "ach-13",
-     "x": 71.96,
-     "y": 3.81,
-     "end_x": 67.0,
-     "end_y": 3.38,
+     "player_id": "ach-03",
+     "x": 29.77,
+     "y": 10.57,
+     "end_x": 43.79,
+     "end_y": 4.39,
      "outcome": true,
      "receiver_id": "ach-11",
-     "ball_speed_ms": 11.97,
+     "ball_speed_ms": 10.0,
      "extras": {
-      "chosen_score": -0.0018632302159205586,
-      "best_score": 0.0034567898538476454,
+      "chosen_score": 0.000352199429572296,
+      "best_score": 0.0006275885577563272,
       "chosen_option": {
        "kind": "pass",
        "target": "ach-11",
        "end": [
-        65.6,
-        4.05
+        43.03,
+        4.24
        ]
       },
       "best_option": {
-       "kind": "pass",
-       "target": "ach-17",
+       "kind": "through",
+       "target": "ach-11",
        "end": [
-        76.23,
-        14.9
+        50.55,
+        4.52
        ]
       },
-      "risk_weight": 0.94,
+      "risk_weight": 0.96676,
       "lofted": false,
-      "arrival_t": 945.2
+      "arrival_t": 1067.2
      }
     },
     {
-     "event_id": "r01-chapinero-v-laureles-e00285",
+     "event_id": "r01-chapinero-v-laureles-e00327",
      "match_id": "r01-chapinero-v-laureles",
      "period": 1,
-     "t": 946.6,
+     "t": 1068.6,
      "type": "pass",
      "team_id": "chapinero",
      "player_id": "ach-11",
-     "x": 67.02,
-     "y": 3.36,
-     "end_x": 78.32,
-     "end_y": 10.52,
+     "x": 43.5,
+     "y": 4.53,
+     "end_x": 7.4,
+     "end_y": 32.29,
      "outcome": true,
-     "receiver_id": "ach-17",
-     "ball_speed_ms": 13.39,
+     "receiver_id": "ach-02",
+     "ball_speed_ms": 26.79,
      "extras": {
-      "chosen_score": 0.004961372529994471,
-      "best_score": 0.004961372529994471,
+      "chosen_score": -0.0011400133213473052,
+      "best_score": -0.00052771727479985,
       "chosen_option": {
        "kind": "pass",
-       "target": "ach-17",
+       "target": "ach-02",
        "end": [
-        77.92,
-        10.94
+        9.01,
+        33.95
        ]
       },
       "best_option": {
        "kind": "pass",
-       "target": "ach-17",
+       "target": "ach-04",
        "end": [
-        77.92,
-        10.94
+        25.28,
+        19.19
        ]
       },
       "risk_weight": 0.98008,
+      "lofted": true,
+      "arrival_t": 1071.0
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00328",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1072.8,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-02",
+     "x": 7.65,
+     "y": 32.07,
+     "end_x": 42.03,
+     "end_y": 21.16,
+     "outcome": false,
+     "receiver_id": null,
+     "ball_speed_ms": 25.61,
+     "extras": {
+      "chosen_score": -0.009240650897026132,
+      "best_score": 0.0007264091797506891,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-13",
+       "end": [
+        40.64,
+        17.96
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-15",
+       "end": [
+        37.58,
+        59.2
+       ]
+      },
+      "risk_weight": 0.94,
+      "lofted": true,
+      "arrival_t": 1074.7
+     }
+    }
+   ],
+   "r01-chapinero-v-laureles-e00330": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00327",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1068.6,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-11",
+     "x": 43.5,
+     "y": 4.53,
+     "end_x": 7.4,
+     "end_y": 32.29,
+     "outcome": true,
+     "receiver_id": "ach-02",
+     "ball_speed_ms": 26.79,
+     "extras": {
+      "chosen_score": -0.0011400133213473052,
+      "best_score": -0.00052771727479985,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-02",
+       "end": [
+        9.01,
+        33.95
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-04",
+       "end": [
+        25.28,
+        19.19
+       ]
+      },
+      "risk_weight": 0.98008,
+      "lofted": true,
+      "arrival_t": 1071.0
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00328",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1072.8,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-02",
+     "x": 7.65,
+     "y": 32.07,
+     "end_x": 42.03,
+     "end_y": 21.16,
+     "outcome": false,
+     "receiver_id": null,
+     "ball_speed_ms": 25.61,
+     "extras": {
+      "chosen_score": -0.009240650897026132,
+      "best_score": 0.0007264091797506891,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-13",
+       "end": [
+        40.64,
+        17.96
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-15",
+       "end": [
+        37.58,
+        59.2
+       ]
+      },
+      "risk_weight": 0.94,
+      "lofted": true,
+      "arrival_t": 1074.7
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00329",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1074.7,
+     "type": "interception",
+     "team_id": "laureles",
+     "player_id": "ala-14",
+     "x": 42.03,
+     "y": 21.16,
+     "end_x": null,
+     "end_y": null,
+     "outcome": true,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {}
+    }
+   ],
+   "r01-chapinero-v-laureles-e00334": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00331",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1078.1,
+     "type": "carry",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 30.71,
+     "y": 32.12,
+     "end_x": 25.63,
+     "end_y": 32.12,
+     "outcome": true,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "chosen_score": -0.002972732962324317,
+      "best_score": -0.002972732962324317,
+      "chosen_option": {
+       "kind": "carry",
+       "target": null,
+       "end": [
+        23.71,
+        32.12
+       ]
+      },
+      "best_option": {
+       "kind": "carry",
+       "target": null,
+       "end": [
+        23.71,
+        32.12
+       ]
+      },
+      "risk_weight": 0.979168
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00332",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1079.8,
+     "type": "pass",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 25.67,
+     "y": 32.12,
+     "end_x": 28.28,
+     "end_y": 68.0,
+     "outcome": false,
+     "receiver_id": null,
+     "ball_speed_ms": 10.0,
+     "extras": {
+      "chosen_score": 0.0061975102777154486,
+      "best_score": 0.0061975102777154486,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ala-13",
+       "end": [
+        26.03,
+        38.3
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ala-13",
+       "end": [
+        26.03,
+        38.3
+       ]
+      },
+      "risk_weight": 0.979168,
       "lofted": false,
-      "arrival_t": 947.6
+      "arrival_t": 1085.5
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00333",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1085.5,
+     "type": "out",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 28.28,
+     "y": 68.0,
+     "end_x": null,
+     "end_y": null,
+     "outcome": null,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "restart": "throw_in"
+     }
+    }
+   ],
+   "r01-chapinero-v-laureles-e00335": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00332",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1079.8,
+     "type": "pass",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 25.67,
+     "y": 32.12,
+     "end_x": 28.28,
+     "end_y": 68.0,
+     "outcome": false,
+     "receiver_id": null,
+     "ball_speed_ms": 10.0,
+     "extras": {
+      "chosen_score": 0.0061975102777154486,
+      "best_score": 0.0061975102777154486,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ala-13",
+       "end": [
+        26.03,
+        38.3
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ala-13",
+       "end": [
+        26.03,
+        38.3
+       ]
+      },
+      "risk_weight": 0.979168,
+      "lofted": false,
+      "arrival_t": 1085.5
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00333",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1085.5,
+     "type": "out",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 28.28,
+     "y": 68.0,
+     "end_x": null,
+     "end_y": null,
+     "outcome": null,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "restart": "throw_in"
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00334",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1092.8,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-15",
+     "x": 28.28,
+     "y": 67.7,
+     "end_x": 22.67,
+     "end_y": 67.09,
+     "outcome": true,
+     "receiver_id": "ach-09",
+     "ball_speed_ms": 12.0,
+     "extras": {
+      "chosen_score": -0.00018141395580321832,
+      "best_score": -0.00011429555796072617,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-09",
+       "end": [
+        22.09,
+        66.63
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-07",
+       "end": [
+        23.82,
+        53.89
+       ]
+      },
+      "risk_weight": 1.049368,
+      "restart": "throw_in",
+      "lofted": false,
+      "arrival_t": 1093.3
+     }
+    }
+   ],
+   "r01-chapinero-v-laureles-e00336": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00333",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1085.5,
+     "type": "out",
+     "team_id": "laureles",
+     "player_id": "ala-17",
+     "x": 28.28,
+     "y": 68.0,
+     "end_x": null,
+     "end_y": null,
+     "outcome": null,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "restart": "throw_in"
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00334",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1092.8,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-15",
+     "x": 28.28,
+     "y": 67.7,
+     "end_x": 22.67,
+     "end_y": 67.09,
+     "outcome": true,
+     "receiver_id": "ach-09",
+     "ball_speed_ms": 12.0,
+     "extras": {
+      "chosen_score": -0.00018141395580321832,
+      "best_score": -0.00011429555796072617,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-09",
+       "end": [
+        22.09,
+        66.63
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-07",
+       "end": [
+        23.82,
+        53.89
+       ]
+      },
+      "risk_weight": 1.049368,
+      "restart": "throw_in",
+      "lofted": false,
+      "arrival_t": 1093.3
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00335",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1095.2,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-09",
+     "x": 22.57,
+     "y": 66.7,
+     "end_x": 21.5,
+     "end_y": 15.27,
+     "outcome": true,
+     "receiver_id": "ach-03",
+     "ball_speed_ms": 23.59,
+     "extras": {
+      "chosen_score": -7.995129391694296e-05,
+      "best_score": 7.347752506301408e-05,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-04",
+       "end": [
+        23.04,
+        34.99
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-03",
+       "end": [
+        23.45,
+        16.42
+       ]
+      },
+      "risk_weight": 0.982216,
+      "lofted": true,
+      "arrival_t": 1099.4
+     }
+    }
+   ],
+   "r01-chapinero-v-laureles-e00337": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00334",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1092.8,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-15",
+     "x": 28.28,
+     "y": 67.7,
+     "end_x": 22.67,
+     "end_y": 67.09,
+     "outcome": true,
+     "receiver_id": "ach-09",
+     "ball_speed_ms": 12.0,
+     "extras": {
+      "chosen_score": -0.00018141395580321832,
+      "best_score": -0.00011429555796072617,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-09",
+       "end": [
+        22.09,
+        66.63
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-07",
+       "end": [
+        23.82,
+        53.89
+       ]
+      },
+      "risk_weight": 1.049368,
+      "restart": "throw_in",
+      "lofted": false,
+      "arrival_t": 1093.3
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00335",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1095.2,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-09",
+     "x": 22.57,
+     "y": 66.7,
+     "end_x": 21.5,
+     "end_y": 15.27,
+     "outcome": true,
+     "receiver_id": "ach-03",
+     "ball_speed_ms": 23.59,
+     "extras": {
+      "chosen_score": -7.995129391694296e-05,
+      "best_score": 7.347752506301408e-05,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-04",
+       "end": [
+        23.04,
+        34.99
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-03",
+       "end": [
+        23.45,
+        16.42
+       ]
+      },
+      "risk_weight": 0.982216,
+      "lofted": true,
+      "arrival_t": 1099.4
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00336",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1101.3,
+     "type": "carry",
+     "team_id": "chapinero",
+     "player_id": "ach-03",
+     "x": 21.52,
+     "y": 15.04,
+     "end_x": 25.69,
+     "end_y": 12.12,
+     "outcome": true,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "chosen_score": -0.005527341680047783,
+      "best_score": 0.0006344095651710677,
+      "chosen_option": {
+       "kind": "carry",
+       "target": null,
+       "end": [
+        27.26,
+        11.03
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-13",
+       "end": [
+        39.52,
+        23.37
+       ]
+      },
+      "risk_weight": 0.96676
+     }
+    }
+   ],
+   "r01-chapinero-v-laureles-e00338": [
+    {
+     "event_id": "r01-chapinero-v-laureles-e00335",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1095.2,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-09",
+     "x": 22.57,
+     "y": 66.7,
+     "end_x": 21.5,
+     "end_y": 15.27,
+     "outcome": true,
+     "receiver_id": "ach-03",
+     "ball_speed_ms": 23.59,
+     "extras": {
+      "chosen_score": -7.995129391694296e-05,
+      "best_score": 7.347752506301408e-05,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-04",
+       "end": [
+        23.04,
+        34.99
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-03",
+       "end": [
+        23.45,
+        16.42
+       ]
+      },
+      "risk_weight": 0.982216,
+      "lofted": true,
+      "arrival_t": 1099.4
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00336",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1101.3,
+     "type": "carry",
+     "team_id": "chapinero",
+     "player_id": "ach-03",
+     "x": 21.52,
+     "y": 15.04,
+     "end_x": 25.69,
+     "end_y": 12.12,
+     "outcome": true,
+     "receiver_id": null,
+     "ball_speed_ms": null,
+     "extras": {
+      "chosen_score": -0.005527341680047783,
+      "best_score": 0.0006344095651710677,
+      "chosen_option": {
+       "kind": "carry",
+       "target": null,
+       "end": [
+        27.26,
+        11.03
+       ]
+      },
+      "best_option": {
+       "kind": "pass",
+       "target": "ach-13",
+       "end": [
+        39.52,
+        23.37
+       ]
+      },
+      "risk_weight": 0.96676
+     }
+    },
+    {
+     "event_id": "r01-chapinero-v-laureles-e00337",
+     "match_id": "r01-chapinero-v-laureles",
+     "period": 1,
+     "t": 1103.0,
+     "type": "pass",
+     "team_id": "chapinero",
+     "player_id": "ach-03",
+     "x": 25.67,
+     "y": 12.14,
+     "end_x": 38.17,
+     "end_y": 61.18,
+     "outcome": true,
+     "receiver_id": "ach-15",
+     "ball_speed_ms": 28.23,
+     "extras": {
+      "chosen_score": -0.0010575119277751236,
+      "best_score": 0.0006990395805076129,
+      "chosen_option": {
+       "kind": "pass",
+       "target": "ach-15",
+       "end": [
+        39.32,
+        57.24
+       ]
+      },
+      "best_option": {
+       "kind": "through",
+       "target": "ach-11",
+       "end": [
+        40.27,
+        18.2
+       ]
+      },
+      "risk_weight": 0.96676,
+      "lofted": true,
+      "arrival_t": 1105.8
      }
     }
    ]
@@ -2436,7 +1626,7 @@
     {
      "agent": "tactical analyst",
      "tool_calls": [],
-     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m013\",\"surface\":true,\"level\":\"player\",\"priority\":5,\"tactical_context\":\"Atlético Chapinero's player Jhojan Loancia received a red card at the 56th minute, significantly impacting the team's dynamics and leaving them a player down for the remainder of the match.\",\"metrics_to_cite\":[\"red\"]}]}"
+     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m013\",\"surface\":true,\"level\":\"player\",\"priority\":5,\"tactical_context\":\"Atlético Chapinero had a player sent off, reducing their defensive capacity and potentially shifting the momentum and tactical balance in favor of Atlético Laureles at this critical point in the match.\",\"metrics_to_cite\":[\"red\",\"ppda_10min\",\"possession\",\"momentum\"]}]}"
     }
    ],
    "decision": {
@@ -2444,9 +1634,12 @@
     "surface": true,
     "level": "player",
     "priority": 5,
-    "tactical_context": "Atlético Chapinero's player Jhojan Loancia received a red card at the 56th minute, significantly impacting the team's dynamics and leaving them a player down for the remainder of the match.",
+    "tactical_context": "Atlético Chapinero had a player sent off, reducing their defensive capacity and potentially shifting the momentum and tactical balance in favor of Atlético Laureles at this critical point in the match.",
     "metrics_to_cite": [
-     "red"
+     "red",
+     "ppda_10min",
+     "possession",
+     "momentum"
     ]
    },
    "attempts": [
@@ -2456,51 +1649,44 @@
       "moment_id": "r01-chapinero-v-laureles-m013",
       "match_id": "r01-chapinero-v-laureles",
       "level": "player",
-      "headline": "Loancia's red card leaves Chapinero a man down",
-      "why": "At 56', Jhojan Loancia received a red card, reducing Atlético Chapinero to 10 players. Despite this, Chapinero maintains a strong pressing intensity with a PPDA of 4.6 in the last 10 minutes, but their possession is limited to 44.3%. Loancia contributed defensively with 12 interceptions and 2 tackles before his dismissal.",
-      "recommendation": "Atlético Chapinero should reorganize defensively to cover the gap left by Loancia, focusing on maintaining pressing intensity while conserving energy. Other players need to increase their defensive contributions to compensate for being a player down.",
+      "headline": "Chapinero down to 10 men, press intensity rises",
+      "why": "Jhojan Loancia was sent off at 56', reducing Atlético Chapinero to 10 players. Despite this, Chapinero have increased their pressing intensity, allowing only 4.6 passes per defensive action in the last 10 minutes, compared to Laureles' 9.2. However, Chapinero's possession is lower at 44.3%, and their momentum is higher at 0.267, showing they are fighting to regain control despite the numerical disadvantage.",
+      "recommendation": "Chapinero should focus on maintaining high pressing intensity and quick transitions to capitalize on momentum, while managing energy to compensate for being a player down.",
       "claims": [
        {
-        "text": "Jhojan Loancia received a red card",
+        "text": "Jhojan Loancia was sent off",
         "metric": "red",
         "value": 1.0,
         "unit": "",
         "ref": "metric:red@2:638.5/team:chapinero"
        },
        {
-        "text": "Atlético Chapinero has 10 players on the pitch",
-        "metric": "players",
-        "value": 10.0,
-        "unit": "",
-        "ref": "metric:players@2:638.5/team:chapinero"
-       },
-       {
-        "text": "PPDA in last 10 minutes is 4.6",
+        "text": "Chapinero allow 4.6 passes per defensive action in last 10 minutes",
         "metric": "ppda_10min",
         "value": 4.6,
         "unit": "",
         "ref": "metric:ppda_10min@2:638.5/team:chapinero"
        },
        {
-        "text": "Possession is 44.3%",
+        "text": "Laureles allow 9.2 passes per defensive action in last 10 minutes",
+        "metric": "ppda_10min",
+        "value": 9.2,
+        "unit": "",
+        "ref": "metric:ppda_10min@2:638.5/team:laureles"
+       },
+       {
+        "text": "Chapinero possession is 44.3%",
         "metric": "possession",
         "value": 0.4428191489361702,
-        "unit": "%",
+        "unit": "",
         "ref": "metric:possession@2:638.5/team:chapinero"
        },
        {
-        "text": "Loancia made 12 interceptions and 2 tackles",
-        "metric": "interceptions",
-        "value": 12.0,
+        "text": "Chapinero momentum is 0.267",
+        "metric": "momentum",
+        "value": 0.2668643531950474,
         "unit": "",
-        "ref": "metric:interceptions@2:638.5/player:ach-04"
-       },
-       {
-        "text": "Loancia made 2 tackles",
-        "metric": "tackles",
-        "value": 2.0,
-        "unit": "",
-        "ref": "metric:tackles@2:638.5/player:ach-04"
+        "ref": "metric:momentum@2:638.5/team:chapinero"
        }
       ],
       "event_ids": [
@@ -2509,7 +1695,7 @@
       "confidence": "high",
       "verified": false,
       "source": "agent",
-      "trace_id": null,
+      "trace_id": "9d422669793fbfd0a1de290280bea8e3",
       "prompt_version": "explainer.v1"
      },
      "verdict": {
@@ -2531,6 +1717,15 @@
          }
         ],
         [
+         "get_team_metrics",
+         {
+          "match_id": "r01-chapinero-v-laureles",
+          "team_id": "laureles",
+          "period": 2,
+          "t": 638.5
+         }
+        ],
+        [
          "get_player_stats",
          {
           "match_id": "r01-chapinero-v-laureles",
@@ -2545,12 +1740,12 @@
       {
        "agent": "explainer",
        "tool_calls": [],
-       "text": "{\"headline\":\"Loancia's red card leaves Chapinero a man down\",\"why\":\"At 56', Jhojan Loancia received a red card, reducing Atlético Chapinero to 10 players. Despite this, Chapinero maintains a strong pressing intensity with a PPDA of 4.6 in the last 10 minutes, but their possession is limited to 44.3%. Loancia contributed defensively with 12 interceptions and 2 tackles before his dismissal.\",\"recommendation\":\"Atlético Chapinero should reorganize defensively to cover the gap left by Loancia, focusing on maintaining pressing intensity while conserving energy. Other players need to increase their defensive contributions to compensate for being a player down.\",\"claims\":[{\"text\":\"Jhojan Loancia received a red card\",\"metric\":\"red\",\"value\":1.0,\"unit\":\"\",\"ref\":\"metric:red@2:638.5/team:chapinero\"},{\"text\":\"Atlético Chapinero has 10 players on the pitch\",\"metric\":\"players\",\"value\":10.0,\"unit\":\"\",\"ref\":\"metric:players@2:638.5/team:chapinero\"},{\"text\":\"PPDA in last 10 minutes is 4.6\",\"metric\":\"ppda_10min\",\"value\":4.6,\"unit\":\"\",\"ref\":\"metric:ppda_10min@2:638.5/team:chapinero\"},{\"text\":\"Possession is 44.3%\",\"metric\":\"possession\",\"value\":0.4428191489361702,\"unit\":\"%\",\"ref\":\"metric:possession@2:638.5/team:chapinero\"},{\"text\":\"Loancia made 12 interceptions and 2 tackles\",\"metric\":\"interceptions\",\"value\":12.0,\"unit\":\"\",\"ref\":\"metric:interceptions@2:638.5/player:ach-04\"},{\"text\":\"Loancia made 2 tackles\",\"metric\":\"tackles\",\"value\":2.0,\"unit\":\"\",\"ref\":\"metric:tackles@2:638.5/player:ach-04\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e01058\"],\"confidence\":\"high\"}"
+       "text": "{\"headline\":\"Chapinero down to 10 men, press intensity rises\",\"why\":\"Jhojan Loancia was sent off at 56', reducing Atlético Chapinero to 10 players. Despite this, Chapinero have increased their pressing intensity, allowing only 4.6 passes per defensive action in the last 10 minutes, compared to Laureles' 9.2. However, Chapinero's possession is lower at 44.3%, and their momentum is higher at 0.267, showing they are fighting to regain control despite the numerical disadvantage.\",\"recommendation\":\"Chapinero should focus on maintaining high pressing intensity and quick transitions to capitalize on momentum, while managing energy to compensate for being a player down.\",\"claims\":[{\"text\":\"Jhojan Loancia was sent off\",\"metric\":\"red\",\"value\":1.0,\"unit\":\"\",\"ref\":\"metric:red@2:638.5/team:chapinero\"},{\"text\":\"Chapinero allow 4.6 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":4.6,\"unit\":\"\",\"ref\":\"metric:ppda_10min@2:638.5/team:chapinero\"},{\"text\":\"Laureles allow 9.2 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":9.2,\"unit\":\"\",\"ref\":\"metric:ppda_10min@2:638.5/team:laureles\"},{\"text\":\"Chapinero possession is 44.3%\",\"metric\":\"possession\",\"value\":0.4428191489361702,\"unit\":\"\",\"ref\":\"metric:possession@2:638.5/team:chapinero\"},{\"text\":\"Chapinero momentum is 0.267\",\"metric\":\"momentum\",\"value\":0.2668643531950474,\"unit\":\"\",\"ref\":\"metric:momentum@2:638.5/team:chapinero\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e01058\"],\"confidence\":\"high\"}"
       },
       {
        "agent": "verifier",
        "tool_calls": [],
-       "text": "{\"checks\":[{\"statement\":\"Loancia's red card leaves Chapinero a man down\",\"verdict\":\"supported\",\"reason\":\"The 56' red card event for Jhojan Loancia reduces Chapinero to 10 players.\"},{\"statement\":\"At 56', Jhojan Loancia received a red card, reducing Atlético Chapinero to 10 players\",\"verdict\":\"supported\",\"reason\":\"The event at 56' is a red card for Loancia, for Atlético Chapinero.\"},{\"statement\":\"Despite this, Chapinero maintains a strong pressing intensity with a PPDA of 4.6 in the last 10 minutes\",\"verdict\":\"supported\",\"reason\":\"The PPDA fact of 4.6 for Atlético Chapinero is given.\"},{\"statement\":\"but their possession is limited to 44.3%\",\"verdict\":\"supported\",\"reason\":\"The possession fact of 44.3% for Atlético Chapinero is given.\"},{\"statement\":\"Loancia contributed defensively with 12 interceptions and 2 tackles before his dismissal\",\"verdict\":\"supported\",\"reason\":\"Facts include Loancia's interceptions and tackles before the red card.\"},{\"statement\":\"Atlético Chapinero should reorganize defensively to cover the gap left by Loancia\",\"verdict\":\"not_covered\",\"reason\":\"This is advice based on the red card event.\"},{\"statement\":\"focusing on maintaining pressing intensity while conserving energy\",\"verdict\":\"not_covered\",\"reason\":\"This is a recommendation not directly supported or contradicted by events.\"},{\"statement\":\"Other players need to increase their defensive contributions to compensate for being a player down\",\"verdict\":\"not_covered\",\"reason\":\"This is a reasonable suggestion, not contradicted by events.\"}]}"
+       "text": "{\"checks\":[{\"statement\":\"Jhojan Loancia was sent off at 56', reducing Atlético Chapinero to 10 players\",\"verdict\":\"supported\",\"reason\":\"The 56' card event is a sending off for Jhojan Loancia of Atlético Chapinero.\"},{\"statement\":\"Despite this, Chapinero have increased their pressing intensity, allowing only 4.6 passes per defensive action in the last 10 minutes, compared to Laureles' 9.2\",\"verdict\":\"not_covered\",\"reason\":\"No events show pressing intensity or passes per defensive action; facts confirm the stats but events do not detail this.\"},{\"statement\":\"However, Chapinero's possession is lower at 44.3%\",\"verdict\":\"supported\",\"reason\":\"The possession fact is about Atlético Chapinero and matches the text.\"},{\"statement\":\"and their momentum is higher at 0.267, showing they are fighting to regain control despite the numerical disadvantage\",\"verdict\":\"supported\",\"reason\":\"The momentum fact is about Atlético Chapinero and matches the text; the interpretation is reasonable.\"},{\"statement\":\"Chapinero should focus on maintaining high pressing intensity and quick transitions to capitalize on momentum, while managing energy to compensate for being a player down\",\"verdict\":\"not_covered\",\"reason\":\"This is advice and recommendation, not directly supported or contradicted by events.\"}]}"
       }
      ]
     }
@@ -2560,51 +1755,44 @@
     "moment_id": "r01-chapinero-v-laureles-m013",
     "match_id": "r01-chapinero-v-laureles",
     "level": "player",
-    "headline": "Loancia's red card leaves Chapinero a man down",
-    "why": "At 56', Jhojan Loancia received a red card, reducing Atlético Chapinero to 10 players. Despite this, Chapinero maintains a strong pressing intensity with a PPDA of 4.6 in the last 10 minutes, but their possession is limited to 44.3%. Loancia contributed defensively with 12 interceptions and 2 tackles before his dismissal.",
-    "recommendation": "Atlético Chapinero should reorganize defensively to cover the gap left by Loancia, focusing on maintaining pressing intensity while conserving energy. Other players need to increase their defensive contributions to compensate for being a player down.",
+    "headline": "Chapinero down to 10 men, press intensity rises",
+    "why": "Jhojan Loancia was sent off at 56', reducing Atlético Chapinero to 10 players. Despite this, Chapinero have increased their pressing intensity, allowing only 4.6 passes per defensive action in the last 10 minutes, compared to Laureles' 9.2. However, Chapinero's possession is lower at 44.3%, and their momentum is higher at 0.267, showing they are fighting to regain control despite the numerical disadvantage.",
+    "recommendation": "Chapinero should focus on maintaining high pressing intensity and quick transitions to capitalize on momentum, while managing energy to compensate for being a player down.",
     "claims": [
      {
-      "text": "Jhojan Loancia received a red card",
+      "text": "Jhojan Loancia was sent off",
       "metric": "red",
       "value": 1.0,
       "unit": "",
       "ref": "metric:red@2:638.5/team:chapinero"
      },
      {
-      "text": "Atlético Chapinero has 10 players on the pitch",
-      "metric": "players",
-      "value": 10.0,
-      "unit": "",
-      "ref": "metric:players@2:638.5/team:chapinero"
-     },
-     {
-      "text": "PPDA in last 10 minutes is 4.6",
+      "text": "Chapinero allow 4.6 passes per defensive action in last 10 minutes",
       "metric": "ppda_10min",
       "value": 4.6,
       "unit": "",
       "ref": "metric:ppda_10min@2:638.5/team:chapinero"
      },
      {
-      "text": "Possession is 44.3%",
+      "text": "Laureles allow 9.2 passes per defensive action in last 10 minutes",
+      "metric": "ppda_10min",
+      "value": 9.2,
+      "unit": "",
+      "ref": "metric:ppda_10min@2:638.5/team:laureles"
+     },
+     {
+      "text": "Chapinero possession is 44.3%",
       "metric": "possession",
       "value": 0.4428191489361702,
-      "unit": "%",
+      "unit": "",
       "ref": "metric:possession@2:638.5/team:chapinero"
      },
      {
-      "text": "Loancia made 12 interceptions and 2 tackles",
-      "metric": "interceptions",
-      "value": 12.0,
+      "text": "Chapinero momentum is 0.267",
+      "metric": "momentum",
+      "value": 0.2668643531950474,
       "unit": "",
-      "ref": "metric:interceptions@2:638.5/player:ach-04"
-     },
-     {
-      "text": "Loancia made 2 tackles",
-      "metric": "tackles",
-      "value": 2.0,
-      "unit": "",
-      "ref": "metric:tackles@2:638.5/player:ach-04"
+      "ref": "metric:momentum@2:638.5/team:chapinero"
      }
     ],
     "event_ids": [
@@ -2613,10 +1801,10 @@
     "confidence": "high",
     "verified": true,
     "source": "agent",
-    "trace_id": null,
+    "trace_id": "9d422669793fbfd0a1de290280bea8e3",
     "prompt_version": "explainer.v1"
    },
-   "seconds": 13.4
+   "seconds": 16.4
   },
   {
    "moment": {
@@ -2651,7 +1839,7 @@
     {
      "agent": "tactical analyst",
      "tool_calls": [],
-     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m009\",\"surface\":true,\"level\":\"player\",\"priority\":5,\"tactical_context\":\"Atlético Laureles scored a goal through Mateo Balero in added time at the end of the first half, impacting the game's momentum in their favor.\",\"metrics_to_cite\":[\"goal\",\"momentum\",\"possession\",\"field_tilt_10min\"]}]}"
+     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m009\",\"surface\":true,\"level\":\"player\",\"priority\":5,\"tactical_context\":\"Atlético Laureles scored a goal in stoppage time, altering the scoreline and influencing the momentum in their favor just before the halftime break.\",\"metrics_to_cite\":[\"goal\",\"momentum\",\"goals\",\"possession\",\"xg\"]}]}"
     }
    ],
    "decision": {
@@ -2659,12 +1847,13 @@
     "surface": true,
     "level": "player",
     "priority": 5,
-    "tactical_context": "Atlético Laureles scored a goal through Mateo Balero in added time at the end of the first half, impacting the game's momentum in their favor.",
+    "tactical_context": "Atlético Laureles scored a goal in stoppage time, altering the scoreline and influencing the momentum in their favor just before the halftime break.",
     "metrics_to_cite": [
      "goal",
      "momentum",
+     "goals",
      "possession",
-     "field_tilt_10min"
+     "xg"
     ]
    },
    "attempts": [
@@ -2674,9 +1863,9 @@
       "moment_id": "r01-chapinero-v-laureles-m009",
       "match_id": "r01-chapinero-v-laureles",
       "level": "player",
-      "headline": "Mateo Balero's goal shifts momentum to Laureles",
-      "why": "At 45+2', Mateo Balero scored the decisive goal for Atlético Laureles, boosting their momentum significantly to 0.33 compared to Chapinero's 0.01. Laureles also dominate possession with 58% and control 63% of the territory in the last 10 minutes, despite a lower field tilt of 38%. Balero has contributed 1 goal and 0.409 xG so far, showing his key attacking role.",
-      "recommendation": "Balero should keep exploiting his attacking threat with high pass accuracy and dribbling, while teammates should support to maintain possession and pressure. Chapinero must tighten defense and disrupt Laureles' control to regain momentum.",
+      "headline": "Mateo Balero's goal boosts Laureles' momentum before halftime",
+      "why": "Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead. His personal expected goals (xG) of 0.409 shows he has been a significant attacking threat. This goal has shifted momentum strongly in Laureles' favor, with their momentum metric at 0.331 compared to Chapinero's 0.010. Laureles also dominate possession at 58%, controlling the game's rhythm.",
+      "recommendation": "Mateo Balero should continue to take advantage of his attacking form and look for more goal-scoring opportunities. His team should maintain possession and momentum to build on this lead after halftime.",
       "claims": [
        {
         "text": "Mateo Balero scored 1 goal",
@@ -2686,46 +1875,25 @@
         "ref": "metric:goals@1:2800.8/player:ala-17"
        },
        {
-        "text": "Balero's xG is 0.409",
+        "text": "Mateo Balero's expected goals (xG) is 0.409",
         "metric": "xg",
         "value": 0.409,
         "unit": "",
         "ref": "metric:xg@1:2800.8/player:ala-17"
        },
        {
-        "text": "Laureles momentum is 0.33095635589062455",
+        "text": "Atlético Laureles' momentum is 0.331",
         "metric": "momentum",
         "value": 0.33095635589062455,
         "unit": "",
         "ref": "metric:momentum@1:2800.8/team:laureles"
        },
        {
-        "text": "Chapinero momentum is 0.009592071506184649",
-        "metric": "momentum",
-        "value": 0.009592071506184649,
-        "unit": "",
-        "ref": "metric:momentum@1:2800.8/team:chapinero"
-       },
-       {
-        "text": "Laureles possession is 57.99676898222941%",
+        "text": "Atlético Laureles' possession is 58%",
         "metric": "possession",
         "value": 0.5799676898222941,
         "unit": "%",
         "ref": "metric:possession@1:2800.8/team:laureles"
-       },
-       {
-        "text": "Laureles territory is 62.82430744394378%",
-        "metric": "territory",
-        "value": 0.6282430744394378,
-        "unit": "%",
-        "ref": "metric:territory@1:2800.8/team:laureles"
-       },
-       {
-        "text": "Laureles field tilt in last 10 min is 38.46%",
-        "metric": "field_tilt_10min",
-        "value": 0.38461538461538464,
-        "unit": "%",
-        "ref": "metric:field_tilt_10min@1:2800.8/team:laureles"
        }
       ],
       "event_ids": [
@@ -2734,7 +1902,143 @@
       "confidence": "high",
       "verified": false,
       "source": "agent",
-      "trace_id": null,
+      "trace_id": "0b41bd8020a4e9e9ccb7bc8f0292012f",
+      "prompt_version": "explainer.v1"
+     },
+     "verdict": {
+      "ok": false,
+      "failures": [
+       "number '0.010' (in “…compared to Chapinero's 0.010. Laureles also dominate…”) matches no verified stat: every number needs its own claim (its own metric, value, and ref from a stats tool), or remove it"
+      ],
+      "fixed_claims": []
+     },
+     "turns": [
+      {
+       "agent": "explainer",
+       "tool_calls": [
+        [
+         "get_moment",
+         {
+          "moment_id": "r01-chapinero-v-laureles-m009"
+         }
+        ],
+        [
+         "get_player_stats",
+         {
+          "match_id": "r01-chapinero-v-laureles",
+          "player_id": "ala-17",
+          "period": 1,
+          "t": 2800.8
+         }
+        ],
+        [
+         "get_team_metrics",
+         {
+          "match_id": "r01-chapinero-v-laureles",
+          "team_id": "laureles",
+          "period": 1,
+          "t": 2800.8
+         }
+        ],
+        [
+         "get_metric",
+         {
+          "match_id": "r01-chapinero-v-laureles",
+          "name": "momentum",
+          "scope": "team",
+          "scope_id": "laureles",
+          "period": 1,
+          "t": 2800.8
+         }
+        ],
+        [
+         "get_metric",
+         {
+          "match_id": "r01-chapinero-v-laureles",
+          "name": "xg",
+          "scope": "player",
+          "scope_id": "ala-17",
+          "period": 1,
+          "t": 2800.8
+         }
+        ]
+       ],
+       "text": ""
+      },
+      {
+       "agent": "explainer",
+       "tool_calls": [],
+       "text": "{\"headline\":\"Mateo Balero's goal boosts Laureles' momentum before halftime\",\"why\":\"Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead. His personal expected goals (xG) of 0.409 shows he has been a significant attacking threat. This goal has shifted momentum strongly in Laureles' favor, with their momentum metric at 0.331 compared to Chapinero's 0.010. Laureles also dominate possession at 58%, controlling the game's rhythm.\",\"recommendation\":\"Mateo Balero should continue to take advantage of his attacking form and look for more goal-scoring opportunities. His team should maintain possession and momentum to build on this lead after halftime.\",\"claims\":[{\"text\":\"Mateo Balero scored 1 goal\",\"metric\":\"goals\",\"value\":1.0,\"unit\":\"\",\"ref\":\"metric:goals@1:2800.8/player:ala-17\"},{\"text\":\"Mateo Balero's expected goals (xG) is 0.409\",\"metric\":\"xg\",\"value\":0.409,\"unit\":\"\",\"ref\":\"metric:xg@1:2800.8/player:ala-17\"},{\"text\":\"Atlético Laureles' momentum is 0.331\",\"metric\":\"momentum\",\"value\":0.33095635589062455,\"unit\":\"\",\"ref\":\"metric:momentum@1:2800.8/team:laureles\"},{\"text\":\"Atlético Laureles' possession is 58%\",\"metric\":\"possession\",\"value\":0.5799676898222941,\"unit\":\"%\",\"ref\":\"metric:possession@1:2800.8/team:laureles\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e00848\"],\"confidence\":\"high\"}"
+      }
+     ]
+    },
+    {
+     "insight": {
+      "insight_id": "r01-chapinero-v-laureles-m009-ins",
+      "moment_id": "r01-chapinero-v-laureles-m009",
+      "match_id": "r01-chapinero-v-laureles",
+      "level": "player",
+      "headline": "Mateo Balero's goal shifts momentum to Laureles",
+      "why": "Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead. Laureles dominate possession at 58% and have a higher expected goals (0.502) than Chapinero (0.482), reflecting their attacking control. Their momentum is strong at 0.331 compared to Chapinero's 0.010, showing a clear shift in pressure and confidence.",
+      "recommendation": "Balero should continue to leverage his attacking threat and shooting opportunities, as he has already contributed 1 goal and 0.409 xG. The team should maintain possession dominance and press to keep the momentum going after halftime.",
+      "claims": [
+       {
+        "text": "Mateo Balero scored 1 goal",
+        "metric": "goals",
+        "value": 1.0,
+        "unit": "",
+        "ref": "metric:goals@1:2800.8/player:ala-17"
+       },
+       {
+        "text": "Atlético Laureles have 58% possession",
+        "metric": "possession",
+        "value": 0.5799676898222941,
+        "unit": "%",
+        "ref": "metric:possession@1:2800.8/team:laureles"
+       },
+       {
+        "text": "Atlético Laureles have 0.502 expected goals",
+        "metric": "xg",
+        "value": 0.502,
+        "unit": "",
+        "ref": "metric:xg@1:2800.8/team:laureles"
+       },
+       {
+        "text": "Atlético Chapinero have 0.482 expected goals",
+        "metric": "xg",
+        "value": 0.482,
+        "unit": "",
+        "ref": "metric:xg@1:2800.8/team:chapinero"
+       },
+       {
+        "text": "Atlético Laureles momentum is 0.331",
+        "metric": "momentum",
+        "value": 0.33095635589062455,
+        "unit": "",
+        "ref": "metric:momentum@1:2800.8/team:laureles"
+       },
+       {
+        "text": "Atlético Chapinero momentum is 0.010",
+        "metric": "momentum",
+        "value": 0.009592071506184649,
+        "unit": "",
+        "ref": "metric:momentum@1:2800.8/team:chapinero"
+       },
+       {
+        "text": "Mateo Balero has 0.409 expected goals",
+        "metric": "xg",
+        "value": 0.409,
+        "unit": "",
+        "ref": "metric:xg@1:2800.8/player:ala-17"
+       }
+      ],
+      "event_ids": [
+       "r01-chapinero-v-laureles-e00848"
+      ],
+      "confidence": "high",
+      "verified": false,
+      "source": "agent",
+      "trace_id": "c9f8e4218a5521e549e3b66b64d61d0e",
       "prompt_version": "explainer.v1"
      },
      "verdict": {
@@ -2785,12 +2089,12 @@
       {
        "agent": "explainer",
        "tool_calls": [],
-       "text": "{\"headline\":\"Mateo Balero's goal shifts momentum to Laureles\",\"why\":\"At 45+2', Mateo Balero scored the decisive goal for Atlético Laureles, boosting their momentum significantly to 0.33 compared to Chapinero's 0.01. Laureles also dominate possession with 58% and control 63% of the territory in the last 10 minutes, despite a lower field tilt of 38%. Balero has contributed 1 goal and 0.409 xG so far, showing his key attacking role.\",\"recommendation\":\"Balero should keep exploiting his attacking threat with high pass accuracy and dribbling, while teammates should support to maintain possession and pressure. Chapinero must tighten defense and disrupt Laureles' control to regain momentum.\",\"claims\":[{\"text\":\"Mateo Balero scored 1 goal\",\"metric\":\"goals\",\"value\":1.0,\"unit\":\"\",\"ref\":\"metric:goals@1:2800.8/player:ala-17\"},{\"text\":\"Balero's xG is 0.409\",\"metric\":\"xg\",\"value\":0.409,\"unit\":\"\",\"ref\":\"metric:xg@1:2800.8/player:ala-17\"},{\"text\":\"Laureles momentum is 0.33095635589062455\",\"metric\":\"momentum\",\"value\":0.33095635589062455,\"unit\":\"\",\"ref\":\"metric:momentum@1:2800.8/team:laureles\"},{\"text\":\"Chapinero momentum is 0.009592071506184649\",\"metric\":\"momentum\",\"value\":0.009592071506184649,\"unit\":\"\",\"ref\":\"metric:momentum@1:2800.8/team:chapinero\"},{\"text\":\"Laureles possession is 57.99676898222941%\",\"metric\":\"possession\",\"value\":0.5799676898222941,\"unit\":\"%\",\"ref\":\"metric:possession@1:2800.8/team:laureles\"},{\"text\":\"Laureles territory is 62.82430744394378%\",\"metric\":\"territory\",\"value\":0.6282430744394378,\"unit\":\"%\",\"ref\":\"metric:territory@1:2800.8/team:laureles\"},{\"text\":\"Laureles field tilt in last 10 min is 38.46%\",\"metric\":\"field_tilt_10min\",\"value\":0.38461538461538464,\"unit\":\"%\",\"ref\":\"metric:field_tilt_10min@1:2800.8/team:laureles\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e00848\"],\"confidence\":\"high\"}"
+       "text": "{\"headline\":\"Mateo Balero's goal shifts momentum to Laureles\",\"why\":\"Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead. Laureles dominate possession at 58% and have a higher expected goals (0.502) than Chapinero (0.482), reflecting their attacking control. Their momentum is strong at 0.331 compared to Chapinero's 0.010, showing a clear shift in pressure and confidence.\",\"recommendation\":\"Balero should continue to leverage his attacking threat and shooting opportunities, as he has already contributed 1 goal and 0.409 xG. The team should maintain possession dominance and press to keep the momentum going after halftime.\",\"claims\":[{\"text\":\"Mateo Balero scored 1 goal\",\"metric\":\"goals\",\"value\":1.0,\"unit\":\"\",\"ref\":\"metric:goals@1:2800.8/player:ala-17\"},{\"text\":\"Atlético Laureles have 58% possession\",\"metric\":\"possession\",\"value\":0.5799676898222941,\"unit\":\"%\",\"ref\":\"metric:possession@1:2800.8/team:laureles\"},{\"text\":\"Atlético Laureles have 0.502 expected goals\",\"metric\":\"xg\",\"value\":0.502,\"unit\":\"\",\"ref\":\"metric:xg@1:2800.8/team:laureles\"},{\"text\":\"Atlético Chapinero have 0.482 expected goals\",\"metric\":\"xg\",\"value\":0.482,\"unit\":\"\",\"ref\":\"metric:xg@1:2800.8/team:chapinero\"},{\"text\":\"Atlético Laureles momentum is 0.331\",\"metric\":\"momentum\",\"value\":0.33095635589062455,\"unit\":\"\",\"ref\":\"metric:momentum@1:2800.8/team:laureles\"},{\"text\":\"Atlético Chapinero momentum is 0.010\",\"metric\":\"momentum\",\"value\":0.009592071506184649,\"unit\":\"\",\"ref\":\"metric:momentum@1:2800.8/team:chapinero\"},{\"text\":\"Mateo Balero has 0.409 expected goals\",\"metric\":\"xg\",\"value\":0.409,\"unit\":\"\",\"ref\":\"metric:xg@1:2800.8/player:ala-17\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e00848\"],\"confidence\":\"high\"}"
       },
       {
        "agent": "verifier",
        "tool_calls": [],
-       "text": "{\"checks\": [{\"statement\": \"Mateo Balero's goal shifts momentum to Laureles\", \"verdict\": \"supported\", \"reason\": \"Balero scored a goal at 45+2' for Atlético Laureles, and the momentum values show Laureles' momentum is higher.\"}, {\"statement\": \"At 45+2', Mateo Balero scored the decisive goal for Atlético Laureles\", \"verdict\": \"supported\", \"reason\": \"The event at 45+2' is a goal by Mateo Balero for Atlético Laureles.\"}, {\"statement\": \"boosting their momentum significantly to 0.33 compared to Chapinero's 0.01\", \"verdict\": \"supported\", \"reason\": \"The facts show Laureles momentum is 0.33 and Chapinero's is 0.01.\"}, {\"statement\": \"Laureles also dominate possession with 58%\", \"verdict\": \"supported\", \"reason\": \"The facts show Laureles possession is 58%.\"}, {\"statement\": \"and control 63% of the territory in the last 10 minutes\", \"verdict\": \"supported\", \"reason\": \"The facts show Laureles territory is 63%.\"}, {\"statement\": \"despite a lower field tilt of 38%\", \"verdict\": \"supported\", \"reason\": \"The facts show Laureles field tilt in last 10 min is 38%.\"}, {\"statement\": \"Balero has contributed 1 goal and 0.409 xG so far\", \"verdict\": \"supported\", \"reason\": \"The facts show Balero scored 1 goal and his xG is 0.409.\"}, {\"statement\": \"showing his key attacking role\", \"verdict\": \"not_covered\", \"reason\": \"This is an interpretation of Balero's contribution, not directly shown by events.\"}, {\"statement\": \"Balero should keep exploiting his attacking threat with high pass accuracy and dribbling\", \"verdict\": \"not_covered\", \"reason\": \"This is advice based on his attacking role, not directly supported or contradicted by events.\"}, {\"statement\": \"while teammates should support to maintain possession and pressure\", \"verdict\": \"not_covered\", \"reason\": \"This is a recommendation, not directly supported or contradicted by events.\"}, {\"statement\": \"Chapinero must tighten defense and disrupt Laureles' control to regain momentum\", \"verdict\": \"not_covered\", \"reason\": \"This is a recommendation, not directly supported or contradicted by events.\"}]}"
+       "text": "{\"checks\":[{\"statement\":\"Mateo Balero's goal shifts momentum to Laureles\",\"verdict\":\"not_covered\",\"reason\":\"The events show Balero's goal but do not explicitly state a momentum shift.\"},{\"statement\":\"Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead\",\"verdict\":\"supported\",\"reason\":\"Event at 45+2' shows Balero scored a goal for Atlético Laureles in stoppage time of the first half.\"},{\"statement\":\"Laureles dominate possession at 58%\",\"verdict\":\"supported\",\"reason\":\"Fact states Atlético Laureles have 58% possession.\"},{\"statement\":\"Laureles have a higher expected goals (0.502) than Chapinero (0.482), reflecting their attacking control\",\"verdict\":\"supported\",\"reason\":\"Facts show Atlético Laureles have 0.502 xG and Chapinero 0.482 xG.\"},{\"statement\":\"Their momentum is strong at 0.331 compared to Chapinero's 0.010, showing a clear shift in pressure and confidence\",\"verdict\":\"supported\",\"reason\":\"Facts show Atlético Laureles momentum 0.331 and Chapinero 0.010.\"},{\"statement\":\"Balero should continue to leverage his attacking threat and shooting opportunities, as he has already contributed 1 goal and 0.409 xG\",\"verdict\":\"supported\",\"reason\":\"Facts show Balero has 1 goal and 0.409 expected goals.\"},{\"statement\":\"The team should maintain possession dominance and press to keep the momentum going after halftime\",\"verdict\":\"not_covered\",\"reason\":\"This is advice based on the situation, not contradicted by events.\"}]}"
       }
      ]
     }
@@ -2801,8 +2105,8 @@
     "match_id": "r01-chapinero-v-laureles",
     "level": "player",
     "headline": "Mateo Balero's goal shifts momentum to Laureles",
-    "why": "At 45+2', Mateo Balero scored the decisive goal for Atlético Laureles, boosting their momentum significantly to 0.33 compared to Chapinero's 0.01. Laureles also dominate possession with 58% and control 63% of the territory in the last 10 minutes, despite a lower field tilt of 38%. Balero has contributed 1 goal and 0.409 xG so far, showing his key attacking role.",
-    "recommendation": "Balero should keep exploiting his attacking threat with high pass accuracy and dribbling, while teammates should support to maintain possession and pressure. Chapinero must tighten defense and disrupt Laureles' control to regain momentum.",
+    "why": "Mateo Balero scored a crucial goal in stoppage time of the first half, giving Atlético Laureles the lead. Laureles dominate possession at 58% and have a higher expected goals (0.502) than Chapinero (0.482), reflecting their attacking control. Their momentum is strong at 0.331 compared to Chapinero's 0.010, showing a clear shift in pressure and confidence.",
+    "recommendation": "Balero should continue to leverage his attacking threat and shooting opportunities, as he has already contributed 1 goal and 0.409 xG. The team should maintain possession dominance and press to keep the momentum going after halftime.",
     "claims": [
      {
       "text": "Mateo Balero scored 1 goal",
@@ -2812,46 +2116,46 @@
       "ref": "metric:goals@1:2800.8/player:ala-17"
      },
      {
-      "text": "Balero's xG is 0.409",
-      "metric": "xg",
-      "value": 0.409,
-      "unit": "",
-      "ref": "metric:xg@1:2800.8/player:ala-17"
-     },
-     {
-      "text": "Laureles momentum is 0.33095635589062455",
-      "metric": "momentum",
-      "value": 0.33095635589062455,
-      "unit": "",
-      "ref": "metric:momentum@1:2800.8/team:laureles"
-     },
-     {
-      "text": "Chapinero momentum is 0.009592071506184649",
-      "metric": "momentum",
-      "value": 0.009592071506184649,
-      "unit": "",
-      "ref": "metric:momentum@1:2800.8/team:chapinero"
-     },
-     {
-      "text": "Laureles possession is 57.99676898222941%",
+      "text": "Atlético Laureles have 58% possession",
       "metric": "possession",
       "value": 0.5799676898222941,
       "unit": "%",
       "ref": "metric:possession@1:2800.8/team:laureles"
      },
      {
-      "text": "Laureles territory is 62.82430744394378%",
-      "metric": "territory",
-      "value": 0.6282430744394378,
-      "unit": "%",
-      "ref": "metric:territory@1:2800.8/team:laureles"
+      "text": "Atlético Laureles have 0.502 expected goals",
+      "metric": "xg",
+      "value": 0.502,
+      "unit": "",
+      "ref": "metric:xg@1:2800.8/team:laureles"
      },
      {
-      "text": "Laureles field tilt in last 10 min is 38.46%",
-      "metric": "field_tilt_10min",
-      "value": 0.38461538461538464,
-      "unit": "%",
-      "ref": "metric:field_tilt_10min@1:2800.8/team:laureles"
+      "text": "Atlético Chapinero have 0.482 expected goals",
+      "metric": "xg",
+      "value": 0.482,
+      "unit": "",
+      "ref": "metric:xg@1:2800.8/team:chapinero"
+     },
+     {
+      "text": "Atlético Laureles momentum is 0.331",
+      "metric": "momentum",
+      "value": 0.33095635589062455,
+      "unit": "",
+      "ref": "metric:momentum@1:2800.8/team:laureles"
+     },
+     {
+      "text": "Atlético Chapinero momentum is 0.010",
+      "metric": "momentum",
+      "value": 0.009592071506184649,
+      "unit": "",
+      "ref": "metric:momentum@1:2800.8/team:chapinero"
+     },
+     {
+      "text": "Mateo Balero has 0.409 expected goals",
+      "metric": "xg",
+      "value": 0.409,
+      "unit": "",
+      "ref": "metric:xg@1:2800.8/player:ala-17"
      }
     ],
     "event_ids": [
@@ -2860,10 +2164,10 @@
     "confidence": "high",
     "verified": true,
     "source": "agent",
-    "trace_id": null,
+    "trace_id": "c9f8e4218a5521e549e3b66b64d61d0e",
     "prompt_version": "explainer.v1"
    },
-   "seconds": 13.3
+   "seconds": 24.1
   },
   {
    "moment": {
@@ -2896,7 +2200,7 @@
     {
      "agent": "tactical analyst",
      "tool_calls": [],
-     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m005\",\"surface\":true,\"level\":\"team\",\"priority\":3,\"tactical_context\":\"Atlético Laureles experienced a pressing collapse, increasing their PPDA ratio significantly. This caused them to press less aggressively, allowing Atlético Chapinero more freedom to control the game and advance with possession.\",\"metrics_to_cite\":[\"ppda_ratio\",\"ppda_10min\",\"field_tilt_10min\"]}]}"
+     "text": "{\"decisions\":[{\"moment_id\":\"r01-chapinero-v-laureles-m005\",\"surface\":true,\"level\":\"team\",\"priority\":3,\"tactical_context\":\"Atlético Laureles' pressing effectiveness dropped significantly, allowing Atlético Chapinero more time and space to build their attacks from the back. This shift made it easier for Chapinero to take control of the game's rhythm and territory.\",\"metrics_to_cite\":[\"ppda_ratio\",\"ppda_10min\",\"field_tilt_10min\"]}]}"
     }
    ],
    "decision": {
@@ -2904,7 +2208,7 @@
     "surface": true,
     "level": "team",
     "priority": 3,
-    "tactical_context": "Atlético Laureles experienced a pressing collapse, increasing their PPDA ratio significantly. This caused them to press less aggressively, allowing Atlético Chapinero more freedom to control the game and advance with possession.",
+    "tactical_context": "Atlético Laureles' pressing effectiveness dropped significantly, allowing Atlético Chapinero more time and space to build their attacks from the back. This shift made it easier for Chapinero to take control of the game's rhythm and territory.",
     "metrics_to_cite": [
      "ppda_ratio",
      "ppda_10min",
@@ -2918,51 +2222,46 @@
       "moment_id": "r01-chapinero-v-laureles-m005",
       "match_id": "r01-chapinero-v-laureles",
       "level": "team",
-      "headline": "Laureles' pressing collapse lets Chapinero dominate",
-      "why": "Atlético Laureles' pressing intensity dropped significantly, allowing Atlético Chapinero to face only 6.4 passes per defensive action in the last 10 minutes, compared to Laureles' 9.0. This pressing collapse gave Chapinero 72% of final-third passes, enabling them to control the game and advance with possession.",
-      "recommendation": "Atlético Laureles should increase their pressing intensity to reduce Chapinero's freedom on the ball and regain control of the final third.",
+      "headline": "Laureles' press drops, Chapinero gains control",
+      "why": "Atlético Laureles' pressing intensity has decreased, allowing Atlético Chapinero more time and space to build attacks. Laureles' PPDA in the last 10 minutes is 9.0, higher than Chapinero's 6.375, showing Laureles press less aggressively. Chapinero controls 72% of final-third passes, dominating territory and rhythm.",
+      "recommendation": "Laureles should increase pressing intensity to disrupt Chapinero's build-up and regain control of the game's tempo and territory.",
       "claims": [
        {
-        "text": "Laureles allow 9.0 passes per defensive action in last 10 minutes",
+        "text": "Laureles' PPDA in last 10 minutes is 9.0",
         "metric": "ppda_10min",
         "value": 9.0,
         "unit": "",
         "ref": "metric:ppda_10min@1:1200.0/team:laureles"
        },
        {
-        "text": "Chapineros allow 6.4 passes per defensive action in last 10 minutes",
+        "text": "Chapineros' PPDA in last 10 minutes is 6.375",
         "metric": "ppda_10min",
         "value": 6.375,
         "unit": "",
         "ref": "metric:ppda_10min@1:1200.0/team:chapinero"
        },
        {
-        "text": "Chapineros have 72.2% of final-third passes in last 10 minutes",
+        "text": "Chapineros' field tilt in last 10 minutes is 72.2%",
         "metric": "field_tilt_10min",
         "value": 0.7222222222222222,
-        "unit": "",
+        "unit": "%",
         "ref": "metric:field_tilt_10min@1:1200.0/team:chapinero"
        }
       ],
       "event_ids": [
-       "r01-chapinero-v-laureles-e00272",
-       "r01-chapinero-v-laureles-e00273",
-       "r01-chapinero-v-laureles-e00274",
-       "r01-chapinero-v-laureles-e00275",
-       "r01-chapinero-v-laureles-e00276",
-       "r01-chapinero-v-laureles-e00279",
-       "r01-chapinero-v-laureles-e00280",
-       "r01-chapinero-v-laureles-e00281",
-       "r01-chapinero-v-laureles-e00282",
-       "r01-chapinero-v-laureles-e00283",
-       "r01-chapinero-v-laureles-e00284",
-       "r01-chapinero-v-laureles-e00285",
-       "r01-chapinero-v-laureles-e00286"
+       "r01-chapinero-v-laureles-e00327",
+       "r01-chapinero-v-laureles-e00329",
+       "r01-chapinero-v-laureles-e00330",
+       "r01-chapinero-v-laureles-e00334",
+       "r01-chapinero-v-laureles-e00335",
+       "r01-chapinero-v-laureles-e00336",
+       "r01-chapinero-v-laureles-e00337",
+       "r01-chapinero-v-laureles-e00338"
       ],
       "confidence": "high",
       "verified": false,
       "source": "agent",
-      "trace_id": null,
+      "trace_id": "7158528bd467f1afea5dc5f19a358c26",
       "prompt_version": "explainer.v1"
      },
      "verdict": {
@@ -2975,12 +2274,6 @@
        "agent": "explainer",
        "tool_calls": [
         [
-         "get_moment",
-         {
-          "moment_id": "r01-chapinero-v-laureles-m005"
-         }
-        ],
-        [
          "get_team_metrics",
          {
           "match_id": "r01-chapinero-v-laureles",
@@ -2997,38 +2290,14 @@
           "period": 1,
           "t": 1200.0
          }
-        ]
-       ],
-       "text": ""
-      },
-      {
-       "agent": "explainer",
-       "tool_calls": [],
-       "text": "{\"headline\":\"Laureles' pressing collapse lets Chapinero control game\",\"why\":\"Atlético Laureles' pressing intensity dropped significantly, allowing 9.0 passes per defensive action in the last 10 minutes, compared to Chapinero's 6.375. This pressing collapse gave Chapinero 72.2% of final-third passes, letting them dominate possession and territory at 53.8% and 58.4% respectively by the 21st minute.\",\"recommendation\":\"Atlético Laureles should tighten their pressing to reduce Chapinero's freedom on the ball, aiming to lower their PPDA ratio and regain control of the final third.\",\"claims\":[{\"text\":\"Atlético Laureles allow 9.0 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":9.0,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:laureles\"},{\"text\":\"Atlético Chapinero allow 6.375 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":6.375,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:chapinero\"},{\"text\":\"Atlético Chapinero have 72.2% of final-third passes in last 10 minutes\",\"metric\":\"field_tilt_10min\",\"value\":0.7222222222222222,\"unit\":\"\",\"ref\":\"metric:field_tilt_10min@1:1200.0/team:chapinero\"}],\"event_ids\":[],\"confidence\":\"high\"}"
-      },
-      {
-       "agent": "explainer",
-       "tool_calls": [
-        [
-         "get_moment",
-         {
-          "moment_id": "r01-chapinero-v-laureles-m005"
-         }
         ],
         [
-         "get_team_metrics",
+         "get_metric",
          {
           "match_id": "r01-chapinero-v-laureles",
-          "team_id": "laureles",
-          "period": 1,
-          "t": 1200.0
-         }
-        ],
-        [
-         "get_team_metrics",
-         {
-          "match_id": "r01-chapinero-v-laureles",
-          "team_id": "chapinero",
+          "name": "ppda_ratio",
+          "scope": "match",
+          "scope_id": "r01-chapinero-v-laureles",
           "period": 1,
           "t": 1200.0
          }
@@ -3039,12 +2308,7 @@
           "match_id": "r01-chapinero-v-laureles",
           "period": 1,
           "t_from": 900,
-          "t_to": 1200,
-          "types": [
-           "pass",
-           "tackle",
-           "interception"
-          ]
+          "t_to": 1200
          }
         ]
        ],
@@ -3053,12 +2317,12 @@
       {
        "agent": "explainer",
        "tool_calls": [],
-       "text": "{\"headline\":\"Laureles' pressing collapse lets Chapinero dominate\",\"why\":\"Atlético Laureles' pressing intensity dropped significantly, allowing Atlético Chapinero to face only 6.4 passes per defensive action in the last 10 minutes, compared to Laureles' 9.0. This pressing collapse gave Chapinero 72% of final-third passes, enabling them to control the game and advance with possession.\",\"recommendation\":\"Atlético Laureles should increase their pressing intensity to reduce Chapinero's freedom on the ball and regain control of the final third.\",\"claims\":[{\"text\":\"Laureles allow 9.0 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":9.0,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:laureles\"},{\"text\":\"Chapineros allow 6.4 passes per defensive action in last 10 minutes\",\"metric\":\"ppda_10min\",\"value\":6.375,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:chapinero\"},{\"text\":\"Chapineros have 72.2% of final-third passes in last 10 minutes\",\"metric\":\"field_tilt_10min\",\"value\":0.7222222222222222,\"unit\":\"\",\"ref\":\"metric:field_tilt_10min@1:1200.0/team:chapinero\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e00272\",\"r01-chapinero-v-laureles-e00273\",\"r01-chapinero-v-laureles-e00274\",\"r01-chapinero-v-laureles-e00275\",\"r01-chapinero-v-laureles-e00276\",\"r01-chapinero-v-laureles-e00279\",\"r01-chapinero-v-laureles-e00280\",\"r01-chapinero-v-laureles-e00281\",\"r01-chapinero-v-laureles-e00282\",\"r01-chapinero-v-laureles-e00283\",\"r01-chapinero-v-laureles-e00284\",\"r01-chapinero-v-laureles-e00285\",\"r01-chapinero-v-laureles-e00286\"],\"confidence\":\"high\"}"
+       "text": "{\"headline\":\"Laureles' press drops, Chapinero gains control\",\"why\":\"Atlético Laureles' pressing intensity has decreased, allowing Atlético Chapinero more time and space to build attacks. Laureles' PPDA in the last 10 minutes is 9.0, higher than Chapinero's 6.375, showing Laureles press less aggressively. Chapinero controls 72% of final-third passes, dominating territory and rhythm.\",\"recommendation\":\"Laureles should increase pressing intensity to disrupt Chapinero's build-up and regain control of the game's tempo and territory.\",\"claims\":[{\"text\":\"Laureles' PPDA in last 10 minutes is 9.0\",\"metric\":\"ppda_10min\",\"value\":9.0,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:laureles\"},{\"text\":\"Chapineros' PPDA in last 10 minutes is 6.375\",\"metric\":\"ppda_10min\",\"value\":6.375,\"unit\":\"\",\"ref\":\"metric:ppda_10min@1:1200.0/team:chapinero\"},{\"text\":\"Chapineros' field tilt in last 10 minutes is 72.2%\",\"metric\":\"field_tilt_10min\",\"value\":0.7222222222222222,\"unit\":\"%\",\"ref\":\"metric:field_tilt_10min@1:1200.0/team:chapinero\"}],\"event_ids\":[\"r01-chapinero-v-laureles-e00327\",\"r01-chapinero-v-laureles-e00329\",\"r01-chapinero-v-laureles-e00330\",\"r01-chapinero-v-laureles-e00334\",\"r01-chapinero-v-laureles-e00335\",\"r01-chapinero-v-laureles-e00336\",\"r01-chapinero-v-laureles-e00337\",\"r01-chapinero-v-laureles-e00338\"],\"confidence\":\"high\"}"
       },
       {
        "agent": "verifier",
        "tool_calls": [],
-       "text": "{\"checks\":[{\"statement\":\"Laureles' pressing collapse lets Chapinero dominate\",\"verdict\":\"not_covered\",\"reason\":\"The events show passes and an interception but do not explicitly show pressing intensity or collapse.\"},{\"statement\":\"Atlético Laureles' pressing intensity dropped significantly, allowing Atlético Chapinero to face only 6.4 passes per defensive action in the last 10 minutes, compared to Laureles' 9.0\",\"verdict\":\"supported\",\"reason\":\"The facts include passes per defensive action for both teams in the last 10 minutes, matching the statement.\"},{\"statement\":\"This pressing collapse gave Chapinero 72% of final-third passes\",\"verdict\":\"supported\",\"reason\":\"The facts include Chapinero having 72% of final-third passes in the last 10 minutes.\"},{\"statement\":\"enabling them to control the game and advance with possession\",\"verdict\":\"not_covered\",\"reason\":\"The events show passes but do not explicitly show control or possession advancement.\"},{\"statement\":\"Atlético Laureles should increase their pressing intensity to reduce Chapinero's freedom on the ball and regain control of the final third\",\"verdict\":\"not_covered\",\"reason\":\"This is a recommendation based on the situation, not directly supported or contradicted by events.\"}]}"
+       "text": "{\"checks\":[{\"statement\":\"Laureles' press drops\",\"verdict\":\"not_covered\",\"reason\":\"No event or fact directly shows a drop in Laureles' pressing intensity, only PPDA values.\"},{\"statement\":\"Chapinero gains control\",\"verdict\":\"not_covered\",\"reason\":\"Events show Chapinero possession and passes but do not explicitly state control gained.\"},{\"statement\":\"Atlético Laureles' pressing intensity has decreased, allowing Atlético Chapinero more time and space to build attacks\",\"verdict\":\"not_covered\",\"reason\":\"No events or facts explicitly show a decrease in Laureles' pressing intensity or Chapinero gaining more time and space.\"},{\"statement\":\"Laureles' PPDA in the last 10 minutes is 9.0, higher than Chapinero's 6.375, showing Laureles press less aggressively\",\"verdict\":\"supported\",\"reason\":\"Facts include PPDA values for both teams with these exact numbers.\"},{\"statement\":\"Chapinero controls 72% of final-third passes, dominating territory and rhythm\",\"verdict\":\"supported\",\"reason\":\"Fact about Chapinero's field tilt (final-third passes) is 72%, indicating territorial dominance.\"},{\"statement\":\"Laureles should increase pressing intensity to disrupt Chapinero's build-up and regain control of the game's tempo and territory\",\"verdict\":\"not_covered\",\"reason\":\"This is a recommendation or advice, not directly supported or contradicted by events.\"}]}"
       }
      ]
     }
@@ -3068,54 +2332,49 @@
     "moment_id": "r01-chapinero-v-laureles-m005",
     "match_id": "r01-chapinero-v-laureles",
     "level": "team",
-    "headline": "Laureles' pressing collapse lets Chapinero dominate",
-    "why": "Atlético Laureles' pressing intensity dropped significantly, allowing Atlético Chapinero to face only 6.4 passes per defensive action in the last 10 minutes, compared to Laureles' 9.0. This pressing collapse gave Chapinero 72% of final-third passes, enabling them to control the game and advance with possession.",
-    "recommendation": "Atlético Laureles should increase their pressing intensity to reduce Chapinero's freedom on the ball and regain control of the final third.",
+    "headline": "Laureles' press drops, Chapinero gains control",
+    "why": "Atlético Laureles' pressing intensity has decreased, allowing Atlético Chapinero more time and space to build attacks. Laureles' PPDA in the last 10 minutes is 9.0, higher than Chapinero's 6.375, showing Laureles press less aggressively. Chapinero controls 72% of final-third passes, dominating territory and rhythm.",
+    "recommendation": "Laureles should increase pressing intensity to disrupt Chapinero's build-up and regain control of the game's tempo and territory.",
     "claims": [
      {
-      "text": "Laureles allow 9.0 passes per defensive action in last 10 minutes",
+      "text": "Laureles' PPDA in last 10 minutes is 9.0",
       "metric": "ppda_10min",
       "value": 9.0,
       "unit": "",
       "ref": "metric:ppda_10min@1:1200.0/team:laureles"
      },
      {
-      "text": "Chapineros allow 6.4 passes per defensive action in last 10 minutes",
+      "text": "Chapineros' PPDA in last 10 minutes is 6.375",
       "metric": "ppda_10min",
       "value": 6.375,
       "unit": "",
       "ref": "metric:ppda_10min@1:1200.0/team:chapinero"
      },
      {
-      "text": "Chapineros have 72.2% of final-third passes in last 10 minutes",
+      "text": "Chapineros' field tilt in last 10 minutes is 72.2%",
       "metric": "field_tilt_10min",
       "value": 0.7222222222222222,
-      "unit": "",
+      "unit": "%",
       "ref": "metric:field_tilt_10min@1:1200.0/team:chapinero"
      }
     ],
     "event_ids": [
-     "r01-chapinero-v-laureles-e00272",
-     "r01-chapinero-v-laureles-e00273",
-     "r01-chapinero-v-laureles-e00274",
-     "r01-chapinero-v-laureles-e00275",
-     "r01-chapinero-v-laureles-e00276",
-     "r01-chapinero-v-laureles-e00279",
-     "r01-chapinero-v-laureles-e00280",
-     "r01-chapinero-v-laureles-e00281",
-     "r01-chapinero-v-laureles-e00282",
-     "r01-chapinero-v-laureles-e00283",
-     "r01-chapinero-v-laureles-e00284",
-     "r01-chapinero-v-laureles-e00285",
-     "r01-chapinero-v-laureles-e00286"
+     "r01-chapinero-v-laureles-e00327",
+     "r01-chapinero-v-laureles-e00329",
+     "r01-chapinero-v-laureles-e00330",
+     "r01-chapinero-v-laureles-e00334",
+     "r01-chapinero-v-laureles-e00335",
+     "r01-chapinero-v-laureles-e00336",
+     "r01-chapinero-v-laureles-e00337",
+     "r01-chapinero-v-laureles-e00338"
     ],
     "confidence": "high",
     "verified": true,
     "source": "agent",
-    "trace_id": null,
+    "trace_id": "7158528bd467f1afea5dc5f19a358c26",
     "prompt_version": "explainer.v1"
    },
-   "seconds": 16.0
+   "seconds": 14.6
   }
  ]
 }

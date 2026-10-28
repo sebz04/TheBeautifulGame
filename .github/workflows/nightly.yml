@@ -11,7 +11,7 @@ permissions:
 jobs:
   slow:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 300  # 1 h 50 min to over 3 h on a hosted runner (2026-10-24 to 27)
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -20,4 +20,4 @@ jobs:
       - name: Install
         run: uv sync --locked
       - name: Slow tests (multi-match statistics, season history, storylines, effects)
-        run: uv run pytest -m slow
+        run: uv run pytest -m slow --durations=15

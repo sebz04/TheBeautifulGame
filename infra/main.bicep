@@ -75,7 +75,6 @@ module budget 'modules/budget.bicep' = if (createBudget) {
 }
 
 output AZURE_RESOURCE_GROUP string = rg.name
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = app.outputs.registryEndpoint
 output SERVICE_API_NAME string = app.outputs.appName
 output SERVICE_API_URI string = app.outputs.appUri
 output MATCHMIND_SQL_URL string = app.outputs.sqlUrl

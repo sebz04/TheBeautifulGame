@@ -19,6 +19,7 @@ from typing import Any
 from agent_framework.exceptions import ChatClientException
 from pydantic import BaseModel
 
+from matchmind.agents.meaning import mixed_moments, ppda_slips
 from matchmind.agents.numbers import check_text, extract_numbers
 from matchmind.agents.runtime import bad_reply, make_agent, run_agent
 from matchmind.agents.templates import _ARABIC, LABELS, _french, format_value
@@ -237,6 +238,7 @@ async def recap(ctx: RecapContext, insights: Sequence[Insight], client: Any) -> 
             if "matches no verified" in f else f
             for f in check.failures
         ]  # fmt: skip
+        problems += mixed_moments(body, "en", cited) + ppda_slips(body, "en")
         if not reply.paragraphs:
             problems.append("paragraphs is empty")
         if not problems:

@@ -6,10 +6,11 @@ minutes themselves (Constitution I): code gives them both.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 from matchmind.clock import minute_label
-from matchmind.schemas import MatchMeta, Moment
+from matchmind.schemas import Event, MatchMeta, Moment
 
 
 def match_names(meta: MatchMeta) -> dict[str, str]:
@@ -34,3 +35,33 @@ def moment_context(moment: Moment) -> dict[str, Any]:
         "minute_end": minute_label(moment.period, moment.t_end),
         "events_window": {"period": moment.period, "t_from": t_from, "t_to": moment.t_end},
     }
+
+
+MAX_WINDOW_EVENTS = 8
+# A deviation stat's own events, when its name isn't the event type's plural.
+STAT_EVENTS = {"dribbles": "carry", "key_passes": "pass", "progressive_passes": "pass",
+               "shots_on_target": "shot", "xg": "shot", "goals": "goal"}  # fmt: skip
+
+
+def window_event_ids(events: Sequence[Event], moment: Moment) -> list[str]:
+    """Evidence for a moment that has no events of its own (TASK-25.2), when the Explainer
+    cites none: a player moment's events by that player up to its end, of the stat's own type
+    when there are any ("dribbles" -> ``carry``); otherwise the moment's team's events in
+    its ``events_window``. The latest ``MAX_WINDOW_EVENTS``, in time order."""
+    end = (moment.period, moment.t_end)
+    if moment.player_id:
+        mine = [e for e in events
+                if e.player_id == moment.player_id and (e.period, e.t) <= end]  # fmt: skip
+        stat = moment.trigger_metric
+        types = {STAT_EVENTS.get(stat, ""), stat, stat[:-1], stat[:-2]}
+        typed = [e for e in mine if e.type in types]
+        chosen = typed or mine
+    else:
+        window = moment_context(moment)["events_window"]
+        chosen = [
+            e for e in events
+            if e.period == moment.period and window["t_from"] <= e.t <= window["t_to"]
+            and (moment.team_id is None or e.team_id == moment.team_id)
+        ]  # fmt: skip
+    ordered = sorted(chosen, key=lambda e: (e.period, e.t))
+    return [e.event_id for e in ordered[-MAX_WINDOW_EVENTS:]]

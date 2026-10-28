@@ -13,7 +13,6 @@ param apiImage string
 var token = toLower(uniqueString(subscription().id, resourceGroup().id, location))
 var appName = 'ca-matchmind-api'
 var roles = {
-  acrPull: '7f951dda-4ed3-4680-a7ca-43fe172d538d'
   blobReader: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
   blobContributor: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 }
@@ -40,25 +39,8 @@ resource insights 'Microsoft.Insights/components@2020-02-02' = {
   properties: { Application_Type: 'web', WorkspaceResourceId: logs.id }
 }
 
-// Kept for azd, but unused: ACR builds are paused on Azure for Students, so the app runs the
-// public GitHub Container Registry image (apiImage) instead.
-resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
-  name: 'crmatchmind${token}'
-  location: location
-  tags: tags
-  sku: { name: 'Basic' }
-  properties: { adminUserEnabled: false }
-}
-
-resource pull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(registry.id, identity.id, roles.acrPull)
-  scope: registry
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.acrPull)
-    principalId: identity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
+// No container registry: ACR builds are paused on Azure for Students, so the app runs the
+// public GitHub Container Registry image (apiImage). The unused registry was deleted 2026-10-27.
 
 // Tracking frames (Parquet), read by the API; the deployer uploads them (seed_cloud.py).
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
@@ -194,12 +176,10 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
       scale: { minReplicas: 1, maxReplicas: 1 }
     }
   }
-  dependsOn: [pull]
 }
 
 output appName string = app.name
 output appUri string = 'https://${host}'
-output registryEndpoint string = registry.properties.loginServer
 output sqlUrl string = sqlUrl
 output sqlServerName string = sql.name
 output blobUrl string = storage.properties.primaryEndpoints.blob

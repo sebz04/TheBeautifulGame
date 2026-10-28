@@ -72,6 +72,15 @@ async def test_explainer_rejects_insight_without_event_ids(stats: StatsStub) -> 
     assert "event_ids" in client.calls[1].text  # the error is fed back
 
 
+async def test_empty_event_ids_take_the_moments_window_events(stats: StatsStub) -> None:
+    """Moments found from rolling stats have no events; the model sometimes cites none, and
+    the moment fell back to a template (TASK-25.2): code fills in the window's events."""
+    client = _client(_draft(event_ids=[]))
+    insight = await explain(_decision(), moment(1), client, stats.tools(),
+                            fallback_events=["x1-e00007", "x1-e00008"])  # fmt: skip
+    assert insight.event_ids == ["x1-e00007", "x1-e00008"] and len(client.calls) == 1
+
+
 async def test_explainer_gives_up_after_one_regeneration(stats: StatsStub) -> None:
     client = _client(_draft(event_ids=[]), _draft(claims=[]))
     with pytest.raises(ExplainerError, match="m1"):
