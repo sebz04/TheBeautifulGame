@@ -101,4 +101,5 @@ Writing the AI insights (`scripts/precompute.py`) and the live re-ask need a Fou
 
 - **Rules and plan:** [CONSTITUTION.md](CONSTITUTION.md) and [docs/superpowers/plans/](docs/superpowers/plans/), including what changed while building and why.
 - **Data:** all of it is synthetic. The clubs, players, and matches are fictional (Colombian barrio clubs), and no real match data is used.
+- **License:** MIT ([LICENSE](LICENSE)). The match data is synthetic and free to reuse with the code.
 - **Credits and licenses:** every open-source dependency is listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and a CI gate checks the runtime licenses. Pitch control follows Spearman (2018) and the Friends of Tracking implementation by Laurie Shaw ([LaurieOnTracking](https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking), MIT): ours in `src/matchmind/stats/pitch_control.py` is vectorized and parity-tested against it.
