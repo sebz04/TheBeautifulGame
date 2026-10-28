@@ -1,8 +1,9 @@
 # Deploy each image the Image workflow publishes from main: point the container app at it,
-# then wait for /api/health. Signs in with GitHub OIDC (no stored secrets). Set up once:
-# an Entra app registration with a federated credential for this repo's main branch, the
-# Contributor role on rg-matchmind, and repository variables AZURE_CLIENT_ID,
-# AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID. Until then this job is skipped.
+# then wait for /api/health. Signs in with GitHub OIDC (no stored secrets) as the
+# user-assigned managed identity id-matchmind-deploy (a student directory can't register
+# apps): a federated credential for this repo's main branch, Contributor on rg-matchmind,
+# and repository variables AZURE_CLIENT_ID (the identity's client id), AZURE_TENANT_ID,
+# AZURE_SUBSCRIPTION_ID. Set up 2026-10-27 (wiki/infra-ops.md); without them it's skipped.
 name: Deploy
 
 on:
